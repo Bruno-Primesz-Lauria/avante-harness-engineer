@@ -1,6 +1,7 @@
 # Harness da esteira
 
 Regras para todo pedido. Detalhes em `nucleo/modus-operandi.md`.
+Contexto do projeto Avante (vocabulário, etapas, papéis): `nucleo/contexto-avante.md` — advisory, nunca autoridade.
 
 ## Sempre
 
@@ -8,6 +9,7 @@ Regras para todo pedido. Detalhes em `nucleo/modus-operandi.md`.
 - Faça a menor mudança que resolve o pedido. Preserve alterações que já existiam.
 - O produto fica em `prj-avante-analytics-adb/`, com Git próprio. Leia o `AGENTS.md` dele antes de trabalhar ali; ele prevalece nesse escopo.
 - Registros do harness ficam em `.execucoes/`, nunca nos arquivos do produto.
+- Leia `nucleo/contexto-avante.md` quando o pedido ou a fonte citar Mock, SIT, UAT, etapas do objeto, módulos SAP ou papéis (PO, Key User, etc.).
 
 ## Caminho simples ou estruturado
 

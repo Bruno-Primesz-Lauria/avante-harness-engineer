@@ -17,7 +17,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 
 | Pasta | Conteúdo |
 |---|---|
-| [`nucleo/`](nucleo/modus-operandi.md) | Política: caminho simples ou estruturado, quando perguntar, fontes, recuperação. |
+| [`nucleo/`](nucleo/modus-operandi.md) | Política (`modus-operandi.md`) e contexto do projeto Avante (`contexto-avante.md`, advisory). |
 | [`trilhas/`](trilhas/README.md) | Oito trilhas, cada uma com passos, aceite e fecho. |
 | [`contratos/`](contratos/README.md) | Campos do contrato da fatia. |
 | [`guardas/`](guardas/README.md) | O que o código nega e as regras de conduta sem código. |
