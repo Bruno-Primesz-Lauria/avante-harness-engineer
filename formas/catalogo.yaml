@@ -1,0 +1,257 @@
+schema_versao: "3.1"
+status: implementado_parcial
+fonte: ../user-harness-esteira-v3.html
+nota: >
+  Contrato de campos. Exemplos com exemplo:true ficam no HTML de referencia e
+  o consumidor operacional os rejeita. Quatro formas estao adotadas (estado:
+  adotada): contrato, guarda, brief e teste. As demais sao candidatas
+  (estado: candidata) e ainda nao tem validador. O consumidor operacional usa
+  a versao 3.1. Baseline, manifesto e estado estao descritos em
+  evidencia/uso.md.
+enums:
+  trilha: [novo, manutencao, entendimento, docs, correcao, validacao, review, destilar]
+  caminho: [simples, estruturado]
+  aceite_tipo: [teste, inspecao_documental, analise_codigo, ambiente, paridade, validacao_dados]
+  status_tarefa: [DONE, REVIEW, DECIDE, BLOCKED, FAILED]
+  veredito_revisao: [aceitavel, com_achados, inconclusivo]
+  veredito_ataque: [com_achados, nao_quebrei, inconclusivo]
+  checagem: [limpo, bloqueio, nao_aplica, nao_verificado]
+  resultado_prova: [pass, fail, info, inconclusivo]
+  base_prova: [direct, derived, reported]
+  decisao_guarda: [permitir, negar, nao_aplica]
+  validade: [valida, obsoleta, nao_verificada]
+envelope:
+  - campo: schema_versao
+    tipo: string
+    regra: "Versionada. O consumidor operacional usa 3.1."
+  - campo: tipo
+    tipo: enum
+    regra: "Uma das formas deste catalogo."
+  - campo: exemplo
+    tipo: bool
+    regra: "true e exclusivo de documentacao; consumidor operacional rejeita."
+  - campo: execucao_id
+    tipo: string
+    regra: "Nao vazia, sem separador de caminho."
+  - campo: fatia_id
+    tipo: string
+    regra: "Nao vazia, sem separador de caminho."
+  - campo: evento_id
+    tipo: string
+    regra: "Nao vazio, sem separador de caminho; unico na execucao."
+  - campo: tentativa
+    tipo: int
+    regra: "Inteiro positivo, vinculado ao estado da fatia."
+  - campo: produtor
+    tipo: string
+    regra: "Identidade do produtor; autorizacao conferida pelo adaptador."
+  - campo: registrado_em
+    tipo: timestamp
+    regra: "UTC."
+  - campo: manifesto_ref
+    tipo: string
+    regra: "Referencia relativa dentro da raiz da execucao; impedir fuga de diretorio."
+  - campo: dados
+    tipo: objeto
+    regra: "Tipado pelo tipo. Chave desconhecida e rejeitada pelo validador."
+formas:
+  - id: contrato
+    titulo: Contrato
+    estado: adotada
+    uso: "Critérios tipados; superfície de produto separada de artefatos."
+    produtor: coordenador
+    consumidor: [executores, verificador]
+    validacao: "Aceite não vazio, IDs únicos, tipo permitido e esperado verificável. Superfície e artefatos separados."
+    dados:
+      objetivo: {tipo: string, obrigatorio: true}
+      termino_fatia: {tipo: string, obrigatorio: true}
+      trilha: {tipo: enum, enum: trilha, obrigatorio: true}
+      superficie: {tipo: lista, item: caminho, obrigatorio: true}
+      artefatos_raiz: {tipo: string, obrigatorio: true}
+      fora: {tipo: lista, item: string, obrigatorio: true}
+      fontes: {tipo: lista, item: string, obrigatorio: true}
+      prazo: {tipo: timestamp, anulavel: true, obrigatorio: true}
+      aceite:
+        tipo: lista
+        obrigatorio: true
+        min: 1
+        item:
+          id: {tipo: string, obrigatorio: true}
+          tipo: {tipo: enum, enum: aceite_tipo, obrigatorio: true}
+          obrigatorio: {tipo: bool, obrigatorio: true}
+          esperado: {tipo: string, obrigatorio: true}
+          verificacao:
+            tipo: objeto
+            obrigatorio: true
+            campos:
+              comando: {tipo: string, obrigatorio: true}
+              cwd: {tipo: string, obrigatorio: true}
+              caminhos: {tipo: lista, item: caminho, min: 1, obrigatorio: true}
+      orcamento:
+        tipo: objeto
+        obrigatorio: true
+        campos:
+          ciclos_correcao_max: {tipo: int}
+          ciclos_sem_progresso_max: {tipo: int}
+          repeticoes_operacao_max: {tipo: int}
+      responsaveis:
+        tipo: objeto
+        obrigatorio: true
+        campos:
+          executor: {tipo: string}
+          verificador: {tipo: string}
+          coordenador: {tipo: string}
+
+  - id: guarda
+    titulo: Guarda
+    estado: adotada
+    uso: "Evento próprio do hook, sem sobrescrever brief."
+    produtor: hook
+    consumidor: coordenador
+    validacao: "nao_aplica exige justificativa de escopo; nao_verificado não aprova critério obrigatório. Decisão negar impede somente a chamada dependente."
+    dados:
+      operacao: {tipo: string, obrigatorio: true}
+      checagens:
+        tipo: lista
+        obrigatorio: true
+        item:
+          id: {tipo: string, obrigatorio: true}
+          resultado: {tipo: enum, enum: checagem, obrigatorio: true}
+          evidencia_ref: {tipo: string}
+          motivo: {tipo: string}
+      decisao: {tipo: enum, enum: decisao_guarda, obrigatorio: true}
+      recuperacao: {tipo: string, obrigatorio: true}
+
+  - id: brief
+    titulo: Fecho
+    estado: adotada
+    uso: "Somente coordenador publica; resultados por critério sustentam o status."
+    produtor: coordenador
+    consumidor: [pessoa, retomada]
+    validacao: "DONE exige critérios obrigatórios atendidos e evidências válidas; nenhuma pendência obrigatória ou ação humana. REVIEW exige revisão prevista. Um novo fecho não apaga o anterior."
+    dados:
+      escopo_conclusao: {tipo: string, obrigatorio: true}
+      status: {tipo: enum, enum: status_tarefa, obrigatorio: true}
+      outcome: {tipo: string, obrigatorio: true}
+      criterios:
+        tipo: lista
+        obrigatorio: true
+        item:
+          id: {tipo: string, obrigatorio: true}
+          atendido: {tipo: bool, obrigatorio: true}
+          evidencia_ref: {tipo: string}
+          validade: {tipo: enum, enum: validade}
+      pendencias: {tipo: lista, obrigatorio: true}
+      acao_humana: {tipo: string, anulavel: true, obrigatorio: true}
+
+  - id: intencao
+    titulo: Intenção
+    estado: candidata
+    uso: "Somente no caminho estruturado; não obriga pergunta para preencher campo."
+    produtor: coordenador
+    consumidor: contrato
+    campos: [objetivo, trilha, caminho, decisao_pendente]
+
+  - id: mapa
+    titulo: Mapa
+    estado: candidata
+    uso: "Fatos conferidos, com referência ao estado consultado."
+    produtor: map
+    consumidor: [executor, coordenador]
+    campos: [fontes, fatos, lacunas, alteracoes_atribuiveis]
+
+  - id: config
+    titulo: Configuração
+    estado: candidata
+    uso: "YAML e recursos declarados no contrato."
+    produtor: config
+    consumidor: [verificador, coordenador]
+    campos: [arquivos, manifesto_antes, manifesto_depois, criterios_a_verificar]
+
+  - id: implement
+    titulo: Implementação
+    estado: candidata
+    uso: "Notebook ou código; inclui criação de novo objeto."
+    produtor: implement
+    consumidor: [verificador, coordenador]
+    campos: [arquivos, manifesto_antes, manifesto_depois, criterios_a_verificar]
+
+  - id: docs
+    titulo: Documentação
+    estado: candidata
+    uso: "Precisão factual e referências inspecionadas."
+    produtor: docs
+    consumidor: [verificador, coordenador]
+    campos: [arquivos, manifesto_antes, manifesto_depois, criterios_a_verificar]
+
+  - id: destilar
+    titulo: Destilação
+    estado: candidata
+    uso: "Separar instrução recorrente de fato que deve permanecer na fonte."
+    produtor: distill
+    consumidor: [docs, coordenador]
+    campos: [fonte, padrao, referencia, destino, adaptador]
+
+  - id: teste
+    titulo: Teste
+    estado: adotada
+    uso: "Resultado do executor, vinculado ao estado; não basta o agente afirmar pass."
+    produtor: executor_teste
+    consumidor: coordenador
+    validacao: "Exit code inteiro ou null em execução incompleta; pass/fail casa com o comando e o esperado. Log real e manifesto referenciado existem."
+    dados:
+      criterio_id: {tipo: string, obrigatorio: true}
+      chamada_id: {tipo: string, obrigatorio: true}
+      cwd: {tipo: string, obrigatorio: true}
+      comando: {tipo: string, obrigatorio: true}
+      inicio: {tipo: timestamp, obrigatorio: true}
+      fim: {tipo: timestamp, obrigatorio: true}
+      exit_code: {tipo: int, anulavel: true, obrigatorio: true}
+      log_ref: {tipo: caminho, obrigatorio: true}
+      log_sha256: {tipo: string, obrigatorio: true}
+      estado_testado: {tipo: string, obrigatorio: true}
+      resultado: {tipo: enum, enum: resultado_prova, obrigatorio: true}
+      validade: {tipo: enum, enum: validade, obrigatorio: true}
+
+  - id: ataque
+    titulo: Revisão independente
+    estado: candidata
+    uso: "Payload leva intenção, aceite e recorte verificável; sem racional persuasivo."
+    produtor: refute
+    consumidor: coordenador
+    validacao: "com_achados exige achados com evidência; nao_quebrei exige tentativas e cobertura. Inconclusivo não aprova critério obrigatório."
+    campos: [entrada, veredito, tentativas, achados, cobertura]
+
+  - id: diagnostico
+    titulo: Diagnóstico
+    estado: candidata
+    uso: "Causa sustentada ou hipótese com próximo experimento."
+    produtor: diagnostico
+    consumidor: [executor, coordenador]
+    campos: [sintoma, causa, base, locator, proximo_passo]
+
+  - id: sandbox
+    titulo: Ambiente
+    estado: candidata
+    uso: "Pré-condições distintas por operação. Nomes são confirmação adicional."
+    produtor: executor_ambiente
+    consumidor: coordenador
+    validacao: "Deploy exige plan válido e compatível. Run de ingestão ou espinha exige coordenação verificada para escopo e rodada. Guardas e autorização anteriores ao efeito."
+    campos: [operacao, cwd, bundle, target, identidade, selecao, destinos_resolvidos, autorizacao_ref, plan_ref, plan_estado_compativel, coordenacao, resultado, log_ref]
+
+  - id: paridade
+    titulo: Paridade
+    estado: candidata
+    uso: "Mesmo recorte, insumos identificados, cálculo reproduzível e gap tratado."
+    produtor: paridade
+    consumidor: coordenador
+    validacao: "Diferença deriva dos insumos do mesmo recorte. Gap sem explicação comprovada impede aprovação quando paridade é obrigatória."
+    campos: [criterio_id, recorte, insumos, contas, divergencias, resultado]
+
+  - id: resposta
+    titulo: Resposta
+    estado: candidata
+    uso: "Fontes sustentam o conteúdo; preservação de estado é critério separado."
+    produtor: coordenador
+    consumidor: pessoa
+    campos: [texto, fontes, alteracoes_atribuiveis, limites]

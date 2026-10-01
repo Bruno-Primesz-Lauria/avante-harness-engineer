@@ -1,0 +1,10 @@
+# Claude Code
+
+Visão geral e tabela: [adaptadores](../README.md).
+
+- Configuração: `.claude/settings.json`, gerada com `py -3 adaptadores/gerenciar.py claude_code --instalar`. Mescla com o que já existe (permissões e outros hooks ficam).
+- `PreToolUse` com matcher `^(Bash|PowerShell)$`. No Windows o hook roda em `powershell` e usa `CLAUDE_PROJECT_DIR` para achar `adaptadores/entrada.py`.
+- O `cwd` do envelope é da sessão e não vale como prova. Prefixe o comando com `Set-Location -LiteralPath '...' -ErrorAction Stop;` (PowerShell) ou `cd -- '...' &&` (Bash).
+- Decisão positiva devolve só contexto. Negação usa `permissionDecision: deny`.
+- Não coleta prova nem retoma fecho.
+- Confira: `/hooks`.

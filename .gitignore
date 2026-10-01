@@ -1,0 +1,5 @@
+__pycache__/
+.execucoes/
+.venv/
+/prj-avante-analytics-adb/
+*.backup.*

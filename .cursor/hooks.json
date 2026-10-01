@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "py -3 adaptadores/entrada.py cursor",
+        "timeout": 10,
+        "failClosed": true
+      }
+    ],
+    "sessionStart": [
+      {
+        "command": "py -3 adaptadores/entrada.py cursor",
+        "timeout": 10
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "py -3 adaptadores/entrada.py cursor",
+        "timeout": 10,
+        "matcher": "Shell",
+        "failClosed": true
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "py -3 adaptadores/entrada.py cursor",
+        "timeout": 10,
+        "matcher": "Shell"
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": "py -3 adaptadores/entrada.py cursor",
+        "timeout": 10,
+        "matcher": "Shell"
+      }
+    ],
+    "stop": [
+      {
+        "command": "py -3 adaptadores/entrada.py cursor",
+        "timeout": 10,
+        "loop_limit": 2
+      }
+    ]
+  }
+}
