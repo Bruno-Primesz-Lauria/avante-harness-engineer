@@ -28,6 +28,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 | [`adaptadores/`](adaptadores/README.md) | Tradução dos eventos de cada runtime para a mesma guarda. |
 | [`avaliacao/`](avaliacao/README.md) | Oito cenários e métricas para medir a política. |
 | `implementacao/`, `configuracao/`, `testes/` | Código da guarda e da prova, política de caminhos e testes. |
+| `.execucoes/` | Registros locais: provas, sessões e diagnósticos. Fora do Git. |
 
 ## Estado
 
@@ -75,6 +76,15 @@ py -3 adaptadores/gerenciar.py cursor --instalar
 ## Precedência
 
 No escopo do produto, o `AGENTS.md` dele prevalece. Sobre o comportamento da esteira, valem o código e o `AGENTS.md` do produto. Sobre o harness, valem estes arquivos e o código; o HTML é o desenho.
+
+## Onde o HTML diverge da pasta
+
+O HTML não é editado. Nestes pontos, vale o que está aqui:
+
+- **Git do harness**: o HTML diz ausente. A pasta é um repositório Git. Só o clone `prj-avante-analytics-adb/` está ausente.
+- **Claude Code**: o HTML diz que a carga do `AGENTS.md` não está integrada. O `CLAUDE.md` importa `@AGENTS.md` ([adaptador](adaptadores/claude_code/README.md)).
+- **Layout das provas**: o HTML usa `<execucao_id>/<fatia_id>/`. O código grava uma fatia por execução em `.execucoes/provas/<execucao_id>/principal/`, com `contrato.yaml`, `logs/resultado.txt` e sessões em `.execucoes/sessoes/` ([layout](evidencia/layout.md)).
+- **Estrutura**: a tabela do HTML lista só código e configuração. A estrutura completa está acima.
 
 ## Verificar mudanças no harness
 
