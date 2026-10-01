@@ -6,7 +6,9 @@ nota: >
   Inventário das peças do desenho. Nenhum código lê este arquivo.
   estado: politica = há texto de política no núcleo; implementado = há código
   que aplica a guarda (política em guardas/README.md); candidato = não
-  implementado, só descrito aqui.
+  implementado, só descrito aqui; coberto = papel atendido por skill instalada.
+  Skills de plataforma (databricks-*, aitools v0.2.10) não entram aqui:
+  roteamento em trilhas/README.md#skills-databricks.
 pecas:
   - id: modus-operandi
     tipo: rule
@@ -58,7 +60,8 @@ pecas:
     tipo: skill
     escopo: projeto
     ativacao: conforme tarefa
-    estado: candidato
+    estado: coberto
+    coberto_por: skills databricks-* (trilhas/README.md#skills-databricks)
     gatilho: "dúvida técnica ou alteração de recurso Databricks"
     criterio: "Referência relevante consultada; disponibilidade e versão conferidas."
     trilhas: "*"

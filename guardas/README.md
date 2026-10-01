@@ -6,7 +6,7 @@ Mapa do código: [arquitetura](../adaptadores/arquitetura.md). Comandos dos degr
 
 ## O que o código nega
 
-A guarda vale para chamadas de shell que contêm `databricks`. Roda em `beforeShellExecution` (Cursor), `PreToolUse` (Claude Code, Codex) e `tool.execute.before` (OpenCode). Falha da guarda, entrada inválida ou YAML ambíguo negam a chamada.
+A guarda vale para chamadas de shell de `databricks bundle` e de SQL ad hoc pela CLI. Roda em `beforeShellExecution` (Cursor), `PreToolUse` (Claude Code, Codex) e `tool.execute.before` (OpenCode). Falha da guarda, entrada inválida ou YAML ambíguo negam a chamada.
 
 | Guarda | O código nega | Limite |
 |---|---|---|
@@ -14,6 +14,7 @@ A guarda vale para chamadas de shell que contêm `databricks`. Roda em `beforeSh
 | Comando literal | Pipe, `;`, `&&` fora do prefixo, redirecionamento, `$`, subshell, wrapper opaco. Só `databricks`, `databricks.exe` e `databricks.cmd` sem caminho. Subcomando `bundle` além de `validate`, `plan` e `deploy` (`run`, `destroy`, `sync`...). Flag desconhecida ou duplicada. | Leitura literal (`Get-Content`, `rg` sem `--pre`...) passa. MCP, SDK e subcomandos fora de `bundle` não são vistos. |
 | `target-dev` | Target ausente. Target fora de `sandbox` e `dev`. `dev` sem `autorizacoes_dev` na política para aquela operação e seleção (a política atual não tem nenhuma). Perfil (`-p`/`--profile`) ausente. Flag e prefixo `DATABRICKS_BUNDLE_TARGET=` divergentes. | Só lê flag e prefixo literal. Não lê o ambiente do processo, o default do YAML nem variável da CLI. |
 | Plan antes de deploy | Deploy sem `--select` e sem `intencao_deploy_completo` na política. Deploy sem recibo de plan do mesmo bundle, target, perfil e seleção, ou com arquivo do bundle alterado depois do plan. | Deploy continua negado mesmo com recibo: identidade autenticada e destinos resolvidos não são conferidos. O recibo hasheia `databricks.yml` e os arquivos informados dentro do bundle; não cobre código fora dele. `--select` não restringe o sync. |
+| SQL ad hoc | `databricks experimental aitools tools query` com escrita (`INSERT`, `UPDATE`, `DELETE`, `MERGE`, `CREATE`, `DROP`, `ALTER`...), mais de um comando que não seja leitura, comentário SQL, `$`, crase, pipe ou encadeamento. Só passa `SELECT`, `WITH`, `SHOW`, `DESCRIBE`, `EXPLAIN`, `VALUES`. | Não vê SQL por SDK, REST, notebook ou editor. Identificador com crase não é aceito. |
 | Fecho | `adaptadores/prova.py fechar` recusa `DONE` ou `REVIEW` sem prova atual de cada critério obrigatório. Prova perde validade se arquivo relevante mudar (hash). Fecho adulterado é inválido. | O `stop` do Cursor pede correção em até duas continuações. Não bloqueia texto livre já exibido. Uso: [evidencia/uso.md](../evidencia/uso.md). |
 
 O recibo de plan nasce quando o Cursor observa `exitCode` 0 (`postToolUse`) de um `plan` literal declarado como verificação no contrato de uma fatia ativa. A guarda de antes da execução nunca grava sucesso.
@@ -53,6 +54,10 @@ Mudança fora do escopo impede o aceite. Preserve o trabalho anterior do usuári
 ### Fecho com evidência
 
 Todo critério obrigatório precisa de prova válida depois da última alteração relevante. Todo achado obrigatório precisa estar tratado. Se editou YAML ou código relevante, a prova anterior não vale: rode de novo a verificação autorizada. Não escreva `DONE` se o fecho for recusado.
+
+### Skills Databricks
+
+As skills ensinam comando e API; não autorizam. A guarda vê `databricks bundle` e o SQL ad hoc. Outros comandos que elas sugerem (`jobs`, `pipelines`, SDK, REST) passam sem checagem: `run-now`, `start-update` e execução em compute exigem autorização explícita.
 
 ### Schema das formas
 

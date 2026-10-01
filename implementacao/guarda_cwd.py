@@ -124,6 +124,47 @@ CLI_BUNDLE = re.compile(
     re.IGNORECASE)
 
 
+# SQL ad hoc pela CLI (skills databricks-*): so leitura passa.
+CLI_SQL = re.compile(
+    r"(?<![\w.\-])databricks(?:\.exe|\.cmd)?[\"']?\s.*?\bexperimental\s+aitools\s+tools\s+query\b",
+    re.IGNORECASE | re.DOTALL)
+SQL_LEITURA = {"select", "with", "show", "describe", "desc", "explain", "values"}
+SQL_ESCRITA = re.compile(
+    r"\b(insert|update|delete|merge|create|drop|alter|truncate|grant|revoke|copy|"
+    r"optimize|vacuum|refresh|call|msck|restore|analyze|set|reset|execute)\b", re.IGNORECASE)
+
+
+def avaliar_sql(comando: str) -> Decisao:
+    composto = negar("sql_nao_verificavel", "Consulta composta, dinamica ou com comentario.",
+                     "Rode uma unica chamada literal: databricks experimental aitools tools query "
+                     "\"SELECT ...\" --profile <perfil>. Sem pipe, variavel, crase ou comentario SQL.")
+    if any(c in comando for c in "$`\r\n"):
+        return composto
+    try:
+        leitor = shlex.shlex(comando.strip(), posix=True, punctuation_chars=";|&<>(){}")
+        leitor.whitespace_split = True
+        leitor.commenters = ""
+        tokens = list(leitor)
+    except ValueError:
+        return composto
+    if any(t and set(t) <= set(";|&<>(){}") for t in tokens):
+        return composto
+    posicao = next((i for i, t in enumerate(tokens) if t.casefold() == "query"), None)
+    if posicao is None or posicao + 1 >= len(tokens) or tokens[posicao + 1].startswith("-"):
+        return composto
+    sql = tokens[posicao + 1]
+    if "--" in sql or "/*" in sql:
+        return composto
+    texto = re.sub(r"'(?:[^']|'')*'", "''", sql)
+    comandos = [c.strip() for c in texto.split(";") if c.strip()]
+    if (not comandos or SQL_ESCRITA.search(texto)
+            or any(c.split()[0].casefold() not in SQL_LEITURA for c in comandos)):
+        return negar("sql_escrita", "SQL ad hoc so pode ler (SELECT, WITH, SHOW, DESCRIBE, EXPLAIN).",
+                     "Escrita em catalogo segue pelo pipeline ou job do bundle. Se for preciso escrever "
+                     "agora, peca ao usuario que execute.")
+    return Decisao("permitir", "sql_leitura", "Consulta somente leitura.")
+
+
 def avaliar_operacao(operacao: Operacao, politica: dict) -> Decisao:
     if operacao.fase != "antes_execucao":
         return negar("evento_invalido", "Esperada operacao anterior a execucao.")
@@ -133,6 +174,8 @@ def avaliar_operacao(operacao: Operacao, politica: dict) -> Decisao:
     if not isinstance(operacao.comando, str):
         return negar("entrada_invalida", "Comando ausente ou invalido.")
     comando = operacao.comando
+    if CLI_SQL.search(comando) and not CLI_BUNDLE.search(comando):
+        return avaliar_sql(comando)
     if not CLI_BUNDLE.search(comando):
         return Decisao("nao_aplica", "comando_fora_do_recorte",
                        "Sem chamada de databricks bundle no comando.")

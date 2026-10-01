@@ -20,9 +20,11 @@ Regras para todo pedido. Detalhes em `nucleo/modus-operandi.md`.
 ## Databricks
 
 - Leia `guardas/README.md` antes de qualquer `databricks bundle`.
-- Rode um comando literal por vez, sem pipe, `;`, `&&` extra ou variável, no diretório do bundle local `prj-avante-analytics-adb/bundles/src/notebooks/saneamento_migracao`. Se o runtime não informa o diretório, use o prefixo `Set-Location -LiteralPath '<caminho>' -ErrorAction Stop;` (PowerShell) ou `cd -- '<caminho>' &&` (Bash).
+- Em `databricks bundle`, rode um comando literal por vez, sem pipe, `;`, `&&` extra ou variável, no diretório do bundle local `prj-avante-analytics-adb/bundles/src/notebooks/saneamento_migracao`. Se o runtime não informa o diretório, use o prefixo `Set-Location -LiteralPath '<caminho>' -ErrorAction Stop;` (PowerShell) ou `cd -- '<caminho>' &&` (Bash).
 - Deploy e `run` exigem autorização explícita. A guarda não concede autorização.
 - Uma negação vale para aquela chamada. Corrija e repita; não contorne com outra ferramenta, wrapper ou terminal.
+- Para comando ou API da plataforma, use as skills `databricks-*` indicadas para a trilha em `trilhas/README.md` (comece por `databricks-core`). Elas ensinam; não autorizam. Se a skill e o harness divergirem, vale o harness.
+- SQL ad hoc (`databricks experimental aitools tools query`) só lê: `SELECT`, `WITH`, `SHOW`, `DESCRIBE`, `EXPLAIN`. A guarda nega escrita; ela segue pelo pipeline ou job do bundle, ou o usuário executa.
 
 ## Mudanças no próprio harness
 

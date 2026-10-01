@@ -6,9 +6,12 @@ Vinte e seis peças do desenho: 1 regra, 13 skills, 7 papéis de agente e 5 hook
 |---|---|---|
 | `politica` | `modus-operandi` | Há texto de política em [`nucleo/modus-operandi.md`](../nucleo/modus-operandi.md). |
 | `implementado` | `cwd-bundle`, `target-dev`, `yaml-stop` e `stop-untested` (estes dois são a guarda "Fecho") | Há código que aplica a guarda. Política e limites em [`guardas/README.md`](../guardas/README.md). |
-| `candidato` | as 13 skills, os 7 papéis, `docs-distill` | Não implementado. Não existe como skill, subagente ou hook. |
+| `coberto` | `tech-guide` | O papel é atendido pelas skills Databricks instaladas. |
+| `candidato` | as outras 12 skills, os 7 papéis, `docs-distill` | Não implementado. Não existe como skill, subagente ou hook. |
 
 A skill pessoal `grilling` não é copiada aqui.
+
+As skills de plataforma `databricks-*` (aitools v0.2.10, em `.agents/skills/`) estão instaladas e ficam fora deste catálogo. Qual usar em cada trilha: [`trilhas/README.md`](../trilhas/README.md#skills-databricks).
 
 ## Roteamento
 

@@ -24,6 +24,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 | [`evidencia/`](evidencia/uso.md) | Uso da prova, validade, status de fecho e layout dos registros. |
 | [`formas/`](formas/README.md) | Schema dos registros (4 formas adotadas, 11 candidatas). |
 | [`acervo/`](acervo/README.md) | 26 peças do desenho e o estado de cada uma. |
+| `.agents/skills/` | 10 skills Databricks (aitools v0.2.10) para Cursor, Codex e OpenCode; roteamento em [`trilhas/`](trilhas/README.md#skills-databricks). |
 | [`adaptadores/`](adaptadores/README.md) | Tradução dos eventos de cada runtime para a mesma guarda. |
 | [`avaliacao/`](avaliacao/README.md) | Oito cenários e métricas para medir a política. |
 | `implementacao/`, `configuracao/`, `testes/` | Código da guarda e da prova, política de caminhos e testes. |
@@ -33,6 +34,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 **Imposto por código** (a IA não contorna pelo shell do chat):
 
 - `databricks bundle` só roda no bundle local, com comando literal, target `sandbox` e perfil explícito.
+- SQL ad hoc pela CLI só lê; escrita é negada.
 - `run`, `destroy`, `sync` e `deploy` são negados. Target `dev` só passa com autorização registrada na política (hoje não há nenhuma). Deploy segue negado porque identidade e destinos ainda não são conferidos.
 - No Cursor, `prova.py fechar` recusa `DONE` sem prova atual; o `stop` pede correção até duas vezes.
 
@@ -42,7 +44,9 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 
 **Ainda não observado**: nenhuma sessão real de Cursor, Claude Code, Codex ou OpenCode mostrou o hook negando ou a prova sendo coletada. Os testes locais cobrem o código, não a ativação. A avaliação dos oito cenários não foi executada.
 
-**Não implementado**: skills, subagentes, 11 das 15 formas, guarda de `run`, coordenação de dados, identidade autenticada e `docs-distill`.
+**Skills Databricks**: as 10 roteadas pelas trilhas ficam em `.agents/skills/`, lido por Cursor, Codex e OpenCode. O Claude Code recebe as 29 pelo plugin `databricks` do projeto. Ativação a observar em sessão.
+
+**Não implementado**: skills do projeto, subagentes, 11 das 15 formas, guarda de `run`, coordenação de dados, identidade autenticada e `docs-distill`.
 
 ## Preparar um clone
 

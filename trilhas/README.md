@@ -41,3 +41,22 @@ pode corrigir?
 - Teste em outro agente continua o mesmo teste. O esperado vem do requisito, do dado de referência ou do comportamento contratado.
 - O CI do PR não executa as suítes locais. Rode-as antes do PR (regra do `AGENTS.md` do produto). Ampliação local de suíte vai separada no manifesto de entrega.
 - Orçamento do laço: [`nucleo/modus-operandi.md`](../nucleo/modus-operandi.md#recuperação).
+
+## Skills Databricks
+
+Use a skill para acertar comando e API da plataforma. Ela não muda escopo, autorização nem guarda. Se divergir do harness ou do `AGENTS.md` do produto, vale o harness.
+
+| Skill | Use quando | Trilhas |
+|---|---|---|
+| `databricks-core` | CLI, autenticação e perfil. Nunca escolha o perfil sozinho. | todas |
+| `databricks-docs` | Dúvida técnica sem skill específica. | todas |
+| `databricks-dabs` | `databricks.yml`, `include`, recurso, `validate` e `plan`. | `novo`, `manutencao`, `correcao`, `validacao`, `review` |
+| `databricks-pipelines` | Pipeline Lakeflow (cutover, saneamento, fornecedor, cliente). | `novo`, `manutencao`, `correcao`, `validacao` |
+| `databricks-jobs` | Job e orquestrador; etapa 06. | `novo`, `manutencao`, `correcao`, `validacao` |
+| `databricks-dbsql` | SQL do objeto e leitura da saída de dados. | `novo`, `manutencao`, `correcao`, `entendimento`, `validacao` |
+| `databricks-unity-catalog` | Catálogo, schema, volume e permissão. | `novo`, `entendimento`, `validacao`, `review` |
+| `databricks-data-discovery` | Achar tabela ou responder pergunta sobre o dado. | `entendimento`, `correcao`, `validacao` |
+| `databricks-python-sdk` | Código com SDK, Databricks Connect ou REST. | `novo`, `manutencao`, `correcao` |
+| `databricks-execution-compute` | Rodar código em cluster ou serverless, só com autorização. | `correcao`, `validacao` |
+
+Ficam em `.agents/skills/` (aitools v0.2.10), lido por Cursor, Codex e OpenCode; o Claude Code as recebe pelo plugin `databricks`. As outras 19 skills do aitools (apps, ML, Lakebase, vector search...) ficam fora da esteira. Atualizar: `databricks aitools install --path .agents/skills --skills databricks-core,databricks-docs,databricks-dabs,databricks-pipelines,databricks-jobs,databricks-dbsql,databricks-unity-catalog,databricks-data-discovery,databricks-python-sdk,databricks-execution-compute`.

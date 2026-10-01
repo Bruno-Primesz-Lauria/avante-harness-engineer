@@ -158,11 +158,27 @@ class GuardaCwdTestes(unittest.TestCase):
 
     def test_cli_por_caminho_continua_negada(self):
         for comando in ("C:/bin/databricks bundle deploy -t sandbox -p teste",
-                        "C:\bin\databricks.exe bundle validate -t sandbox -p teste",
+                        r"C:\bin\databricks.exe bundle validate -t sandbox -p teste",
                         "./databricks bundle validate -t sandbox -p teste",
                         '"C:/Program Files/databricks.exe" bundle deploy'):
             with self.subTest(comando=comando):
                 self.assertEqual(self.avaliar(comando).decisao, "negar")
+
+    def test_sql_ad_hoc_so_leitura(self):
+        q = "databricks experimental aitools tools query "
+        for sql in ('"SELECT * FROM c.s.t LIMIT 10"', '"select replace(a, \'x\', \'y\') from t"',
+                    '"WITH x AS (SELECT 1) SELECT * FROM x"', '"DESCRIBE TABLE c.s.t"',
+                    '"SHOW TABLES IN c.s"', '"SELECT * FROM t WHERE status = \'DELETE\'"'):
+            with self.subTest(sql=sql):
+                self.assertEqual(self.avaliar(q + sql + " --profile teste").decisao, "permitir")
+        for sql in ('"DELETE FROM c.s.t"', '"SELECT 1; DROP TABLE t"', '"WITH x AS (SELECT 1) INSERT INTO t SELECT * FROM x"',
+                    '"CREATE OR REPLACE TABLE t AS SELECT 1"', '"MERGE INTO t USING s ON 1=1"',
+                    '"SELECT /* it\'s */ 1; DROP TABLE t"', '"SELECT 1 -- x"', '"SELECT $(x)"',
+                    '"SELECT 1" | Out-Null', '"SELECT 1"; databricks bundle deploy', "--profile teste"):
+            with self.subTest(sql=sql):
+                self.assertEqual(self.avaliar(q + sql).decisao, "negar")
+        self.assertEqual(self.avaliar("databricks --profile teste experimental aitools tools query "
+                                      "\"UPDATE t SET a = 1\"").decisao, "negar")
 
     def test_demais_operacoes_nao_liberadas_por_cwd(self):
         for operacao in ("run", "destroy", "sync"):
