@@ -176,6 +176,41 @@ class GuardasEfeitoTestes(unittest.TestCase):
         self.assertIn("plan_ausente", corpo["permissionDecisionReason"])
         self.assertNotIn("perfil_privado", corpo["permissionDecisionReason"])
 
+    def test_deploy_sandbox_autorizado_exige_plan_e_so_vale_no_sandbox(self):
+        politica = dict(self.politica, deploy_sandbox_autorizado=True)
+        deploy = "databricks bundle deploy -t sandbox -p teste --select etapa"
+        self.assertEqual(self.avaliar(deploy, politica).codigo, "plan_ausente")
+        self.assertEqual(self.observar(politica=politica).codigo, "plan_registrado")
+        liberado = self.avaliar(deploy, politica)
+        self.assertEqual((liberado.decisao, liberado.codigo), ("permitir", "deploy_sandbox_autorizado"))
+        self.assertEqual(self.avaliar(deploy).codigo, "identidade_destinos_pendentes")
+        self.assertEqual(
+            self.avaliar("databricks bundle deploy -t sandbox -p teste --select outra", politica).codigo,
+            "plan_ausente")
+        self.assertEqual(
+            self.avaliar("databricks bundle deploy -p teste --select etapa", politica).codigo,
+            "target_nao_observavel")
+        com_dev = dict(politica, autorizacoes_dev=[{"operacao": "plan", "selecao": ["etapa"]},
+                                                   {"operacao": "deploy", "selecao": ["etapa"]}])
+        self.assertEqual(self.observar("databricks bundle plan -t dev -p teste --select etapa",
+                                       politica=com_dev).codigo, "plan_registrado")
+        self.assertEqual(
+            self.avaliar("databricks bundle deploy -t dev -p teste --select etapa", com_dev).codigo,
+            "identidade_destinos_pendentes")
+        for valor in (False, "true", 1):
+            self.assertEqual(
+                self.avaliar(deploy, dict(self.politica, deploy_sandbox_autorizado=valor)).codigo,
+                "identidade_destinos_pendentes")
+
+    def test_deploy_sandbox_autorizado_nao_vale_fora_do_bundle(self):
+        politica = dict(self.politica, deploy_sandbox_autorizado=True)
+        self.observar(politica=politica)
+        fora = self.raiz / "outro"
+        fora.mkdir()
+        decisao = self.avaliar("databricks bundle deploy -t sandbox -p teste --select etapa",
+                               politica, cwd=fora)
+        self.assertEqual(decisao.decisao, "negar")
+
     def test_identidade_do_recibo_diferente_nao_serve_ao_gancho(self):
         self.assertEqual(self.observar(identidade="pessoa@exemplo").codigo, "plan_registrado")
         self.assertEqual(self.avaliar("databricks bundle deploy -t sandbox -p teste --select etapa").codigo,

@@ -1,5 +1,6 @@
 {
   "bundle_local": "../prj-avante-analytics-adb/bundles/src/notebooks/saneamento_migracao",
   "bundle_nome": "saneamento_migracao",
-  "registros_raiz": "../.execucoes"
+  "registros_raiz": "../.execucoes",
+  "deploy_sandbox_autorizado": true
 }

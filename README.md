@@ -35,7 +35,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 **Imposto por código** (vale para o shell do chat, quando o hook dispara):
 
 - `databricks bundle` só roda no bundle local, com comando literal, target `sandbox` e perfil explícito.
-- Só `validate` e `plan` passam. `deploy`, `run`, `destroy` e `sync` são negados; o deploy segue negado mesmo com plan, porque identidade e destinos não são conferidos.
+- `validate` e `plan` passam em `sandbox` (e em `dev` só com autorização na política). `deploy` passa só em `sandbox`, com plan vigente, `-p` e `--select`; identidade e destinos não são conferidos. `run`, `destroy` e `sync` são negados.
 - Target `dev` só passa com autorização registrada na política. Hoje não há nenhuma.
 - SQL ad hoc pela CLI só lê; escrita é negada.
 - No Cursor, `prova.py fechar` recusa `DONE` sem prova atual; o `stop` pede correção até duas vezes.
