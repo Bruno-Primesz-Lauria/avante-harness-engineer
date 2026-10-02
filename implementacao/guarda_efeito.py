@@ -374,6 +374,12 @@ def _conferir_deploy(chamada: Chamada, politica: dict, base: Decisao) -> Decisao
                      "Nao ha plan registrado para este bundle, target, perfil e selecao.",
                      "Rode o plan autorizado por este chat antes do deploy. "
                      "Um arquivo chamado plan nao conta.")
+    if chamada.target == "sandbox" and politica.get("deploy_sandbox_autorizado") is True:
+        return Decisao("permitir", "deploy_sandbox_autorizado",
+                       "Deploy no sandbox autorizado pela politica, com plan vigente do mesmo bundle, "
+                       "target, perfil e selecao. Identidade autenticada e destinos resolvidos nao "
+                       "foram conferidos. " + SYNC,
+                       cwd=base.cwd, bundle_arquivo=base.bundle_arquivo)
     return negar("identidade_destinos_pendentes",
                  "Ha plan registrado, mas a identidade autenticada e os destinos resolvidos nao sao conferidos.",
                  "Nao rode o deploy nem o contorne. Peca ao usuario para rodar. " + SYNC)

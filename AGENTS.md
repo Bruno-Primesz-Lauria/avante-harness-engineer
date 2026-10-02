@@ -1,6 +1,7 @@
 # Harness da esteira
 
 Regras para todo pedido. Detalhes em `nucleo/modus-operandi.md`.
+Contexto do projeto Avante (vocabulário, etapas, papéis): `nucleo/contexto-avante.md` — advisory, nunca autoridade.
 
 ## Sempre
 
@@ -8,6 +9,7 @@ Regras para todo pedido. Detalhes em `nucleo/modus-operandi.md`.
 - Faça a menor mudança que resolve o pedido. Preserve alterações que já existiam.
 - O produto fica em `prj-avante-analytics-adb/`, com Git próprio. Leia o `AGENTS.md` dele antes de trabalhar ali; ele prevalece nesse escopo.
 - Registros do harness ficam em `.execucoes/`, nunca nos arquivos do produto.
+- Leia `nucleo/contexto-avante.md` quando o pedido ou a fonte citar Mock, SIT, UAT, etapas do objeto, módulos SAP ou papéis (PO, Key User, etc.).
 
 ## Caminho simples ou estruturado
 
@@ -21,7 +23,7 @@ Regras para todo pedido. Detalhes em `nucleo/modus-operandi.md`.
 
 - Leia `guardas/README.md` antes de qualquer `databricks bundle`.
 - Em `databricks bundle`, rode um comando literal por vez, sem pipe, `;`, `&&` extra ou variável, no diretório do bundle local `prj-avante-analytics-adb/bundles/src/notebooks/saneamento_migracao`. Se o runtime não informa o diretório, use o prefixo `Set-Location -LiteralPath '<caminho>' -ErrorAction Stop;` (PowerShell) ou `cd -- '<caminho>' &&` (Bash).
-- Deploy e `run` exigem autorização explícita. A guarda não concede autorização.
+- `validate`, `plan` e `deploy` estão autorizados somente com `-t sandbox`, dentro do bundle local acima. Deploy segue exigindo `plan` atual, `-p` e `--select`. Qualquer outro target (inclusive `dev`) e todo `run` exigem autorização explícita. A guarda não concede autorização.
 - Uma negação vale para aquela chamada. Corrija e repita; não contorne com outra ferramenta, wrapper ou terminal.
 - Para comando ou API da plataforma, use as skills `databricks-*` indicadas para a trilha em `trilhas/README.md` (comece por `databricks-core`). Elas ensinam; não autorizam. Se a skill e o harness divergirem, vale o harness.
 - SQL ad hoc (`databricks experimental aitools tools query`) só lê: `SELECT`, `WITH`, `SHOW`, `DESCRIBE`, `EXPLAIN`. A guarda nega escrita; ela segue pelo pipeline ou job do bundle, ou o usuário executa.

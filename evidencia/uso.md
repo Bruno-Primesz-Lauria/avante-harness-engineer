@@ -92,7 +92,7 @@ Sem `exitCode` inteiro ou sem eventos, não há prova de sucesso. Não complete 
 
 ## Plan e deploy
 
-Um `plan` declarado como verificação gera recibo só após resultado observado com exit 0 e estado preservado. O pré-hook não grava sucesso. O recibo **não libera deploy**: identidade autenticada, destinos e cobertura completa do plan não estão integrados. Não implementado: `run`.
+Um `plan` declarado como verificação gera recibo só após resultado observado com exit 0 e estado preservado. O pré-hook não grava sucesso. O recibo sozinho não libera deploy: ele é pré-condição. O deploy só passa em `sandbox` com `deploy_sandbox_autorizado` na política; identidade autenticada, destinos e cobertura completa do plan não estão integrados. Não implementado: `run`.
 
 ## Fecho e `stop`
 

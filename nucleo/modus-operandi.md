@@ -41,6 +41,8 @@ Aplique nesta ordem:
 
 Fontes locais da esteira: `AGENTS.md`, template da etapa, `PLANO-DE-EXECUCAO.md`, README dos testes. A receita `saneamento_migracao/AGENTS.md` está perdida; use o template e o plano.
 
+Contexto do projeto ([`contexto-avante.md`](contexto-avante.md)): vocabulário (Mock, SIT, UAT), oito etapas, módulos SAP e papéis. É `advisory` — leia sob demanda para classificar melhor; nunca cite como autoridade nem como fonte de regra.
+
 ## Recuperação
 
 Confira autorização e efeito, recupere se for seguro, revalide e retome o nó interrompido, ou feche com pendência. Eventos de falha: [`guardas/README.md`](../guardas/README.md).

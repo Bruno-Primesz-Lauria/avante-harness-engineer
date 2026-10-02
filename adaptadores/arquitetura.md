@@ -25,7 +25,7 @@ A raiz é o checkout `user-harness-esteira/`. Abra sempre essa pasta, não a pas
 | `implementacao/guarda_cwd.py` | Recebe `Operacao(fase, ferramenta, comando, cwd, origem_cwd)`. Decide diretório, nome do bundle e comando literal. Não conhece nomes de evento. |
 | `implementacao/guarda_efeito.py` | Target, perfil e plan antes de deploy (recibos). Não executa a CLI. |
 | `implementacao/formas.py`, `implementacao/provas.py` | Validam as quatro formas adotadas (`contrato`, `guarda`, `brief`, `teste`). Gravam baseline, resultados e fecho, com hashes. |
-| `configuracao/politica.json` | `bundle_local`, `bundle_nome`, `registros_raiz`. Caminhos relativos ao arquivo. |
+| `configuracao/politica.json` | `bundle_local`, `bundle_nome`, `registros_raiz`, `deploy_sandbox_autorizado`. Caminhos relativos ao arquivo. |
 | `adaptadores/entrada.py` | Ponto de entrada dos hooks. Acha o checkout pelo próprio arquivo e prefere o Python de `.venv`. |
 | `adaptadores/executar.py` | Lê UTF-8/JSON, carrega a política, chama a guarda, grava o diagnóstico e responde no protocolo nativo. Falha tratada sai com código 2. |
 | `adaptadores/protocolo.py` | Normaliza os quatro protocolos e traduz a decisão de volta. |
@@ -52,7 +52,7 @@ A raiz é o checkout `user-harness-esteira/`. Abra sempre essa pasta, não a pas
 ## Limites reais
 
 - Só shell. `bundle run`, `destroy` e `sync` são negados; MCP, SDK, REST, edição de arquivo e terminal manual não passam pela guarda.
-- Deploy fica negado: identidade autenticada e destinos resolvidos não são conferidos.
+- Deploy só passa em `sandbox`, com plan vigente e `deploy_sandbox_autorizado` na política. Identidade autenticada e destinos resolvidos não são conferidos.
 - Os mecanismos diferem em crash e timeout. Não presuma equivalência.
 - Só o Cursor coleta prova e retoma o fecho.
 - Fecho em prosa não é interceptado.
