@@ -7,6 +7,9 @@ nota: >
   estado: politica = há texto de política no núcleo; implementado = há código
   que aplica a guarda (política em guardas/README.md); candidato = não
   implementado, só descrito aqui; coberto = papel atendido por skill instalada.
+  Para subagentes, politica registra aprovação do desenho; instalado registra
+  presença da definição nativa em cada runtime; observado só registra chamada
+  real em sessão, com versão, data e referência. Pendente não é evidência.
   Skills de plataforma (databricks-*, aitools v0.2.10) não entram aqui:
   roteamento em trilhas/README.md#skills-databricks.
 pecas:
@@ -143,63 +146,168 @@ pecas:
     escopo: projeto
     ativacao: opcional
     estado: candidato
-    gatilho: "investigação ampla que justifique delegação"
+    politica: aprovada
+    instalado:
+      claude_code: nao_instalado
+      cursor: nao_instalado
+    observado:
+      claude_code:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+      cursor:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+    gatilho: "Investigação ampla que justifique contexto separado; principal pode mapear diretamente."
     criterio: "Fontes e recorte sem alterações de produto atribuíveis à tarefa."
     trilhas: "*"
 
   - id: config
     tipo: subagent
     escopo: projeto
-    ativacao: opcional
+    ativacao: "obrigatorio_quando_houver_yaml"
     estado: candidato
-    gatilho: "YAML de negócio, ingestão ou recurso"
-    criterio: "Arquivos do contrato e estado registrado."
-    trilhas: [novo, manutencao]
+    politica: aprovada
+    instalado:
+      claude_code: nao_instalado
+      cursor: nao_instalado
+    observado:
+      claude_code:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+      cursor:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+    gatilho: "YAML de negócio, ingestão ou recurso em novo/manutenção; em correção, quando essa superfície estiver atribuída."
+    criterio: "Arquivos do contrato e estado registrado; somente superfície atribuída."
+    trilhas: [novo, manutencao, correcao]
 
   - id: implement
     tipo: subagent
     escopo: projeto
-    ativacao: opcional
+    ativacao: "obrigatorio_quando_houver_codigo"
     estado: candidato
-    gatilho: "notebook/Python no escopo"
+    politica: aprovada
+    instalado:
+      claude_code: nao_instalado
+      cursor: nao_instalado
+    observado:
+      claude_code:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+      cursor:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+    gatilho: "Notebook/Python/SQL no escopo das trilhas novo/manutenção/correção; carregar skills Databricks pertinentes."
     criterio: "Implementação verificada após última edição relevante."
     trilhas: [novo, manutencao, correcao]
 
   - id: test
     tipo: subagent
     escopo: projeto
-    ativacao: opcional
+    ativacao: "obrigatorio_nas_trilhas_indicadas"
     estado: candidato
-    gatilho: "executar aceite técnico contratado"
+    politica: aprovada
+    instalado:
+      claude_code: nao_instalado
+      cursor: nao_instalado
+    observado:
+      claude_code:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+      cursor:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+    gatilho: "Executar aceite técnico em novo/manutenção/correção/validação; reproduzir antes de corrigir e revalidar após edição."
     criterio: "Log do executor e manifesto de estado; relato sozinho não é prova."
     trilhas: [novo, manutencao, correcao, validacao]
 
   - id: refute
     tipo: subagent
     escopo: projeto
-    ativacao: opcional
+    ativacao: "obrigatorio_nas_trilhas_indicadas"
     estado: candidato
-    gatilho: "revisão com benefício de independência"
+    politica: aprovada
+    instalado:
+      claude_code: nao_instalado
+      cursor: nao_instalado
+    observado:
+      claude_code:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+      cursor:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+    gatilho: "Revisão em novo/manutenção/correção/docs/destilar/review/validação; sem edição de produto."
     criterio: "Achados rastreáveis ou tentativas sem quebra; sem aprovar por autoridade."
     trilhas: [novo, manutencao, docs, correcao, validacao, review, destilar]
 
   - id: docs
     tipo: subagent
     escopo: projeto
-    ativacao: opcional
+    ativacao: "obrigatorio_em_docs_destilar"
     estado: candidato
-    gatilho: "documentação ou destilação"
+    politica: aprovada
+    instalado:
+      claude_code: nao_instalado
+      cursor: nao_instalado
+    observado:
+      claude_code:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+      cursor:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+    gatilho: "Documentação ou destilação em arquivos autorizados."
     criterio: "Precisão, links e utilidade verificados."
     trilhas: [docs, destilar]
 
   - id: dab
     tipo: subagent
     escopo: projeto
-    ativacao: opcional
+    ativacao: "criterio_ambiente_com_autorizacao_valida"
     estado: candidato
-    gatilho: "validate, plan, deploy ou run autorizado"
+    politica: aprovada
+    instalado:
+      claude_code: nao_instalado
+      cursor: nao_instalado
+    observado:
+      claude_code:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+      cursor:
+        estado: pendente
+        versao: null
+        data: null
+        referencia: null
+    gatilho: "Critério ambiente com autorização válida registrada em novo/manutenção/correção/validação; disponibilidade não concede autorização."
     criterio: "Resultado real da operação, IDs e pré-condições; sem retry cego de efeito externo."
-    trilhas: [novo, validacao]
+    trilhas: [novo, manutencao, correcao, validacao]
 
   - id: cwd-bundle
     tipo: hook

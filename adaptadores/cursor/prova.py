@@ -52,7 +52,7 @@ def tratar(evento, politica, raiz):
             pasta = provas.pasta()
             provas.estado(pasta)
             criterios = ler(pasta / "contrato.yaml")["dados"]["aceite"]
-            if not any(c["verificacao"]["comando"] == comando for c in criterios):
+            if not any(c["verificacao"].get("comando") == comando for c in criterios):
                 # A guarda beforeShellExecution continua cobrindo o efeito de bundle.
                 return {"permission": "allow"}
         exigir(isinstance(cwd, str) and Path(cwd).is_absolute(), "Cwd nao observado")

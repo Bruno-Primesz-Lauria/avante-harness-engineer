@@ -2,10 +2,11 @@
 
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
-import tempfile
 import unittest
+from uuid import uuid4
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "implementacao"))
@@ -20,11 +21,11 @@ def avaliar_evento(evento, politica):
 
 class GuardaCwdTestes(unittest.TestCase):
     def setUp(self):
-        temporarios = RAIZ / ".execucoes/testes"
-        temporarios.mkdir(parents=True, exist_ok=True)
-        self.temporario = tempfile.TemporaryDirectory(prefix="harness_cwd_", dir=temporarios)
-        self.addCleanup(self.temporario.cleanup)
-        self.raiz = Path(self.temporario.name).resolve()
+        self.fixture_id = uuid4().hex
+        self.raiz = RAIZ / "testes/.fixtures/provas" / self.fixture_id
+        self.raiz.parent.mkdir(parents=True, exist_ok=True)
+        self.raiz.mkdir()
+        self.addCleanup(self.limpar_fixture)
         self.oficial = self.raiz / "bundles"
         self.local = self.oficial / "src" / "notebooks" / "saneamento_migracao"
         self.local.mkdir(parents=True)
@@ -35,6 +36,13 @@ class GuardaCwdTestes(unittest.TestCase):
         )
         self.politica = {"bundle_local": str(self.local), "bundle_nome": "saneamento_migracao",
                          "registros_raiz": str(self.raiz / "registros")}
+
+    def limpar_fixture(self):
+        raiz_fixtures = (RAIZ / "testes/.fixtures/provas").resolve()
+        destino = self.raiz.resolve()
+        if destino.parent != raiz_fixtures or destino.name != self.fixture_id:
+            raise RuntimeError("Fixture fora da raiz temporaria esperada")
+        shutil.rmtree(destino)
 
     def evento(self, comando="databricks bundle validate -t sandbox -p teste", cwd=None):
         return {"hook_event_name": "PreToolUse", "tool_name": "Bash",

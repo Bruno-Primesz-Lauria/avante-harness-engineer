@@ -18,6 +18,7 @@ Contexto do projeto Avante (vocabulário, etapas, papéis): `nucleo/contexto-ava
   `py -3 adaptadores/prova.py iniciar <contrato.yaml>` — modelo do contrato em `evidencia/uso.md`.
   Rode as verificações pelo chat, consulte com `estado` e feche com `fechar`.
   Só escreva `DONE` se `fechar` aceitar. Se recusar, verifique de novo ou feche com `BLOCKED`, `FAILED` ou `DECIDE` (`evidencia/fecho.md`).
+- **Limite temporário no Claude Code**: até o pacote D-CC passar pelo gate G2, o adaptador não coleta provas de shell nessa sessão; portanto, `fechar` não comprova `DONE`. Feche a fatia como `BLOCKED`, registrando o motivo e a condição de retomada, ou execute a fatia no Cursor. Relato de agente não substitui prova.
 
 ## Databricks
 
