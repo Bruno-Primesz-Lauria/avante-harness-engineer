@@ -1,15 +1,179 @@
 """Traduz eventos documentados do Cursor; nao interpreta sucesso em prosa."""
+from datetime import datetime, timezone
+from hashlib import sha256
 import json
 from pathlib import Path
 import re
 
-from formas import exigir
+from formas import dentro, exigir
 from guarda_cwd import Operacao, avaliar_operacao
 from guarda_efeito import observar_resultado_plan
 from protocolo import mensagem
-from provas import Provas, ler
+from provas import PAPEIS, Provas, ler, trava
 
 FALHA = re.compile(r"Command failed with exit code (-?\d+)")
+PAPEIS_REGISTRAVEIS = PAPEIS - {"map"}
+
+
+def _agora():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _editar_estado(provas, alterar):
+    pasta = provas.pasta()
+    if pasta is None:
+        return None, None
+    with trava(pasta):
+        estado = provas.estado(pasta)
+        resultado, mudou = alterar(estado)
+        if mudou:
+            provas.atualizar(pasta, estado)
+        return pasta, resultado
+
+
+def _rastreamento(estado, sessao):
+    rastreio = estado.setdefault("cursor_subagentes", {
+        "coordenador_id": sessao, "pendentes": {}, "janelas": {},
+    })
+    exigir(rastreio.get("coordenador_id") == sessao, "Estado de subagentes pertence a outra conversa")
+    return rastreio
+
+
+def _guardar_task(provas, evento):
+    chamada = evento.get("tool_use_id")
+    papel = evento.get("tool_input", {}).get("subagent_type")
+    exigir(isinstance(chamada, str) and chamada, "tool_use_id ausente na chamada Task")
+    exigir(isinstance(papel, str) and papel, "subagent_type ausente na chamada Task")
+
+    def alterar(estado):
+        rastreio = _rastreamento(estado, evento["conversation_id"])
+        exigir(chamada not in rastreio["pendentes"] and chamada not in rastreio["janelas"],
+               "Chamada Task ja observada")
+        rastreio["pendentes"][chamada] = {"papel": papel}
+        return None, True
+
+    _editar_estado(provas, alterar)
+
+
+def _abrir_janela(provas, evento):
+    chamada = evento.get("subagent_id")
+    exigir(isinstance(chamada, str) and chamada, "subagent_id ausente")
+
+    def alterar(estado):
+        rastreio = estado.get("cursor_subagentes")
+        if rastreio is None or rastreio.get("coordenador_id") != evento.get("conversation_id"):
+            return None, False
+        pendente = rastreio["pendentes"].get(chamada)
+        if pendente is None or pendente["papel"] != evento.get("subagent_type"):
+            return None, False
+        del rastreio["pendentes"][chamada]
+        rastreio["janelas"][chamada] = {
+            "papel": pendente["papel"], "inicio": _agora(), "agente_id": None,
+        }
+        return None, True
+
+    _editar_estado(provas, alterar)
+
+
+def _fechar_janela(provas, evento):
+    chamada = evento.get("subagent_id")
+    if not isinstance(chamada, str) or not chamada:
+        return None
+    fechada = None
+
+    def alterar(estado):
+        nonlocal fechada
+        rastreio = estado.get("cursor_subagentes")
+        if rastreio is None or rastreio.get("coordenador_id") != evento.get("conversation_id"):
+            return None, False
+        fechada = rastreio["janelas"].pop(chamada, None)
+        return None, fechada is not None
+
+    pasta, _ = _editar_estado(provas, alterar)
+    if pasta is None or fechada is None:
+        return None
+    return pasta, chamada, fechada
+
+
+def _chamada_id(tool_use_id):
+    # Cursor inclui LF no ID observado; chamada_id aceita apenas identificadores simples.
+    return "cursor_" + sha256(tool_use_id.encode("utf-8")).hexdigest()
+
+
+def _registrar_subagente(provas, evento):
+    fechada = _fechar_janela(provas, evento)
+    if fechada is None:
+        return
+    pasta, tool_use_id, janela = fechada
+    papel = janela["papel"]
+    if papel not in PAPEIS_REGISTRAVEIS:
+        return
+    estado = provas.estado(pasta)
+    if not any(chamada["papel"] == papel for chamada in estado["chamadas_previstas"]):
+        return
+    ids = [{"nome": "tool_use_id", "valor": tool_use_id}]
+    if janela["agente_id"]:
+        ids.append({"nome": "agente_id", "valor": janela["agente_id"]})
+    status = "concluida" if evento.get("status") == "completed" else "inconclusiva"
+    provas.registrar_chamada(_chamada_id(tool_use_id), papel, "cursor", ids,
+                             janela["inicio"], _agora(), status)
+
+
+def _janelas_ativas(raiz, politica):
+    registros = Path(politica["registros_raiz"])
+    sessoes = registros / "sessoes"
+    abertas = []
+    if not sessoes.exists():
+        return abertas
+    for indice in sessoes.iterdir():
+        ponteiro = indice / "ativa.json"
+        if not ponteiro.is_file():
+            continue
+        dados = ler(ponteiro)
+        pasta = dentro(registros, dados["fatia"])
+        estado_bruto = ler(pasta / "estado.json")
+        rastreio = estado_bruto.get("cursor_subagentes")
+        if not rastreio or not rastreio.get("janelas"):
+            continue
+        coordenador_id = rastreio.get("coordenador_id")
+        if not isinstance(coordenador_id, str) or not coordenador_id:
+            continue
+        coordenador = Provas(raiz, registros, coordenador_id, runtime="cursor")
+        if coordenador.indice.resolve() != indice.resolve() or coordenador.pasta() != pasta:
+            continue
+        estado = coordenador.estado(pasta)
+        rastreio = estado.get("cursor_subagentes", {})
+        abertas.extend((coordenador, coordenador_id, chamada, janela)
+                       for chamada, janela in rastreio.get("janelas", {}).items())
+    return abertas
+
+
+def _prova_do_subagente(evento, politica, raiz):
+    conversa = evento.get("conversation_id")
+    if not isinstance(conversa, str) or not conversa:
+        return None
+    abertas = _janelas_ativas(raiz, politica)
+    if not abertas or any(coordenador_id == conversa
+                          for _, coordenador_id, _, _ in abertas):
+        return None
+    if len(abertas) != 1:
+        return False
+    provas, coordenador_id, tool_use_id, janela = abertas[0]
+    if coordenador_id == conversa or janela["papel"] not in PAPEIS or provas.pasta() is None:
+        return False
+
+    def alterar(estado_atual):
+        rastreio_atual = estado_atual.get("cursor_subagentes", {})
+        atual = rastreio_atual.get("janelas", {}).get(tool_use_id)
+        if atual is None or atual["papel"] not in PAPEIS:
+            return False, False
+        if atual["agente_id"] not in (None, conversa):
+            return False, False
+        atual["agente_id"] = conversa
+        return True, True
+
+    pasta, vinculado = _editar_estado(provas, alterar)
+    return (provas, janela["papel"]) if pasta is not None and vinculado else False
 
 
 def tratar(evento, politica, raiz):
@@ -23,7 +187,17 @@ def tratar(evento, politica, raiz):
                 "conforme evidencia/uso.md. Pergunta simples nao precisa de registro."}
     if nome == "stop" and evento.get("status") != "completed":
         return {}
-    provas = Provas(raiz, politica["registros_raiz"], sessao)
+    provas = Provas(raiz, politica["registros_raiz"], sessao, runtime="cursor")
+    if nome == "preToolUse" and evento.get("tool_name") == "Task":
+        if provas.pasta() is not None:
+            _guardar_task(provas, evento)
+        return {"permission": "allow"}
+    if nome == "subagentStart":
+        _abrir_janela(provas, evento)
+        return {}
+    if nome == "subagentStop":
+        _registrar_subagente(provas, evento)
+        return {}
     if nome == "stop":
         try:
             estado = provas.conferir()
@@ -42,7 +216,14 @@ def tratar(evento, politica, raiz):
     exigir(nome in {"preToolUse", "postToolUse", "postToolUseFailure"}, "Evento nao suportado")
     if evento.get("tool_name") != "Shell":
         return {}
-    if provas.pasta() is None:
+    agente_id = None
+    associado = _prova_do_subagente(evento, politica, raiz)
+    if associado is False:
+        return {"permission": "allow"} if nome == "preToolUse" else {}
+    if associado is not None:
+        provas, _ = associado
+        agente_id = evento["conversation_id"]
+    elif provas.pasta() is None:
         return {"permission": "allow"} if nome == "preToolUse" else {}
     entrada = evento.get("tool_input", {})
     comando = entrada.get("command")
@@ -66,7 +247,7 @@ def tratar(evento, politica, raiz):
         if decisao.decisao == "negar":
             return {"permission": "deny", "user_message": decisao.motivo,
                     "agent_message": mensagem(decisao)}
-        provas.antes(chamada, comando, cwd, evento.get("cursor_version", "nao_informada"))
+        provas.antes(chamada, comando, cwd, evento.get("cursor_version", "nao_informada"), agente_id)
         return {"permission": "allow"}
     codigo, origem = None, "campo_resultado"
     if nome == "postToolUseFailure":

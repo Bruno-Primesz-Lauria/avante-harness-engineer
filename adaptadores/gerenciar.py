@@ -30,9 +30,11 @@ def gerar(runtime, plataforma=None):
         return {"version": 1, "hooks": {
             "beforeShellExecution": [dict(handler, failClosed=True)],
             "sessionStart": [dict(handler)],
-            "preToolUse": [dict(handler, matcher="Shell", failClosed=True)],
+            "preToolUse": [dict(handler, matcher="Shell|Task", failClosed=True)],
             "postToolUse": [dict(handler, matcher="Shell")],
             "postToolUseFailure": [dict(handler, matcher="Shell")],
+            "subagentStart": [dict(handler)],
+            "subagentStop": [dict(handler)],
             "stop": [dict(handler, loop_limit=2)],
         }}
     if runtime in ("claude_code", "codex"):
@@ -105,6 +107,14 @@ def instalar(runtime, workspace=WORKSPACE, plataforma=None):
         atual = json.loads(anterior.decode("utf-8-sig")) if anterior else {}
         preparado = json.loads(json.dumps(atual))
         outra = "posix" if (plataforma or ("windows" if os.name == "nt" else "posix")) == "windows" else "windows"
+        if runtime == "cursor":
+            # Migrar somente nosso matcher Shell anterior para o matcher combinado.
+            hooks = preparado.setdefault("hooks", {})
+            for sistema in ("windows", "posix"):
+                antigo = dict({"command": comando("cursor", sistema), "timeout": 10},
+                              matcher="Shell", failClosed=True)
+                existentes = hooks.get("preToolUse", [])
+                hooks["preToolUse"] = [grupo for grupo in existentes if grupo != antigo]
         # Ao trocar o SO, substituir apenas a definicao exata gerada por nos.
         # Manter as duas faria o lancador indisponivel bloquear a chamada.
         alternativo = gerar(runtime, outra)

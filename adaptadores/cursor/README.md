@@ -3,9 +3,9 @@
 Adaptador principal. Visão geral e tabela: [adaptadores](../README.md).
 
 - Configuração: `.cursor/hooks.json`, gerada com `py -3 adaptadores/gerenciar.py cursor --instalar` (`--plataforma posix` no POSIX).
-- `beforeShellExecution` e `preToolUse` (matcher `Shell`) têm `failClosed: true`. A guarda usa o `cwd` do evento de shell.
+- `beforeShellExecution` e `preToolUse` (matcher `Shell|Task`) têm `failClosed: true`. A guarda usa o `cwd` do evento de shell.
 - `sessionStart` (só em chat novo) informa o ID da sessão pelo contexto adicional e por `ESTEIRA_SESSAO`, que vale no ambiente dos hooks, não no shell do agente, e manda ler o `AGENTS.md`.
-- `preToolUse`, `postToolUse` e `postToolUseFailure` registram só as verificações declaradas no contrato da fatia ativa. O `preToolUse` exige diretório absoluto em `tool_input.cwd` (Cursor 3.17.8) ou `working_directory` (versões anteriores); o diretório da sessão não serve. Com `cwd` vazio, a verificação declarada é negada com a orientação de preencher o campo; fora das verificações do contrato, a chamada passa sem registro. Comando de terminal digitado à mão não gera evento.
+- `preToolUse` para `Shell`, `postToolUse` e `postToolUseFailure` registram só as verificações declaradas no contrato da fatia ativa. O `preToolUse` exige diretório absoluto em `tool_input.cwd` (Cursor 3.17.8) ou `working_directory` (versões anteriores); o diretório da sessão não serve. Com `cwd` vazio, a verificação declarada é negada com a orientação de preencher o campo; fora das verificações do contrato, a chamada passa sem registro. Comando de terminal digitado à mão não gera evento.
 - Sucesso vem do `exitCode` de `postToolUse` (`campo_resultado`). Exit diferente de zero vem do texto `Command failed with exit code N` de `postToolUseFailure` com `failure_type: error` (`texto_falha`). Negação, timeout ou texto inesperado ficam inconclusivos e nunca viram prova de sucesso.
 - `stop` pede correção do fecho em até duas continuações (`loop_limit: 2`). Não bloqueia texto já exibido.
 - Um `plan` literal declarado no contrato, com exit 0, gera o recibo que a guarda de deploy consulta.
@@ -28,3 +28,10 @@ Cursor 3.17.8 (user setup), app interativo, Windows, numa worktree temporária c
 - Com o diretório informado pelo agente, `tool_input.cwd` e `beforeShellExecution.cwd` chegam com o caminho absoluto.
 - A guarda negou no subagente (`cwd-bundle/comando_nao_suportado`), sem executar.
 - Não sondados: `tools`, `skills`, `readonly` e `is_background` no frontmatter, subagente paralelo ou aninhado, interrupção, timeout e leitura de `.claude/agents/` pelo Cursor.
+
+## D-CU (implementado sobre fixture; aguarda G1/B2)
+
+- `preToolUse(Task)` guarda `tool_use_id` e `subagent_type` no estado da fatia. `subagentStart` abre a janela correspondente; `subagentStop` fecha e registra a chamada quando o papel está previsto.
+- O shell do subagente só se associa à fatia do coordenador dentro de uma janela única. A prova usa o `conversation_id` do shell como `agente_id`, também incluído nos IDs observados da chamada. Fora da janela, com janelas sobrepostas ou papel desconhecido, nenhum sucesso é registrado.
+- O ID bruto da chamada fica nos IDs observados; `chamada_id` recebe um identificador estável derivado porque o Schema 3.2 não aceita a quebra de linha que o Cursor inclui no ID bruto. O papel opcional `map` não é gravado como chamada obrigatória pelo núcleo.
+- A tradução foi testada com payloads derivados dos brutos P0.5. Não usa transcript nem contadores do `subagentStop`; ainda não foi observada em sessão real.
