@@ -35,6 +35,28 @@ def principal(runtime, caminho=None):
                     raise
             print(json.dumps(resposta, ensure_ascii=True))
             return 0
+        sem_sessao_legada = (isinstance(evento, dict) and
+                             evento.get("hook_event_name") == "PreToolUse" and
+                             evento.get("tool_name") in {"Bash", "PowerShell"} and
+                             not evento.get("session_id"))
+        if runtime == "claude_code" and not sem_sessao_legada:
+            from claude_code.prova import tratar
+            try:
+                resposta = tratar(evento, politica, RAIZ)
+            except (KeyError, OSError, TypeError, ValueError) as erro:
+                if (isinstance(evento, dict) and evento.get("hook_event_name") == "PreToolUse" and
+                        evento.get("tool_name") in {"Bash", "PowerShell"}):
+                    resposta = {"hookSpecificOutput": {
+                        "hookEventName": "PreToolUse",
+                        "permissionDecision": "deny",
+                        "permissionDecisionReason": "[prova] " + str(erro),
+                    }}
+                elif isinstance(evento, dict) and evento.get("hook_event_name") == "Stop":
+                    resposta = {"decision": "block", "reason": "Registro de prova invalido: " + str(erro)}
+                else:
+                    raise
+            print(json.dumps(resposta, ensure_ascii=True))
+            return 0
         operacao = normalizar(runtime, evento)
         decisao = avaliar_operacao(operacao, politica)
         if decisao.decisao != "nao_aplica":

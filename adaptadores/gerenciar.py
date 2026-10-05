@@ -37,14 +37,22 @@ def gerar(runtime, plataforma=None):
             "subagentStop": [dict(handler)],
             "stop": [dict(handler, loop_limit=2)],
         }}
-    if runtime in ("claude_code", "codex"):
+    if runtime == "claude_code":
         handler = {"type": "command", "command": comando(runtime, plataforma), "timeout": 10}
-        if runtime == "claude_code" and plataforma == "windows":
+        if plataforma == "windows":
             handler["shell"] = "powershell"
-        return {"hooks": {"PreToolUse": [{
-            "matcher": "^(Bash|PowerShell)$" if runtime == "claude_code" else "^Bash$",
-            "hooks": [handler],
-        }]}}
+        return {"hooks": {
+            "SessionStart": [{"hooks": [handler]}],
+            "PreToolUse": [
+                {"matcher": "^(Bash|PowerShell|Agent)$", "hooks": [handler]},
+            ],
+            "PostToolUse": [{"matcher": "^(Bash|PowerShell|Agent)$", "hooks": [handler]}],
+            "PostToolUseFailure": [{"matcher": "^(Bash|PowerShell)$", "hooks": [handler]}],
+            "Stop": [{"hooks": [handler]}],
+        }}
+    if runtime == "codex":
+        handler = {"type": "command", "command": comando(runtime, plataforma), "timeout": 10}
+        return {"hooks": {"PreToolUse": [{"matcher": "^Bash$", "hooks": [handler]}]}}
     if runtime == "opencode":
         return ('import { criar_ponte_portatil } from "../../adaptadores/opencode/esteira.js";\n'
                 'export const Esteira = criar_ponte_portatil();\n')
@@ -122,6 +130,16 @@ def instalar(runtime, workspace=WORKSPACE, plataforma=None):
             existentes = preparado.get("hooks", {}).get(evento, [])
             if existentes:
                 preparado["hooks"][evento] = [g for g in existentes if g not in grupos]
+        if runtime == "claude_code":
+            hooks = preparado.setdefault("hooks", {})
+            existentes = hooks.get("PreToolUse", [])
+            legados = []
+            for so in ("windows", "posix"):
+                legado = {"type": "command", "command": comando(runtime, so), "timeout": 10}
+                if so == "windows":
+                    legado["shell"] = "powershell"
+                legados.append({"matcher": "^(Bash|PowerShell)$", "hooks": [legado]})
+            hooks["PreToolUse"] = [g for g in existentes if g not in legados]
         resultado = mesclar(preparado, candidato)
         if resultado == atual:
             return caminho

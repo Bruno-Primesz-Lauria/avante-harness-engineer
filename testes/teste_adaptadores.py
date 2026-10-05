@@ -112,7 +112,8 @@ class AdaptadoresTestes(unittest.TestCase):
         atual = {"permissions": {"allow": ["Read"]}, "hooks": {"Stop": [{"hooks": []}]}}
         resultado = mesclar(atual, gerar("claude_code"))
         self.assertEqual(resultado["permissions"], atual["permissions"])
-        self.assertEqual(resultado["hooks"]["Stop"], atual["hooks"]["Stop"])
+        self.assertIn(atual["hooks"]["Stop"][0], resultado["hooks"]["Stop"])
+        self.assertIn(gerar("claude_code")["hooks"]["Stop"][0], resultado["hooks"]["Stop"])
 
     def test_cursor_preserva_outros_handlers(self):
         atual = {"version": 1, "hooks": {"beforeShellExecution": [{"command": "outra_guarda"}]}}

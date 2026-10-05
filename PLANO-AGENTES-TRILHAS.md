@@ -87,6 +87,24 @@ Sem tratamento, estes pontos travam trilhas inteiras mesmo com os agentes instal
 | BL3 | A prova é indexada pelo ID de sessão do evento. Subagente com outro ID não encontra a fatia ativa, e o comando passa sem registro. | Test verde em subagente não sustenta DONE; a prova se perde sem aviso. | Sondar os IDs nos eventos de subagente; associar cada chamada à fatia do coordenador; recusar registro órfão. | P0.4, P0.5, C3, D-CC, D-CU |
 | BL4 | Capacidades citadas nos fluxos (diagnóstico, paridade, distill, docs-objeto, esteira, novo-objeto, regras, ingestão) são skills candidatas, fora do escopo deste plano. | Pela regra de skill exigida indisponível, correção, destilar e validação com paridade bloqueiam. | Classificar cada uma como obrigatória ou orientativa; a obrigatória vira seção da definição neutra do agente, sem skill nova. | P0.2, A2 |
 
+### 3.3 Formas do desenho v3 fora do catálogo
+
+O HTML v3 descrevia 15 formas de saída. Uma forma só é adotada quando o fecho depende dela para aceitar ou recusar DONE; o relato do autor não é prova (seção 4.4). Decisões humanas de 2026-10-05:
+
+| Forma v3 | Decisão | Motivo | Pacote |
+|---|---|---|---|
+| contrato, guarda, teste, brief, ataque | adotadas | Base do aceite, guarda, prova executada, fecho e revisão independente. | C1–C3 |
+| diagnostico | aprovada, registro mínimo | A capacidade é obrigatória na correção (4.3); sem registro, a obrigação só era cobrada pela reprodução, e hipótese e próximo experimento se perdiam na retomada. | C6 |
+| sandbox (Ambiente) | aprovada | É o ponto de efeito externo. Exit code do deploy não comprova target, identidade, seleção nem destinos (limite em `evidencia/uso.md`). | C6 |
+| paridade | aprovada | O produto exige paridade para o DONE do objeto. Exit code não mostra recorte, insumos nem divergências; gap sem explicação comprovada precisa impedir a aprovação. | C6 |
+| config, implement, docs | não adotadas | Os campos repetem o relato do autor. O núcleo já calcula manifesto e invalida provas por edição. O que faltava, a superfície por papel, passa a ser conferido pelo núcleo em C5, para config e implement. | C5 |
+| mapa | não adotada | `map` é opcional e só lê; nenhum fecho depende do mapa. A `chamada` comprova a execução. | — |
+| destilar | não adotada | A trilha fecha por critério `inspecao_documental` (forma `inspecao`); fonte e destino viram checagens. | — |
+| intencao | não adotada | O objetivo mora no contrato; `ataque.entrada.intencao_ref` aponta para ele. | — |
+| resposta | não adotada | Entendimento fecha pelo brief; preservação de estado já é medida por baseline e manifesto. | — |
+
+Triagem, inspeção e chamada não existiam na v3 e foram criadas pelo plano (BL1, BL3 e achados tratados).
+
 ## 4. Contrato comum dos agentes
 
 Manter uma definição neutra por agente em `agentes/<nome>.md`, incluindo responsabilidade, gatilho, entradas, ferramentas permitidas, skills, capacidades, saída e condição de término. Gerar versões nativas em `.claude/agents/<nome>.md` e `.cursor/agents/<nome>.md`, sem duplicar a política manualmente.
@@ -118,7 +136,7 @@ Carregar apenas a skill pertinente ao gatilho da tarefa, registrar as referênci
 
 | Agente | Skills Databricks | Capacidade embutida | Classificação aprovada P0.2 |
 |---|---|---|---|
-| map | data-discovery, unity-catalog, docs | diagnóstico (com o coordenador) | obrigatória na correção |
+| map | data-discovery, unity-catalog, docs | diagnóstico (com o coordenador) | obrigatória na correção, com registro `diagnostico` (C6) |
 | config | dabs, pipelines, jobs | regras, ingestão | orientativas |
 | implement | pipelines, jobs, dbsql, python-sdk, dabs | novo-objeto, esteira | orientativas |
 | test | dbsql, data-discovery, core; execution-compute só autorizado | paridade | obrigatória quando o contrato tem critério `paridade` |
@@ -227,9 +245,11 @@ Gate G2, por runtime: observação aceita. O runtime que não passa G2 não é a
 
 | ID | Pacote | Depende de | Saída verificável |
 |---|---|---|---|
-| E0 | Habilitar manutenção e correção na chave, para os runtimes aprovados em G2 (o A5 já foi aplicado em 2026-10-05). Antes, `adaptadores/prova.py` precisa informar o runtime ao núcleo: com a chave preenchida, `iniciar` e `fechar` sem runtime são recusados | G2 de ao menos um runtime, A5, C4 | Política e chave coerentes; esvaziar a chave restaura o comportamento atual |
+| C5 | Superfície por papel: com a trilha ativada, o núcleo confere que config só altera YAML e implement só altera código, dentro da superfície do contrato, e que o principal não edita produto no lugar deles (seção 3.3) | G1, D-CU (D-CC no Claude Code) | Testes de aceite e recusa por papel; chave vazia sem mudança |
+| C6 | Adotar as formas `diagnostico`, `sandbox` e `paridade` (seção 3.3) | G1 | Catálogo, validação e fecho cobertos por testes; registros anteriores legíveis |
+| E0 | Habilitar manutenção e correção na chave, para os runtimes aprovados em G2 (o A5 já foi aplicado em 2026-10-05). Antes, `adaptadores/prova.py` precisa informar o runtime ao núcleo: com a chave preenchida, `iniciar` e `fechar` sem runtime são recusados. Correção só entra na chave depois de C6 | G2 de ao menos um runtime, A5, C4, C5 | Política e chave coerentes; esvaziar a chave restaura o comportamento atual |
 | E1 | Onda 1: cenários de manutenção e correção | E0 | Registros e métricas da onda |
-| E2 | Onda 2, em paralelo: novo e validação (dab só em sandbox), docs e destilar, review, entendimento | G3a | Registros e métricas por trilha |
+| E2 | Onda 2, em paralelo: novo e validação (dab só em sandbox), docs e destilar, review, entendimento | G3a; C6 para novo e validação | Registros e métricas por trilha |
 
 Gate G3a: onda 1 sem falso DONE, sem violação de escopo e com chamadas previstas iguais às observadas. Gate G3b: o mesmo critério por trilha da onda 2; a trilha que falhar fica desabilitada e as demais seguem. Runtime aprovado em G2 depois da onda 1 entra pelo seu próprio E0.
 
@@ -254,7 +274,7 @@ Aprovado em 2026-10-03. Reaberto depois da sondagem P0.4 para decidir o executor
 - Forma `chamada`: papel, runtime, IDs observados, início, fim e status. Produtor é o adaptador, nunca o principal.
 - Produtores: `coordenador`, `hook`, `executor_teste` e os sete papéis.
 - Compatibilidade: registros 3.1 seguem legíveis e não recebem revisão independente presumida.
-- Triagem, inspeção e chamada são formas próprias; as quatro formas 3.2 ficam adotadas após C2 validar os payloads. As demais formas candidatas não são adotadas.
+- Triagem, inspeção e chamada são formas próprias; as quatro formas 3.2 ficam adotadas após C2 validar os payloads. Diagnóstico, ambiente (`sandbox`) e paridade foram aprovadas em 2026-10-05 e são adotadas em C6. As demais candidatas não são adotadas; motivo por forma na seção 3.3.
 - Executor do teste: a forma `teste` continua produzida por `executor_teste`, observada pelo hook, inclusive quando o comando roda num subagente. Ela ganha `agente_id`, o ID do subagente lido nos eventos do runtime. Com a trilha ativada e `test` no plano, o critério `teste`, `validacao_dados` ou `paridade` só fecha se esse ID casar com um `agente_id` de uma `chamada` concluída do papel `test`; senão a pendência é `teste_fora_do_test`. Um teste rodado pelo principal não substitui o papel.
 - Exit code: a forma `teste` ganha `exit_code_origem`, com três valores. `campo_resultado` é o campo numérico do runtime (o `exitCode` do Cursor). `evento_sucesso` é o evento de sucesso sem código, que vale 0 (o `PostToolUse` do Claude Code). `texto_falha` é o código lido no texto do evento de falha, diferente de 0 (o `Exit code N` do `PostToolUseFailure`). Formato inesperado mantém `exit_code: null`, ou seja, resultado inconclusivo. Os dois campos são opcionais e aditivos, e registros anteriores continuam válidos.
 - Ajustes depois da P0.5 (decididos em 2026-10-05):
@@ -358,6 +378,10 @@ flowchart TB
   G2CU -->|ao menos um G2| E0
   A5 --> E0
   G1 --> C4["C4 entrada de inspeção e revisão"] --> E0
+  G1 --> C5["C5 superfície por papel"] --> E0
+  G1 --> C6["C6 formas diagnóstico, ambiente e paridade"]
+  C6 -.->|antes de correção na chave| E1
+  C6 --> E2N
   E0 --> E1 --> G3a
   G3a --> E2N & E2D & E2R & E2E
   E2N & E2D & E2R & E2E --> G3b
@@ -411,6 +435,7 @@ flowchart LR
 | G2 Claude Code | B2-CC, D-CC, O-CC | Observação aceita em sessão nova | D-CC implementado sobre fixture, conclui depois de G1/B2; atualização de `teste_adaptadores.py` aguarda decisão humana; não observado |
 | G2 Cursor | B2-CU, D-CU, O-CU | Observação aceita em sessão nova | B2-CU DONE (`b4669f0`, 2026-10-05): sete agentes instalados, A4 verde e duas verificações sem divergência. D-CU DONE local (`0457571`): cinco testes de tradução verdes com os agentes instalados; chave real vazia. Roteiro O-CU preparado em `.execucoes/sondagens/ocu-roteiro.md`; script e contratos conferidos localmente. Sessão nova do humano pendente; G2 não observado nem aceito |
 | — | C4 | Inspeção pelo CLI fecha com chave vazia; revisão exige refute observado com chave ativada | DONE (`2368b33`, 2026-10-05): subcomandos inspecionar/revisar/triar, aceite e adulteração cobertos por testes; revisão Sonnet sem achados procedentes. P0.1: humano aprovou `agente_id` opcional no ataque e validação em `formas.py`; vínculo protegido pelo hash como no test. Chave real vazia |
+| — | C5, C6 | C5 antes de E0; C6 antes de correção na chave e de E2 novo/validação | Aprovados pelo humano em 2026-10-05 (seção 3.3); pendentes de implementação |
 | G3a | E0, E1 | Onda 1 sem falso DONE e com chamadas previstas = observadas | pendente |
 | G3b | E2, por trilha | Mesmo critério, por trilha | pendente |
 | G4 | M1, M2 | Aceite final | pendente |
@@ -441,6 +466,10 @@ Começar pelos cenários de manutenção e correção (onda 1). Depois cobrir no
 | Fecho sem chamada prevista observada | DONE recusado nos dois runtimes |
 | Chave de ativação vazia | comportamento atual preservado, sem exigir agente |
 | Ambiente em manutenção (se DEC-3 aprovada) | dab chamado só com critério `ambiente` e autorização válida |
+| Config editando código, ou principal editando produto com papel de escrita previsto | DONE recusado com `superficie_violada` ou `edicao_fora_do_papel` (C5) |
+| Correção sem diagnóstico registrado | escrita não aceita até o registro `diagnostico` (C6) |
+| Deploy com destino não verificado | critério `ambiente` obrigatório não fecha DONE (C6) |
+| Paridade com gap sem explicação e exit 0 | registro `paridade` com `fail`; DONE recusado (C6) |
 
 Rodar os checks exigidos pelo `AGENTS.md` e testes focados nas novas garantias. Não adicionar testes que apenas espelhem prompts. Executar os cenários de ativação no chat de Claude Code e Cursor, preservando registros sob `.execucoes/` sem segredos.
 
@@ -474,7 +503,7 @@ Estado em 2026-10-05: Fase 0 concluída; na Fase 1, A1–A5 e C1–C3 concluído
 | Onda | Pacotes em paralelo | Libera |
 |---|---|---|
 | 1 | B1 ∥ E0a | G1 (humano confere) |
-| 2 | Claude Code: B2-CC → D-CC → O-CC ∥ Cursor: B2-CU → D-CU → O-CU ∥ C4 | G2 por runtime (humano); C4 libera E0 |
+| 2 | Claude Code: B2-CC → D-CC → O-CC ∥ Cursor: B2-CU → D-CU → O-CU ∥ C4 ∥ C5 ∥ C6 | G2 por runtime (humano); C4 e C5 liberam E0; C6 libera correção na chave e E2 novo/validação |
 | 3 | E0 → E1 | G3a (humano) |
 | 4 | E2, por trilha | G3b (humano) |
 | 5 | M1 → M2 | G4 (humano) |
@@ -538,6 +567,21 @@ D-CC e D-CU podem começar sobre os brutos das sondagens (`.execucoes/sondagens/
 - Arquivos: `adaptadores/prova.py`, `implementacao/provas.py` (só o vínculo do `ataque`), `evidencia/uso.md` e testes.
 - Extensão aprovada pelo humano em P0.1 (2026-10-05): `agente_id` opcional no ataque de `formas/catalogo.yaml`, validado em `implementacao/formas.py`, para proteger a atribuição pelo hash do evento, como no `test`.
 - Aceite: critério de inspeção fecha DONE com a chave vazia; com a chave preenchida numa fixture, `ataque` sem chamada `refute` observada fica pendente.
+
+**C5 · superfície por papel** (agente; depois de G1 e D-CU, antes de E0; no Claude Code, também depois de D-CC)
+- Problema: nada comprova que cada papel de escrita ficou na sua superfície. Config poderia editar Python, implement poderia editar YAML de negócio e o principal poderia editar produto em silêncio (seção 3.3).
+- Regra: com a trilha ativada, o núcleo compara o manifesto no início e no fim de cada chamada `config` ou `implement` observada. Arquivo alterado na janela precisa estar na superfície do contrato e na classe do papel: YAML de negócio, ingestão ou recurso para config; notebook, Python ou SQL para implement. Fora disso, pendência `superficie_violada`. Alteração de produto fora de qualquer janela de config ou implement, com o papel no plano de chamadas, gera `edicao_fora_do_papel`. Janelas de escrita sobrepostas tornam a atribuição inconclusiva, e nada é aceito como sucesso.
+- Arquivos: `implementacao/provas.py` (só a conferência), `agentes/roteamento.yaml` (as `superficies` de config e implement já existem; falta o mapa de cada superfície para padrões de caminho), `evidencia/uso.md` e testes.
+- Não usa eventos de edição do runtime, que não foram sondados. Se a sondagem futura os confirmar, eles refinam a atribuição sem mudar a regra.
+- Aceite: com a chave vazia, nenhuma mudança; numa fixture com a chave preenchida, os testes cobrem config editando código, implement editando YAML, edição pelo principal, janelas sobrepostas e o caso correto.
+
+**C6 · formas diagnóstico, ambiente e paridade** (agente; depois de G1; antes de correção na chave e de E2 novo/validação)
+- Objetivo: adotar em `formas/catalogo.yaml` (schema 3.2, aditivo) e validar em `implementacao/formas.py` as três formas aprovadas na seção 3.3, e fazer o fecho exigi-las onde se aplicam.
+- `diagnostico` (registro mínimo; produtor coordenador ou map): `sintoma`, `hipotese_causa`, `base` (`direct`, `derived` ou `reported`), `evidencia_ref`, `criterio_reproducao` e `proximo_passo`. Na correção ativada, a escrita de config ou implement exige um diagnóstico registrado na tentativa, e `criterio_reproducao` precisa existir no contrato.
+- `sandbox` (ambiente; produtor `dab`, vinculado à chamada `dab` observada e ao registro `teste` do comando): `operacao`, `cwd`, `bundle`, `target`, `perfil`, `selecao`, `plan_ref`, `plan_estado_compativel`, `autorizacao_ref`, `identidade`, `destinos_resolvidos`, `coordenacao`, `resultado` e `teste_ref`. Campo sem observação integrada (hoje identidade, destinos e coordenação, conforme `evidencia/uso.md`) vale `nao_verificado`, e `nao_verificado` não aprova critério `ambiente` obrigatório.
+- `paridade` (produtor `test`, vinculado ao registro `teste` do comando de paridade por `teste_ref` e hash do artefato): `criterio_id`, `recorte`, `insumos`, `contas`, `divergencias` (cada uma com explicação e evidência, ou `pendente`) e `resultado`. Divergência pendente impede `pass`, mesmo com exit 0.
+- Arquivos: `formas/catalogo.yaml`, `formas/README.md`, `implementacao/formas.py`, `implementacao/provas.py` (só as exigências no fecho), `evidencia/uso.md` e testes.
+- Aceite: testes de aceite e recusa por forma; diagnóstico ausente bloqueia a escrita na correção ativada; deploy com destino `nao_verificado` não fecha critério `ambiente` obrigatório; paridade com gap pendente e exit 0 fica `fail`; registros 3.1 e 3.2 anteriores continuam legíveis.
 
 **E0 · ativação da onda 1** (agente, depois do aceite humano de G2): pela decisão de 2026-10-05, preencher primeiro apenas `agentes_obrigatorios.cursor` com `manutencao`. Correção e Claude Code ficam para depois, cada runtime aprovado em G2. Aceite: esvaziar a chave restaura o comportamento atual (teste).
 

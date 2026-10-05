@@ -374,6 +374,13 @@ td.m, th.m { text-align: center; }
 .note-uso { margin: 0 0 6px; }
 .note-papeis { font-size: 13px; color: var(--ink-2); margin: 0 0 4px; }
 
+/* ---- Formas de saída ---- */
+.forma-card { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px 22px; }
+.forma-card h3 { margin: 8px 0 4px; }
+.forma-meta { color: var(--ink-2); font-size: 14px; margin: 6px 0; overflow-wrap: anywhere; }
+.forma-yaml { margin: 14px 0 0; padding: 14px 16px; background: var(--surface-sunken); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow-x: auto; font-size: 12.5px; line-height: 1.5; }
+.pills button .est { font-size: 11px; opacity: .75; margin-left: 6px; }
+@media print { .forma-yaml { white-space: pre-wrap; } }
 </style></head><body>
 <header class="rx-brand">
   <div class="rx-brand-inner">
@@ -390,7 +397,7 @@ td.m, th.m { text-align: center; }
     <span class="rx-tagline">design and build the future</span>
   </div>
 </header>
-<nav class="tabs" aria-label="Seções do guia"><div class="tabs-inner" id="tabs"><button type="button" data-target="principio" aria-selected="true"><span class="n">1</span>Princípio</button><button type="button" data-target="arquitetura" aria-selected="false"><span class="n">2</span>Arquitetura</button><button type="button" data-target="caminho" aria-selected="false"><span class="n">3</span>Simples × estruturado</button><button type="button" data-target="ciclo" aria-selected="false"><span class="n">4</span>Ciclo da fatia</button><button type="button" data-target="trilhas" aria-selected="false"><span class="n">5</span>Trilhas e agentes</button><button type="button" data-target="guardas" aria-selected="false"><span class="n">6</span>Guardas</button><button type="button" data-target="pastas" aria-selected="false"><span class="n">7</span>Pastas</button><button type="button" data-target="estado" aria-selected="false"><span class="n">8</span>Estado</button></div></nav>
+<nav class="tabs" aria-label="Seções do guia"><div class="tabs-inner" id="tabs"><button type="button" data-target="principio" aria-selected="true"><span class="n">1</span>Princípio</button><button type="button" data-target="arquitetura" aria-selected="false"><span class="n">2</span>Arquitetura</button><button type="button" data-target="caminho" aria-selected="false"><span class="n">3</span>Simples × estruturado</button><button type="button" data-target="ciclo" aria-selected="false"><span class="n">4</span>Ciclo da fatia</button><button type="button" data-target="trilhas" aria-selected="false"><span class="n">5</span>Trilhas e agentes</button><button type="button" data-target="guardas" aria-selected="false"><span class="n">6</span>Guardas</button><button type="button" data-target="formas" aria-selected="false"><span class="n">7</span>Formas</button><button type="button" data-target="pastas" aria-selected="false"><span class="n">8</span>Pastas</button><button type="button" data-target="estado" aria-selected="false"><span class="n">9</span>Estado</button></div></nav>
 <main>
 <header class="page">
 <p class="eyebrow">Arquitetura de agente · saneamento_migracao</p>
@@ -412,17 +419,19 @@ td.m, th.m { text-align: center; }
 <h2>Arquitetura</h2>
 <p class="section-note">Três planos. O agente lê as instruções e age pelo runtime; cada chamada de shell passa por hook, adaptador e núcleo antes de chegar ao Databricks. A guarda nega antes do efeito, e a prova fica em <code>.execucoes/</code>, fora do produto.</p>
 <style>
-.arq-wrap{overflow-x:auto;padding:8px 4px}
-.arq{display:block;width:100%;min-width:980px;height:auto;font-family:var(--font-brand)}
+.arq-board{width:min(1640px,calc(100vw - 48px));position:relative;left:50%;transform:translateX(-50%)}
+.arq-map{overflow-x:auto;padding:10px 8px 4px}
+.arq{display:block;width:100%;min-width:1180px;height:auto;font-family:var(--font-brand)}
+.arq-map.real .arq{width:1600px;min-width:1600px}
 .arq .band rect{fill:var(--db-grey-04);stroke:var(--border-subtle)}
-.arq .bl{font-size:11px;font-weight:800;letter-spacing:.14em;fill:var(--db-pink)}
+.arq .bl{font-size:13px;font-weight:800;letter-spacing:.12em;fill:var(--db-pink);paint-order:stroke;stroke:var(--db-grey-04);stroke-width:8px;stroke-linejoin:round}
 .arq .grp rect{fill:var(--surface-card);stroke:var(--border-default);stroke-width:1.2}
 .arq .grp.core rect{stroke:var(--db-pink);stroke-width:1.8}
-.arq .gl{font-size:10.5px;font-weight:800;letter-spacing:.12em;fill:var(--text-muted)}
+.arq .gl{font-size:12px;font-weight:800;letter-spacing:.1em;fill:var(--text-muted);paint-order:stroke;stroke:var(--surface-card);stroke-width:8px;stroke-linejoin:round}
 .arq .ab rect{fill:var(--surface-card);stroke:var(--border-default);stroke-width:1.4}
-.arq .ab .t{font-size:13px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
-.arq .ab .t.mono{font-family:var(--font-mono);font-size:12px}
-.arq .ab .s{font-size:11px;fill:var(--text-secondary);text-anchor:middle}
+.arq .ab .t{font-size:15px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
+.arq .ab .t.mono{font-family:var(--font-mono);font-size:13.5px}
+.arq .ab .s{font-size:12.5px;fill:var(--text-secondary);text-anchor:middle}
 .arq .ab.start rect{fill:var(--db-dark-blue);stroke:var(--db-dark-blue)}
 .arq .ab.start .t,.arq .ab.start .s{fill:#fff}
 .arq .ab.key rect{fill:var(--db-pink-06);stroke:var(--db-pink)}
@@ -431,31 +440,53 @@ td.m, th.m { text-align: center; }
 .arq .ab.plan rect{stroke:var(--db-grey-50);stroke-dasharray:5 4}
 .arq .ab.plan .t,.arq .ab.plan .s{fill:var(--text-muted)}
 .arq .ab.prod rect{fill:var(--db-yellow-06);stroke:var(--db-yellow);stroke-dasharray:5 4}
-.arq .rt rect{fill:var(--db-lblue-12);stroke:var(--db-light-blue)}
-.arq .rt text{font-size:11px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
+.arq .rt .rtbg{fill:transparent;stroke:transparent;stroke-width:1.4}
+.arq .rt rect:not(.rtbg){fill:var(--db-lblue-12);stroke:var(--db-light-blue)}
+.arq .rt text{font-size:12.5px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
 .arq .cfg rect{fill:var(--surface-sunken);stroke:var(--border-subtle)}
-.arq .cfg text{font-family:var(--font-mono);font-size:10px;fill:var(--text-secondary);text-anchor:middle}
-.arq .note{font-size:10.5px;fill:var(--text-muted);text-anchor:middle}
+.arq .cfg text{font-family:var(--font-mono);font-size:11.5px;fill:var(--text-secondary);text-anchor:middle}
+.arq .note{font-size:12px;fill:var(--text-muted);text-anchor:middle}
 .arq .note.l{text-anchor:start}
-.arq .ar{fill:none;stroke:var(--db-dark-blue);stroke-width:1.8;stroke-linejoin:round}
+.arq .ar{fill:none;stroke:var(--db-dark-blue);stroke-width:1.9;stroke-linejoin:round}
 .arq .ar.deny{stroke:var(--db-red);stroke-dasharray:6 4}
 .arq .ar.ok,.arq .ar.ev{stroke:#1f9d6b}
 .arq .ar.ev{stroke-dasharray:2 4;stroke-linecap:round}
 .arq .ar.plan{stroke:var(--db-grey-50);stroke-dasharray:5 4}
 .arq .ar.edit{stroke:var(--db-grey-70)}
 .arq .al rect{fill:#fff;stroke:var(--db-dark-blue);stroke-width:1}
-.arq .al text{font-size:10.5px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
+.arq .al text{font-size:12px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
 .arq .al.deny rect{fill:var(--db-red-06);stroke:var(--db-red)}
 .arq .al.deny text{fill:var(--db-red)}
 .arq .al.ok rect,.arq .al.ev rect{fill:var(--db-green-12);stroke:var(--db-green)}
 .arq .al.ok text,.arq .al.ev text{fill:#14704c}
 .arq .al.edit rect{fill:var(--db-yellow-06);stroke:var(--db-yellow)}
-.arq .lg{font-size:11.5px;font-weight:600;fill:var(--text-secondary)}
+.arq .lg{font-size:13px;font-weight:600;fill:var(--text-secondary)}
+.arq .hd .hdr{fill:transparent;stroke:transparent}
+.arq .ii{fill:var(--surface-card);stroke:currentColor;stroke-width:1.3;color:var(--db-grey-50)}
+.arq .iit{font-size:11px;font-weight:800;font-style:italic;font-family:Georgia,serif;fill:var(--db-grey-70);text-anchor:middle}
+.arq .arq-hit{cursor:pointer;outline:none}
+.arq .arq-hit text{pointer-events:none}
+.arq .arq-hit>rect{transition:stroke var(--dur-fast),stroke-width var(--dur-fast),filter var(--dur-fast)}
+.arq .arq-hit:hover>rect,.arq .arq-hit:focus-visible>rect{stroke:var(--db-pink);stroke-width:2.4}
+.arq .rt.arq-hit:hover .rtbg,.arq .rt.arq-hit:focus-visible .rtbg{stroke:var(--db-pink);stroke-dasharray:4 3}
+.arq .hd:hover .hdr,.arq .hd:focus-visible .hdr{fill:var(--db-pink-06);stroke:var(--db-pink)}
+.arq .hd:hover .ii,.arq .hd:focus-visible .ii{color:var(--db-pink)}
+.arq .arq-hit[aria-pressed="true"]>rect{stroke:var(--db-pink);stroke-width:3;filter:drop-shadow(0 3px 8px rgba(237,9,115,.28))}
+.arq .rt.arq-hit[aria-pressed="true"] .rtbg{stroke:var(--db-pink);stroke-dasharray:none}
+.arq .hd[aria-pressed="true"] .hdr{fill:var(--db-pink-12);stroke:var(--db-pink)}
+.arq .sel>rect{stroke:var(--db-pink)!important;stroke-width:2.4!important}
+.arq-pop dd p{margin:0}
+.arq-pop .rel{display:flex;flex-wrap:wrap;gap:6px}
+.arq-pop .rel button{appearance:none;border:1px solid var(--border-subtle);background:var(--surface-card);border-radius:var(--radius-pill);padding:2px 10px;font:600 11.5px var(--sans);color:var(--ink-2);cursor:pointer}
+.arq-pop .rel button:hover{border-color:var(--db-pink);color:var(--db-pink)}
+.flow-pop.arq-pop{width:min(420px,calc(100vw - 24px))}
 </style>
-<div class="flow-board arq-wrap">
-<svg class="arq" viewBox="0 0 1220 870" role="img" aria-labelledby="arq-t arq-d">
+<div class="flow-board arq-board">
+<div class="flow-legend"><span>Clique em uma caixa, no nome de um plano ou grupo <b>(ⓘ)</b> ou em um passo numerado para ver o que é e por que importa.</span><button type="button" class="fit" id="arq-fit">Tamanho real</button></div>
+<div class="arq-map" id="arq-map">
+<svg class="arq" id="arq-svg" viewBox="0 0 1600 1140" role="group" aria-labelledby="arq-t arq-d">
 <title id="arq-t">Arquitetura do harness</title>
-<desc id="arq-d">Três planos: instrução lida pelo agente; controle executado a cada chamada de ferramenta (runtime, hooks, adaptadores, núcleo de guardas e provas, efeito externo); evidência gravada em .execucoes.</desc>
+<desc id="arq-d">Três planos: instrução lida pelo agente; controle executado a cada chamada de ferramenta (runtime, hooks, adaptadores, núcleo de guardas e provas, efeito externo); evidência gravada em .execucoes. Cada caixa abre uma explicação.</desc>
 <defs>
 <marker id="m-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#221F52"/></marker>
 <marker id="m-deny" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#FF1229"/></marker>
@@ -464,181 +495,186 @@ td.m, th.m { text-align: center; }
 <marker id="m-plan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8a8898"/></marker>
 <marker id="m-edit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5b5972"/></marker>
 </defs>
-<g class="band"><rect x="20" y="16" width="1180" height="150" rx="16"/><text class="bl" x="38" y="38">1 · PLANO DE INSTRUÇÃO — o que o agente lê</text></g>
-<g class="ab "><rect x="44" y="56" width="230" height="84" rx="10"/>
-<text class="t" x="159.0" y="94.0">AGENTS.md · CLAUDE.md</text>
-<text class="s" x="159.0" y="110.0">regras curtas de todo pedido</text>
+<g class="band" data-grp="p1"><rect x="20" y="20" width="1560" height="190" rx="18"/></g>
+<g class="hd arq-hit" data-arq="p1" tabindex="0" role="button" aria-pressed="false" aria-label="1 · PLANO DE INSTRUÇÃO — o que o agente lê"><rect class="hdr" x="34" y="32" width="440" height="24" rx="12"/><text class="bl" x="42" y="48">1 · PLANO DE INSTRUÇÃO — o que o agente lê</text><circle class="ii" cx="458" cy="44" r="8.5"/><text class="iit" x="458" y="48">i</text></g>
+<g class="ab  arq-hit" data-arq="agents" tabindex="0" role="button" aria-pressed="false" aria-label="AGENTS.md · CLAUDE.md — regras curtas de todo pedido"><rect x="44" y="76" width="280" height="104" rx="12"/>
+<text class="t" x="184.0" y="124.5">AGENTS.md · CLAUDE.md</text>
+<text class="s" x="184.0" y="144.5">regras curtas de todo pedido</text>
 </g>
-<g class="ab "><rect x="314" y="56" width="230" height="84" rx="10"/>
-<text class="t" x="429.0" y="86.0">trilhas/ · nucleo/</text>
-<text class="s" x="429.0" y="102.0">passos, aceite e política</text>
-<text class="s" x="429.0" y="118.0">lidos sob demanda</text>
+<g class="ab  arq-hit" data-arq="trilhas" tabindex="0" role="button" aria-pressed="false" aria-label="trilhas/ · nucleo/ — passos, aceite e política, lidos sob demanda"><rect x="368" y="76" width="280" height="104" rx="12"/>
+<text class="t" x="508.0" y="116.0">trilhas/ · nucleo/</text>
+<text class="s" x="508.0" y="136.0">passos, aceite e política</text>
+<text class="s" x="508.0" y="153.0">lidos sob demanda</text>
 </g>
-<g class="ab key"><rect x="584" y="56" width="270" height="84" rx="10"/>
-<text class="t" x="719.0" y="86.0">agentes/roteamento.yaml</text>
-<text class="s" x="719.0" y="102.0">fonte única: papéis, ordem</text>
-<text class="s" x="719.0" y="118.0">e gatilhos · + agentes/*.md</text>
+<g class="ab key arq-hit" data-arq="roteamento" tabindex="0" role="button" aria-pressed="false" aria-label="agentes/roteamento.yaml — fonte única: papéis, ordem, e gatilhos · + agentes/*.md"><rect x="692" y="76" width="330" height="104" rx="12"/>
+<text class="t mono" x="857.0" y="116.0">agentes/roteamento.yaml</text>
+<text class="s" x="857.0" y="136.0">fonte única: papéis, ordem</text>
+<text class="s" x="857.0" y="153.0">e gatilhos · + agentes/*.md</text>
 </g>
-<g class="ab "><rect x="894" y="56" width="130" height="84" rx="10"/>
-<text class="t mono" x="959.0" y="94.0">gerar_agentes.py</text>
-<text class="s" x="959.0" y="110.0">neutro → nativo</text>
+<g class="ab  arq-hit" data-arq="gerar" tabindex="0" role="button" aria-pressed="false" aria-label="gerar_agentes.py — neutro → nativo"><rect x="1066" y="76" width="220" height="104" rx="12"/>
+<text class="t mono" x="1176.0" y="124.5">gerar_agentes.py</text>
+<text class="s" x="1176.0" y="144.5">neutro → nativo</text>
 </g>
-<g class="ab plan"><rect x="1052" y="56" width="128" height="84" rx="10"/>
-<text class="t mono" x="1116.0" y="86.0">.claude/agents</text>
-<text class="s" x="1116.0" y="102.0">.cursor/agents</text>
-<text class="s" x="1116.0" y="118.0">Cursor instalado · CC pendente</text>
+<g class="ab plan arq-hit" data-arq="nativos" tabindex="0" role="button" aria-pressed="false" aria-label=".claude/agents — .cursor/agents, Cursor instalado · CC pendente"><rect x="1330" y="76" width="236" height="104" rx="12"/>
+<text class="t mono" x="1448.0" y="116.0">.claude/agents</text>
+<text class="s" x="1448.0" y="136.0">.cursor/agents</text>
+<text class="s" x="1448.0" y="153.0">Cursor instalado · CC pendente</text>
 </g>
-<path class="ar " d="M274 98 H310" marker-end="url(#m-c)"/>
-<path class="ar " d="M854 98 H890" marker-end="url(#m-c)"/>
-<path class="ar plan" d="M1024 98 H1048" marker-end="url(#m-plan)"/>
-<g class="band"><rect x="20" y="186" width="1180" height="440" rx="16"/><text class="bl" x="38" y="208">2 · PLANO DE CONTROLE — executado a cada chamada de ferramenta</text></g>
-<g transform="translate(0,20)">
-<g class="grp "><rect x="40" y="226" width="230" height="360" rx="12"/><text class="gl" x="54" y="246">RUNTIME</text></g>
-<g class="ab start"><rect x="58" y="256" width="194" height="62" rx="10"/>
-<text class="t" x="155.0" y="283.0">Coordenador</text>
-<text class="s" x="155.0" y="299.0">agente principal</text>
+<path class="ar " d="M324 128 H364" marker-end="url(#m-c)"/>
+<path class="ar " d="M1022 128 H1062" marker-end="url(#m-c)"/>
+<path class="ar plan" d="M1286 128 H1326" marker-end="url(#m-plan)"/>
+<g class="band" data-grp="p2"><rect x="20" y="236" width="1560" height="600" rx="18"/></g>
+<g class="grp" data-grp="g_runtime"><rect x="40" y="310" width="260" height="480" rx="14"/></g>
+<g class="hd arq-hit" data-arq="g_runtime" tabindex="0" role="button" aria-pressed="false" aria-label="RUNTIME"><rect class="hdr" x="48" y="320" width="118" height="24" rx="12"/><text class="gl" x="56" y="336">RUNTIME</text><circle class="ii" cx="150" cy="332" r="8.5"/><text class="iit" x="150" y="336">i</text></g>
+<g class="ab start arq-hit" data-arq="coordenador" tabindex="0" role="button" aria-pressed="false" aria-label="Coordenador — agente principal"><rect x="56" y="340" width="228" height="72" rx="12"/>
+<text class="t" x="170.0" y="372.5">Coordenador</text>
+<text class="s" x="170.0" y="392.5">agente principal</text>
 </g>
-<g class="ab plan"><rect x="58" y="334" width="194" height="92" rx="10"/>
-<text class="t" x="155.0" y="360.0">Subagentes · 7 papéis</text>
-<text class="s" x="155.0" y="376.0">map · config · implement</text>
-<text class="s" x="155.0" y="392.0">test · refute · docs · dab</text>
-<text class="s" x="155.0" y="408.0">ativação por trilha (E0)</text>
+<g class="ab plan arq-hit" data-arq="subagentes" tabindex="0" role="button" aria-pressed="false" aria-label="Subagentes · 7 papéis — map · config · implement, test · refute · docs · dab, ativação por trilha (E0)"><rect x="56" y="428" width="228" height="116" rx="12"/>
+<text class="t" x="170.0" y="465.5">Subagentes · 7 papéis</text>
+<text class="s" x="170.0" y="485.5">map · config · implement</text>
+<text class="s" x="170.0" y="502.5">test · refute · docs · dab</text>
+<text class="s" x="170.0" y="519.5">ativação por trilha (E0)</text>
 </g>
-<g class="rt">
-<rect x="58" y="446" width="94" height="30" rx="15"/><text x="105" y="465.5">Cursor</text>
-<rect x="158" y="446" width="94" height="30" rx="15"/><text x="205" y="465.5">Claude Code</text>
-<rect x="58" y="486" width="94" height="30" rx="15"/><text x="105" y="505.5">Codex</text>
-<rect x="158" y="486" width="94" height="30" rx="15"/><text x="205" y="505.5">OpenCode</text>
+<g class="rt arq-hit" data-arq="runtimes" tabindex="0" role="button" aria-pressed="false" aria-label="Runtimes: Cursor, Claude Code, Codex, OpenCode">
+<rect class="rtbg" x="56" y="560" width="228" height="84" rx="12"/>
+<rect x="64" y="568" width="102" height="30" rx="15"/><text x="115" y="588">Cursor</text>
+<rect x="174" y="568" width="102" height="30" rx="15"/><text x="225" y="588">Claude Code</text>
+<rect x="64" y="606" width="102" height="30" rx="15"/><text x="115" y="626">Codex</text>
+<rect x="174" y="606" width="102" height="30" rx="15"/><text x="225" y="626">OpenCode</text>
 </g>
-<text class="note" x="155" y="544">mesmo AGENTS.md nos quatro;</text>
-<text class="note" x="155" y="560">prova coletada só no Cursor</text>
-<g class="grp "><rect x="300" y="226" width="210" height="360" rx="12"/><text class="gl" x="314" y="246">HOOKS DO RUNTIME</text></g>
-<g class="ab "><rect x="316" y="256" width="178" height="70" rx="10"/>
-<text class="t" x="405.0" y="279.0">Cursor</text>
-<text class="s" x="405.0" y="295.0">shell · pre/postToolUse</text>
-<text class="s" x="405.0" y="311.0">stop · subagentStart/Stop</text>
+<text class="note" x="170" y="676">mesmo AGENTS.md nos quatro;</text>
+<text class="note" x="170" y="694">prova coletada só no Cursor</text>
+<g class="grp" data-grp="g_hooks"><rect x="365" y="310" width="240" height="480" rx="14"/></g>
+<g class="hd arq-hit" data-arq="g_hooks" tabindex="0" role="button" aria-pressed="false" aria-label="HOOKS DO RUNTIME"><rect class="hdr" x="373" y="320" width="190" height="24" rx="12"/><text class="gl" x="381" y="336">HOOKS DO RUNTIME</text><circle class="ii" cx="547" cy="332" r="8.5"/><text class="iit" x="547" y="336">i</text></g>
+<g class="ab  arq-hit" data-arq="h_cursor" tabindex="0" role="button" aria-pressed="false" aria-label="Cursor — shell · pre/postToolUse, stop · subagentStart/Stop"><rect x="381" y="340" width="208" height="84" rx="12"/>
+<text class="t" x="485.0" y="370.0">Cursor</text>
+<text class="s" x="485.0" y="390.0">shell · pre/postToolUse</text>
+<text class="s" x="485.0" y="407.0">stop · subagentStart/Stop</text>
 </g>
-<g class="ab "><rect x="316" y="338" width="178" height="58" rx="10"/>
-<text class="t" x="405.0" y="363.0">Claude Code</text>
-<text class="s" x="405.0" y="379.0">PreToolUse · Bash, PowerShell</text>
+<g class="ab  arq-hit" data-arq="h_cc" tabindex="0" role="button" aria-pressed="false" aria-label="Claude Code — PreToolUse · Bash, PowerShell"><rect x="381" y="440" width="208" height="70" rx="12"/>
+<text class="t" x="485.0" y="471.5">Claude Code</text>
+<text class="s" x="485.0" y="491.5">PreToolUse · Bash, PowerShell</text>
 </g>
-<g class="ab "><rect x="316" y="408" width="178" height="58" rx="10"/>
-<text class="t" x="405.0" y="433.0">Codex</text>
-<text class="s" x="405.0" y="449.0">PreToolUse</text>
+<g class="ab  arq-hit" data-arq="h_codex" tabindex="0" role="button" aria-pressed="false" aria-label="Codex — PreToolUse"><rect x="381" y="526" width="208" height="70" rx="12"/>
+<text class="t" x="485.0" y="557.5">Codex</text>
+<text class="s" x="485.0" y="577.5">PreToolUse</text>
 </g>
-<g class="ab "><rect x="316" y="478" width="178" height="58" rx="10"/>
-<text class="t" x="405.0" y="503.0">OpenCode</text>
-<text class="s" x="405.0" y="519.0">tool.execute.before</text>
+<g class="ab  arq-hit" data-arq="h_opencode" tabindex="0" role="button" aria-pressed="false" aria-label="OpenCode — tool.execute.before"><rect x="381" y="612" width="208" height="70" rx="12"/>
+<text class="t" x="485.0" y="643.5">OpenCode</text>
+<text class="s" x="485.0" y="663.5">tool.execute.before</text>
 </g>
-<g class="grp "><rect x="540" y="226" width="230" height="360" rx="12"/><text class="gl" x="554" y="246">ADAPTADORES · adaptadores/</text></g>
-<g class="ab "><rect x="556" y="256" width="198" height="70" rx="10"/>
-<text class="t" x="655.0" y="279.0">entrada.py → executar.py</text>
-<text class="s" x="655.0" y="295.0">normaliza o evento e responde</text>
-<text class="s" x="655.0" y="311.0">no protocolo do runtime</text>
+<g class="grp" data-grp="g_adapt"><rect x="670" y="310" width="270" height="480" rx="14"/></g>
+<g class="hd arq-hit" data-arq="g_adapt" tabindex="0" role="button" aria-pressed="false" aria-label="ADAPTADORES · adaptadores/"><rect class="hdr" x="678" y="320" width="276" height="24" rx="12"/><text class="gl" x="686" y="336">ADAPTADORES · adaptadores/</text><circle class="ii" cx="938" cy="332" r="8.5"/><text class="iit" x="938" y="336">i</text></g>
+<g class="ab  arq-hit" data-arq="entrada" tabindex="0" role="button" aria-pressed="false" aria-label="entrada.py → executar.py — normaliza o evento e responde, no protocolo do runtime"><rect x="686" y="340" width="238" height="84" rx="12"/>
+<text class="t" x="805.0" y="370.0">entrada.py → executar.py</text>
+<text class="s" x="805.0" y="390.0">normaliza o evento e responde</text>
+<text class="s" x="805.0" y="407.0">no protocolo do runtime</text>
 </g>
-<g class="ab "><rect x="556" y="338" width="198" height="58" rx="10"/>
-<text class="t mono" x="655.0" y="363.0">cursor/prova.py</text>
-<text class="s" x="655.0" y="379.0">coleta prova e subagentes</text>
+<g class="ab  arq-hit" data-arq="ad_cursor" tabindex="0" role="button" aria-pressed="false" aria-label="cursor/prova.py — coleta prova e subagentes"><rect x="686" y="440" width="238" height="70" rx="12"/>
+<text class="t mono" x="805.0" y="471.5">cursor/prova.py</text>
+<text class="s" x="805.0" y="491.5">coleta prova e subagentes</text>
 </g>
-<g class="ab plan"><rect x="556" y="408" width="198" height="58" rx="10"/>
-<text class="t mono" x="655.0" y="433.0">claude_code/prova.py</text>
-<text class="s" x="655.0" y="449.0">D-CC · em curso</text>
+<g class="ab plan arq-hit" data-arq="ad_cc" tabindex="0" role="button" aria-pressed="false" aria-label="claude_code/prova.py — D-CC · em curso"><rect x="686" y="526" width="238" height="70" rx="12"/>
+<text class="t mono" x="805.0" y="557.5">claude_code/prova.py</text>
+<text class="s" x="805.0" y="577.5">D-CC · em curso</text>
 </g>
-<g class="ab "><rect x="556" y="478" width="198" height="58" rx="10"/>
-<text class="t mono" x="655.0" y="503.0">prova.py (CLI)</text>
-<text class="s" x="655.0" y="519.0">iniciar · estado · fechar</text>
+<g class="ab  arq-hit" data-arq="prova_cli" tabindex="0" role="button" aria-pressed="false" aria-label="prova.py (CLI) — iniciar · estado · fechar"><rect x="686" y="612" width="238" height="70" rx="12"/>
+<text class="t mono" x="805.0" y="643.5">prova.py (CLI)</text>
+<text class="s" x="805.0" y="663.5">iniciar · estado · fechar</text>
 </g>
-<g class="grp core"><rect x="800" y="226" width="220" height="360" rx="12"/><text class="gl" x="814" y="246">NÚCLEO · implementacao/</text></g>
-<g class="ab deny"><rect x="816" y="256" width="188" height="92" rx="10"/>
-<text class="t" x="910.0" y="282.0">Guardas</text>
-<text class="s" x="910.0" y="298.0">guarda_cwd: diretório, bundle</text>
-<text class="s" x="910.0" y="314.0">e comando literal</text>
-<text class="s" x="910.0" y="330.0">guarda_efeito: target, plan→deploy</text>
+<g class="grp core" data-grp="g_nucleo"><rect x="1005" y="310" width="270" height="480" rx="14"/></g>
+<g class="hd arq-hit" data-arq="g_nucleo" tabindex="0" role="button" aria-pressed="false" aria-label="NÚCLEO · implementacao/"><rect class="hdr" x="1013" y="320" width="250" height="24" rx="12"/><text class="gl" x="1021" y="336">NÚCLEO · implementacao/</text><circle class="ii" cx="1247" cy="332" r="8.5"/><text class="iit" x="1247" y="336">i</text></g>
+<g class="ab deny arq-hit" data-arq="guardas" tabindex="0" role="button" aria-pressed="false" aria-label="Guardas — guarda_cwd: diretório,, bundle e comando literal, guarda_efeito: target, e ordem plan → deploy"><rect x="1021" y="340" width="238" height="124" rx="12"/>
+<text class="t" x="1140.0" y="373.0">Guardas</text>
+<text class="s" x="1140.0" y="393.0">guarda_cwd: diretório,</text>
+<text class="s" x="1140.0" y="410.0">bundle e comando literal</text>
+<text class="s" x="1140.0" y="427.0">guarda_efeito: target</text>
+<text class="s" x="1140.0" y="444.0">e ordem plan → deploy</text>
 </g>
-<g class="ab ok"><rect x="816" y="364" width="188" height="92" rx="10"/>
-<text class="t" x="910.0" y="390.0">Provas</text>
-<text class="s" x="910.0" y="406.0">provas.py: fatia, manifesto,</text>
-<text class="s" x="910.0" y="422.0">invalidação e fecho</text>
-<text class="s" x="910.0" y="438.0">formas.py: schema 3.2</text>
+<g class="ab ok arq-hit" data-arq="provas" tabindex="0" role="button" aria-pressed="false" aria-label="Provas — provas.py: fatia, manifesto,, invalidação e fecho, formas.py: schema 3.2"><rect x="1021" y="480" width="238" height="112" rx="12"/>
+<text class="t" x="1140.0" y="515.5">Provas</text>
+<text class="s" x="1140.0" y="535.5">provas.py: fatia, manifesto,</text>
+<text class="s" x="1140.0" y="552.5">invalidação e fecho</text>
+<text class="s" x="1140.0" y="569.5">formas.py: schema 3.2</text>
 </g>
 <g class="cfg">
-<rect x="816" y="476" width="188" height="22" rx="6"/><text x="910" y="491">configuracao/politica.json</text>
-<rect x="816" y="504" width="188" height="22" rx="6"/><text x="910" y="519">agentes/roteamento.yaml</text>
-<rect x="816" y="532" width="188" height="22" rx="6"/><text x="910" y="547">contrato.yaml da fatia</text>
+<g class="arq-hit" data-arq="cfg_politica" tabindex="0" role="button" aria-pressed="false" aria-label="configuracao/politica.json"><rect x="1021" y="610" width="238" height="26" rx="7"/><text x="1140" y="627.5">configuracao/politica.json</text></g>
+<g class="arq-hit" data-arq="cfg_rot" tabindex="0" role="button" aria-pressed="false" aria-label="agentes/roteamento.yaml"><rect x="1021" y="644" width="238" height="26" rx="7"/><text x="1140" y="661.5">agentes/roteamento.yaml</text></g>
+<g class="arq-hit" data-arq="cfg_contrato" tabindex="0" role="button" aria-pressed="false" aria-label="contrato.yaml da fatia"><rect x="1021" y="678" width="238" height="26" rx="7"/><text x="1140" y="695.5">contrato.yaml da fatia</text></g>
 </g>
-<text class="note" x="910" y="572">entradas lidas pelo núcleo</text>
-<g class="grp "><rect x="1050" y="226" width="140" height="360" rx="12"/><text class="gl" x="1064" y="246">EFEITO EXTERNO</text></g>
-<g class="ab "><rect x="1062" y="256" width="116" height="92" rx="10"/>
-<text class="t" x="1120.0" y="282.0">Databricks CLI</text>
-<text class="s" x="1120.0" y="298.0">bundle validate</text>
-<text class="s" x="1120.0" y="314.0">plan · deploy</text>
-<text class="s" x="1120.0" y="330.0">-t sandbox</text>
+<text class="note" x="1140" y="728">entradas lidas pelo núcleo</text>
+<g class="grp" data-grp="g_efeito"><rect x="1340" y="310" width="220" height="480" rx="14"/></g>
+<g class="hd arq-hit" data-arq="g_efeito" tabindex="0" role="button" aria-pressed="false" aria-label="EFEITO EXTERNO"><rect class="hdr" x="1348" y="320" width="172" height="24" rx="12"/><text class="gl" x="1356" y="336">EFEITO EXTERNO</text><circle class="ii" cx="1504" cy="332" r="8.5"/><text class="iit" x="1504" y="336">i</text></g>
+<g class="ab  arq-hit" data-arq="dbcli" tabindex="0" role="button" aria-pressed="false" aria-label="Databricks CLI — bundle validate, plan · deploy, -t sandbox"><rect x="1356" y="340" width="188" height="124" rx="12"/>
+<text class="t" x="1450.0" y="381.5">Databricks CLI</text>
+<text class="s" x="1450.0" y="401.5">bundle validate</text>
+<text class="s" x="1450.0" y="418.5">plan · deploy</text>
+<text class="s" x="1450.0" y="435.5">-t sandbox</text>
 </g>
-<g class="ab start"><rect x="1062" y="372" width="116" height="62" rx="10"/>
-<text class="t" x="1120.0" y="399.0">Workspace</text>
-<text class="s" x="1120.0" y="415.0">Databricks</text>
+<g class="ab start arq-hit" data-arq="workspace" tabindex="0" role="button" aria-pressed="false" aria-label="Workspace — Databricks"><rect x="1356" y="492" width="188" height="70" rx="12"/>
+<text class="t" x="1450.0" y="523.5">Workspace</text>
+<text class="s" x="1450.0" y="543.5">Databricks</text>
 </g>
-<g class="ab prod"><rect x="1062" y="456" width="116" height="92" rx="10"/>
-<text class="t mono" x="1120.0" y="482.0">prj-avante-</text>
-<text class="s" x="1120.0" y="498.0">analytics-adb/</text>
-<text class="s" x="1120.0" y="514.0">produto · Git e</text>
-<text class="s" x="1120.0" y="530.0">AGENTS.md próprios</text>
+<g class="ab prod arq-hit" data-arq="produto" tabindex="0" role="button" aria-pressed="false" aria-label="prj-avante- — analytics-adb/, produto · Git e, AGENTS.md próprios"><rect x="1356" y="590" width="188" height="120" rx="12"/>
+<text class="t mono" x="1450.0" y="629.5">prj-avante-</text>
+<text class="s" x="1450.0" y="649.5">analytics-adb/</text>
+<text class="s" x="1450.0" y="666.5">produto · Git e</text>
+<text class="s" x="1450.0" y="683.5">AGENTS.md próprios</text>
 </g>
-<path class="ar " d="M252 288 H312" marker-end="url(#m-c)"/>
-<g class="al "><rect x="247.0" y="266" width="70" height="20" rx="10"/><text x="282" y="280">1 chamada</text></g>
-<path class="ar " d="M494 288 H552" marker-end="url(#m-c)"/>
-<g class="al "><rect x="492.0" y="266" width="62" height="20" rx="10"/><text x="523" y="280">2 evento</text></g>
-<path class="ar " d="M754 288 H812" marker-end="url(#m-c)"/>
-<g class="al "><rect x="747.0" y="266" width="72" height="20" rx="10"/><text x="783" y="280">3 operação</text></g>
-<path class="ar ok" d="M1004 288 H1058" marker-end="url(#m-ok)"/>
-<g class="al ok"><rect x="998.0" y="266" width="66" height="20" rx="10"/><text x="1031" y="280">5 permite</text></g>
-<path class="ar ok" d="M1120 348 V368" marker-end="url(#m-ok)"/>
-<path class="ar deny" d="M990 256 V200 H200 V252" marker-end="url(#m-deny)"/>
-<g class="al deny"><rect x="415.0" y="190" width="290" height="20" rx="10"/><text x="560" y="204">4 nega antes do efeito · motivo e correção</text></g>
-<path class="ar ev" d="M754 367 H780 V400 H812" marker-end="url(#m-ev)"/>
-<path class="ar ev" d="M754 507 H790 V430 H812" marker-end="url(#m-ev)"/>
+<path class="ar " d="M284 376 H377" marker-end="url(#m-c)"/>
+<g class="al  arq-hit" data-arq="s1" tabindex="0" role="button" aria-pressed="false" aria-label="1 chamada"><rect x="286.5" y="340" width="92" height="24" rx="12"/><text x="332.5" y="356.5">1 chamada</text></g>
+<path class="ar " d="M589 376 H682" marker-end="url(#m-c)"/>
+<g class="al  arq-hit" data-arq="s2" tabindex="0" role="button" aria-pressed="false" aria-label="2 evento"><rect x="597.5" y="340" width="80" height="24" rx="12"/><text x="637.5" y="356.5">2 evento</text></g>
+<path class="ar " d="M924 376 H1017" marker-end="url(#m-c)"/>
+<g class="al  arq-hit" data-arq="s3" tabindex="0" role="button" aria-pressed="false" aria-label="3 operação"><rect x="926.5" y="340" width="92" height="24" rx="12"/><text x="972.5" y="356.5">3 operação</text></g>
+<path class="ar ok" d="M1259 376 H1352" marker-end="url(#m-ok)"/>
+<g class="al ok arq-hit" data-arq="s5" tabindex="0" role="button" aria-pressed="false" aria-label="5 permite"><rect x="1264.5" y="340" width="86" height="24" rx="12"/><text x="1307.5" y="356.5">5 permite</text></g>
+<path class="ar ok" d="M1450 464 V488" marker-end="url(#m-ok)"/>
+<path class="ar deny" d="M1230 340 V284 H236 V336" marker-end="url(#m-deny)"/>
+<g class="al deny arq-hit" data-arq="s4" tabindex="0" role="button" aria-pressed="false" aria-label="4 nega antes do efeito · motivo e correção"><rect x="535.0" y="272" width="360" height="24" rx="12"/><text x="715" y="288.5">4 nega antes do efeito · motivo e correção</text></g>
+<path class="ar ev" d="M924 475 H968 V520 H1017" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M924 647 H982 V560 H1017" marker-end="url(#m-ev)"/>
+<path class="ar " d="M270 180 V336" marker-end="url(#m-c)"/>
+<text class="note l" x="278" y="228">lê ao iniciar</text>
+<g class="hd arq-hit" data-arq="p2" tabindex="0" role="button" aria-pressed="false" aria-label="2 · PLANO DE CONTROLE — executado a cada chamada de ferramenta"><rect class="hdr" x="34" y="248" width="630" height="24" rx="12"/><text class="bl" x="42" y="264">2 · PLANO DE CONTROLE — executado a cada chamada de ferramenta</text><circle class="ii" cx="648" cy="260" r="8.5"/><text class="iit" x="648" y="264">i</text></g>
+<path class="ar edit" d="M120 790 V808 H1450 V714" marker-end="url(#m-edit)"/>
+<g class="al edit arq-hit" data-arq="s_edit" tabindex="0" role="button" aria-pressed="false" aria-label="o agente edita o código do produto (fora do harness)"><rect x="550.0" y="796" width="420" height="24" rx="12"/><text x="760" y="812.5">o agente edita o código do produto (fora do harness)</text></g>
+<g class="band" data-grp="p3"><rect x="20" y="870" width="1560" height="196" rx="18"/></g>
+<g class="hd arq-hit" data-arq="p3" tabindex="0" role="button" aria-pressed="false" aria-label="3 · PLANO DE EVIDÊNCIA — .execucoes/ (fora do Git)"><rect class="hdr" x="34" y="882" width="510" height="24" rx="12"/><text class="bl" x="42" y="898">3 · PLANO DE EVIDÊNCIA — .execucoes/ (fora do Git)</text><circle class="ii" cx="528" cy="894" r="8.5"/><text class="iit" x="528" y="898">i</text></g>
+<g class="ab  arq-hit" data-arq="ev_sessoes" tabindex="0" role="button" aria-pressed="false" aria-label="sessoes/&lt;hash&gt;/ativa.json — aponta a fatia ativa, de cada sessão"><rect x="44" y="928" width="320" height="108" rx="12"/>
+<text class="t mono" x="204.0" y="970.0">sessoes/&lt;hash&gt;/ativa.json</text>
+<text class="s" x="204.0" y="990.0">aponta a fatia ativa</text>
+<text class="s" x="204.0" y="1007.0">de cada sessão</text>
 </g>
-<path class="ar " d="M130 140 V272" marker-end="url(#m-c)"/>
-<text class="note l" x="137" y="176">lê ao iniciar</text>
-<g transform="translate(0,20)">
-<path class="ar edit" d="M120 586 V598 H1120 V552" marker-end="url(#m-edit)"/>
-<g class="al edit"><rect x="475.0" y="588" width="330" height="20" rx="10"/><text x="640" y="602">o agente edita o código do produto (fora do harness)</text></g>
+<g class="ab  arq-hit" data-arq="ev_provas" tabindex="0" role="button" aria-pressed="false" aria-label="provas/&lt;execução&gt;/principal/ — contrato.yaml · baseline.json, estado.json com hashes"><rect x="424" y="928" width="380" height="108" rx="12"/>
+<text class="t mono" x="614.0" y="970.0">provas/&lt;execução&gt;/principal/</text>
+<text class="s" x="614.0" y="990.0">contrato.yaml · baseline.json</text>
+<text class="s" x="614.0" y="1007.0">estado.json com hashes</text>
 </g>
-<g transform="translate(0,40)">
-<g class="band"><rect x="20" y="626" width="1180" height="150" rx="16"/><text class="bl" x="38" y="648">3 · PLANO DE EVIDÊNCIA — .execucoes/ (fora do Git)</text></g>
-<g class="ab "><rect x="44" y="666" width="240" height="84" rx="10"/>
-<text class="t mono" x="164.0" y="696.0">sessoes/&lt;hash&gt;/ativa.json</text>
-<text class="s" x="164.0" y="712.0">aponta a fatia ativa</text>
-<text class="s" x="164.0" y="728.0">de cada sessão</text>
+<g class="ab  arq-hit" data-arq="ev_tentativas" tabindex="0" role="button" aria-pressed="false" aria-label="tentativas/NNN/ — manifesto · eventos · logs, edição posterior invalida"><rect x="864" y="928" width="330" height="108" rx="12"/>
+<text class="t mono" x="1029.0" y="970.0">tentativas/NNN/</text>
+<text class="s" x="1029.0" y="990.0">manifesto · eventos · logs</text>
+<text class="s" x="1029.0" y="1007.0">edição posterior invalida</text>
 </g>
-<g class="ab "><rect x="324" y="666" width="300" height="84" rx="10"/>
-<text class="t mono" x="474.0" y="696.0">provas/&lt;execução&gt;/principal/</text>
-<text class="s" x="474.0" y="712.0">contrato.yaml · baseline.json</text>
-<text class="s" x="474.0" y="728.0">estado.json com hashes</text>
+<g class="ab ok arq-hit" data-arq="ev_fechos" tabindex="0" role="button" aria-pressed="false" aria-label="fechos/ — DONE só com prova atual, senão BLOCKED · FAILED · DECIDE"><rect x="1254" y="928" width="310" height="108" rx="12"/>
+<text class="t mono" x="1409.0" y="970.0">fechos/</text>
+<text class="s" x="1409.0" y="990.0">DONE só com prova atual</text>
+<text class="s" x="1409.0" y="1007.0">senão BLOCKED · FAILED · DECIDE</text>
 </g>
-<g class="ab "><rect x="664" y="666" width="250" height="84" rx="10"/>
-<text class="t mono" x="789.0" y="696.0">tentativas/NNN/</text>
-<text class="s" x="789.0" y="712.0">manifesto · eventos · logs</text>
-<text class="s" x="789.0" y="728.0">edição posterior invalida</text>
-</g>
-<g class="ab ok"><rect x="954" y="666" width="226" height="84" rx="10"/>
-<text class="t mono" x="1067.0" y="696.0">fechos/</text>
-<text class="s" x="1067.0" y="712.0">DONE só com prova atual</text>
-<text class="s" x="1067.0" y="728.0">senão BLOCKED · FAILED · DECIDE</text>
-</g>
-<path class="ar ev" d="M284 708 H320" marker-end="url(#m-ev)"/>
-<path class="ar ev" d="M624 708 H660" marker-end="url(#m-ev)"/>
-<path class="ar ev" d="M914 708 H950" marker-end="url(#m-ev)"/>
-<path class="ar ev" d="M1004 400 H1036 V640 H474 V662" marker-end="url(#m-ev)"/>
-<g class="al ev"><rect x="708.0" y="630" width="104" height="20" rx="10"/><text x="760" y="644">grava com hash</text></g>
-<path class="ar " d="M40 806 H74" marker-end="url(#m-c)"/><text class="lg" x="82" y="810">controle</text>
-<path class="ar deny" d="M166 806 H200" marker-end="url(#m-deny)"/><text class="lg" x="208" y="810">negação</text>
-<path class="ar ok" d="M285 806 H319" marker-end="url(#m-ok)"/><text class="lg" x="327" y="810">permitido</text>
-<path class="ar ev" d="M418 806 H452" marker-end="url(#m-ev)"/><text class="lg" x="460" y="810">evidência</text>
-<path class="ar plan" d="M551 806 H585" marker-end="url(#m-plan)"/><text class="lg" x="593" y="810">planejado / a ativar</text>
-<path class="ar edit" d="M761 806 H795" marker-end="url(#m-edit)"/><text class="lg" x="803" y="810">edição do produto</text>
-</g>
+<path class="ar ev" d="M364 982 H420" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M804 982 H860" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M1194 982 H1250" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M1259 536 H1300 V850 H614 V924" marker-end="url(#m-ev)"/>
+<g class="al ev arq-hit" data-arq="s_grava" tabindex="0" role="button" aria-pressed="false" aria-label="grava com hash"><rect x="895.0" y="838" width="130" height="24" rx="12"/><text x="960" y="854.5">grava com hash</text></g>
+<path class="ar " d="M40 1106 H76" marker-end="url(#m-c)"/><text class="lg" x="86" y="1111">controle</text>
+<path class="ar deny" d="M199.6 1106 H235.6" marker-end="url(#m-deny)"/><text class="lg" x="245.6" y="1111">negação</text>
+<path class="ar ok" d="M351.0 1106 H387.0" marker-end="url(#m-ok)"/><text class="lg" x="397.0" y="1111">permitido</text>
+<path class="ar ev" d="M518.8 1106 H554.8" marker-end="url(#m-ev)"/><text class="lg" x="564.8" y="1111">evidência</text>
+<path class="ar plan" d="M686.5999999999999 1106 H722.5999999999999" marker-end="url(#m-plan)"/><text class="lg" x="732.5999999999999" y="1111">planejado / a ativar</text>
+<path class="ar edit" d="M944.5999999999999 1106 H980.5999999999999" marker-end="url(#m-edit)"/><text class="lg" x="990.5999999999999" y="1111">edição do produto</text>
 </svg>
+</div>
 </div>
 </section>
 
@@ -698,6 +734,18 @@ td.m, th.m { text-align: center; }
 </tbody></table></div></div>
 </section>
 
+<section id="formas">
+<h2>Formas de saída</h2>
+<p class="section-note">Registros que o fecho lê para aceitar ou recusar <code>DONE</code>, conforme <code>formas/catalogo.yaml</code> (schema 3.2). Oito estão adotadas e validadas por <code>implementacao/formas.py</code>; diagnóstico, ambiente e paridade foram aprovadas em 2026-10-05 e entram no pacote C6. Exemplos com <code>exemplo: true</code> são ilustração: o validador os rejeita.</p>
+<div class="pills" id="forma-pills" role="group" aria-label="Forma de saída"></div>
+<div id="forma-detalhe" aria-live="polite"></div>
+<h3>Formas do desenho v3 que não serão adotadas</h3>
+<p class="section-note">Relato do autor não é prova; uma forma só entra quando o fecho depende dela. Motivos no plano, seção 3.3.</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th scope="col">Forma v3</th><th scope="col">Motivo</th></tr></thead><tbody id="formas-fora"></tbody>
+</table></div>
+</section>
+
 <section id="pastas">
 <h2>Estrutura de pastas</h2>
 <p class="section-note">Raiz: <code>avante-harness-engineer/</code>. Regras curtas na entrada; o resto é lido sob demanda.</p>
@@ -733,6 +781,8 @@ td.m, th.m { text-align: center; }
 <tr><td>Roteamento e definições neutras dos agentes</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
 <tr><td>Coleta de prova no Claude Code (sobre fixture)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">parcial</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
 <tr><td>Agentes nativos por runtime e observação (G2)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor instalado</span></td><td class="m"><span class="chip warn">G2 pendente</span></td></tr>
+<tr><td>Formas 3.2: oito adotadas (contrato, guarda, teste, ataque, triagem, inspeção, chamada, brief)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
+<tr><td>Formas diagnóstico, ambiente e paridade (C6); superfície por papel de config e implement (C5)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
 <tr><td>Guardas de run, identidade, dados compartilhados, fronteira do produto</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
 <tr><td>Skills do projeto; <code>docs-distill</code></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
 </tbody></table></div>
@@ -961,6 +1011,7 @@ function abrir_detalhe(g, L, id) {
      ${n.who ? `<div class="who"><b>Trabalho:</b> ${escapar(n.who)}</div>` : ""}
      <dl>${ins.length ? `<dt>Entra</dt><dd><ul>${ins.map(li).join("")}</ul></dd>` : ""}${outs.length ? `<dt>Sai</dt><dd><ul>${outs.map(li).join("")}</ul></dd>` : ""}</dl>
      <p class="pop-hint">Esc fecha · clique em outro nó para trocar</p>`;
+  pop.classList.remove("arq-pop");
   pop.hidden = false;
   popAnchor = g;
   posicionar_detalhe();
@@ -1138,5 +1189,312 @@ if ("IntersectionObserver" in window) {
   }, { rootMargin: "-20% 0px -65% 0px" });
   abas.forEach(b => obs.observe(document.getElementById(b.dataset.target)));
 }
+/* ---- Arquitetura: pop-up explicativo por caixa, plano, grupo ou passo ---- */
+const ARQ = {
+  p1: { tipo: "Plano", chip: "info", t: "Plano de instrução", onde: "AGENTS.md, CLAUDE.md, trilhas/, nucleo/, agentes/",
+    oque: "Tudo o que o agente lê: regras, trilhas, papéis e roteamento. É texto, não código executável.",
+    serve: "Diz ao agente o que fazer, em que ordem e com qual critério de aceite.",
+    importa: "Instrução orienta, mas não garante. O agente pode esquecer ou interpretar mal; por isso existe o plano de controle logo abaixo.",
+    liga: ["agents", "trilhas", "roteamento", "p2"] },
+  p2: { tipo: "Plano", chip: "info", t: "Plano de controle", onde: "hooks do runtime, adaptadores/, implementacao/",
+    oque: "Código que roda a cada chamada de ferramenta, independentemente do que o agente entendeu das instruções.",
+    serve: "Conferir o efeito real da chamada (diretório, target, plano) e negar o que é perigoso antes que aconteça.",
+    importa: "É aqui que a regra vira garantia. Uma instrução ignorada não passa, porque a guarda olha o comando, não o relato.",
+    liga: ["s1", "s2", "s3", "s4", "s5"] },
+  p3: { tipo: "Plano", chip: "info", t: "Plano de evidência", onde: ".execucoes/ (fora do Git)",
+    oque: "Registros locais do que foi observado: qual comando rodou, sobre qual estado, com qual resultado.",
+    serve: "Sustentar o fecho. “Pronto” só vale quando há prova atual para cada critério obrigatório.",
+    importa: "Sem registro, o fecho seria só relato do agente. Fica fora do Git para não poluir o produto nem o PR.",
+    liga: ["ev_sessoes", "ev_provas", "ev_tentativas", "ev_fechos"] },
+
+  agents: { tipo: "Instrução", chip: "neutral", t: "AGENTS.md · CLAUDE.md", onde: "raiz do harness",
+    oque: "As regras curtas que valem para todo pedido. CLAUDE.md apenas aponta para AGENTS.md.",
+    serve: "Dar ao agente o mínimo comum logo ao iniciar: princípios, limites e onde buscar o resto.",
+    importa: "É a porta de entrada nos quatro runtimes. Mantê-la curta evita que o detalhe dilua as regras que importam.",
+    liga: ["trilhas", "coordenador", "runtimes"] },
+  trilhas: { tipo: "Instrução", chip: "neutral", t: "trilhas/ · nucleo/", onde: "trilhas/, nucleo/",
+    oque: "As oito trilhas (passos, aceite e fecho) e o núcleo de política e contexto do projeto Avante.",
+    serve: "Detalhar como executar cada tipo de trabalho, lido só quando a trilha é escolhida.",
+    importa: "Leitura sob demanda mantém o contexto do agente enxuto e focado na tarefa da vez.",
+    liga: ["agents", "roteamento"] },
+  roteamento: { tipo: "Instrução · fonte única", chip: "warn", t: "agentes/roteamento.yaml", onde: "agentes/roteamento.yaml + agentes/*.md",
+    oque: "A fonte única dos fluxos: quais papéis existem, em que ordem atuam e quais gatilhos os acionam.",
+    serve: "Definir as trilhas de forma neutra, sem depender de runtime. Os fluxogramas deste guia saem dele.",
+    importa: "Uma fonte só evita divergência entre Cursor, Claude Code e o resto. O núcleo também lê este arquivo.",
+    liga: ["gerar", "cfg_rot", "subagentes"] },
+  gerar: { tipo: "Gerador", chip: "neutral", t: "gerar_agentes.py", onde: "adaptadores/gerar_agentes.py",
+    oque: "Script que converte as definições neutras dos papéis no formato nativo de cada runtime.",
+    serve: "Produzir .claude/agents e .cursor/agents a partir de agentes/, sem edição manual.",
+    importa: "Garante que todos os runtimes recebam os mesmos papéis. Editar a cópia nativa à mão criaria desvio.",
+    liga: ["roteamento", "nativos"] },
+  nativos: { tipo: "Planejado / parcial", chip: "warn", t: ".claude/agents · .cursor/agents", onde: ".claude/agents/, .cursor/agents/",
+    oque: "As versões nativas dos papéis, no formato que cada runtime entende.",
+    serve: "Permitir que o runtime ative de fato os subagentes da trilha.",
+    importa: "Estado: Cursor instalado, sessão nova ainda não observada (G2). Claude Code pendente. Papel obrigatório indisponível fecha BLOCKED.",
+    liga: ["gerar", "subagentes"] },
+
+  g_runtime: { tipo: "Grupo", chip: "info", t: "Runtime", onde: "Cursor, Claude Code, Codex, OpenCode",
+    oque: "O ambiente onde o agente roda e chama ferramentas (shell, edição, subagentes).",
+    serve: "Hospedar o coordenador e os subagentes, e expor hooks que o harness usa para interceptar chamadas.",
+    importa: "O harness não substitui o runtime: ele se pluga nos hooks de cada um. Por isso o mesmo controle vale nos quatro.",
+    liga: ["coordenador", "subagentes", "runtimes", "g_hooks"] },
+  coordenador: { tipo: "Agente", chip: "neutral", t: "Coordenador", onde: "agente principal da sessão",
+    oque: "O agente que recebe o pedido, escolhe trilha e recorte, define o aceite e delega aos papéis.",
+    serve: "Tratar os retornos e emitir o fecho único da fatia.",
+    importa: "Só ele publica o fecho. Ninguém disputa o resultado e a responsabilidade fica clara.",
+    liga: ["agents", "subagentes", "s1", "ev_fechos"] },
+  subagentes: { tipo: "Agentes · a ativar", chip: "warn", t: "Subagentes · 7 papéis", onde: "agentes/*.md",
+    oque: "map, config, implement, test, refute, docs e dab: cada um com escopo estreito.",
+    serve: "Separar quem escreve de quem verifica e revisa. Cada papel altera só a superfície atribuída.",
+    importa: "Revisão independente pega o que o autor não vê. A ativação é gradual, trilha a trilha (E0 / E1 / E2).",
+    liga: ["coordenador", "roteamento", "nativos"] },
+  runtimes: { tipo: "Runtimes", chip: "info", t: "Cursor · Claude Code · Codex · OpenCode", onde: "",
+    oque: "Os quatro ambientes suportados. Todos leem o mesmo AGENTS.md.",
+    serve: "Deixar o time usar a ferramenta que preferir sem mudar as regras.",
+    importa: "Limite atual: a prova só é coletada no Cursor. No Claude Code, fechar ainda não comprova DONE.",
+    liga: ["h_cursor", "h_cc", "h_codex", "h_opencode"] },
+
+  g_hooks: { tipo: "Grupo", chip: "info", t: "Hooks do runtime", onde: "configuração de cada runtime",
+    oque: "Pontos de extensão que o runtime chama antes (e às vezes depois) de cada ferramenta.",
+    serve: "Entregar a chamada ao harness antes que ela execute.",
+    importa: "Sem hook, a guarda não teria como negar antes do efeito; só poderia reclamar depois.",
+    liga: ["h_cursor", "h_cc", "h_codex", "h_opencode", "s2"] },
+  h_cursor: { tipo: "Hook", chip: "ok", t: "Hooks do Cursor", onde: "",
+    oque: "shell, preToolUse/postToolUse, stop e subagentStart/Stop.",
+    serve: "Interceptar o shell e observar o resultado e o ciclo dos subagentes.",
+    importa: "É o único runtime com coleta de prova completa hoje, graças ao postToolUse.",
+    liga: ["entrada", "ad_cursor"] },
+  h_cc: { tipo: "Hook", chip: "neutral", t: "Hooks do Claude Code", onde: "",
+    oque: "PreToolUse nas ferramentas Bash e PowerShell.",
+    serve: "Passar cada comando de shell pela guarda antes de executar.",
+    importa: "A guarda já protege aqui; a coleta de prova (claude_code/prova.py) ainda está em curso.",
+    liga: ["entrada", "ad_cc"] },
+  h_codex: { tipo: "Hook", chip: "neutral", t: "Hook do Codex", onde: "",
+    oque: "PreToolUse.", serve: "Passar a chamada pela guarda antes do efeito.",
+    importa: "Mesmo núcleo, mesmo resultado de negação: a regra não depende do runtime.",
+    liga: ["entrada"] },
+  h_opencode: { tipo: "Hook", chip: "neutral", t: "Hook do OpenCode", onde: "adaptadores/opencode/esteira.js",
+    oque: "tool.execute.before, via plugin JavaScript.", serve: "Encaminhar a chamada ao mesmo adaptador Python.",
+    importa: "Mostra que o desenho aceita runtimes de outras linguagens sem duplicar a guarda.",
+    liga: ["entrada"] },
+
+  g_adapt: { tipo: "Grupo", chip: "info", t: "Adaptadores", onde: "adaptadores/",
+    oque: "A camada de tradução entre o protocolo de cada runtime e o núcleo comum.",
+    serve: "Converter o evento do runtime numa operação padrão e devolver a resposta no formato que ele espera.",
+    importa: "Isola as diferenças. Para suportar um runtime novo basta um adaptador; guardas e provas não mudam.",
+    liga: ["entrada", "ad_cursor", "ad_cc", "prova_cli", "s3"] },
+  entrada: { tipo: "Adaptador", chip: "neutral", t: "entrada.py → executar.py", onde: "adaptadores/entrada.py, executar.py, protocolo.py",
+    oque: "Recebe o evento cru do hook, normaliza e chama o núcleo.",
+    serve: "Responder ao runtime com permitir ou negar, junto do motivo e da correção.",
+    importa: "É a ponte única: todo runtime passa por aqui, então a mesma decisão vale para todos.",
+    liga: ["s2", "s3", "guardas"] },
+  ad_cursor: { tipo: "Coleta de prova", chip: "ok", t: "cursor/prova.py", onde: "adaptadores/cursor/prova.py",
+    oque: "Registra o resultado das verificações e o ciclo dos subagentes no Cursor.",
+    serve: "Transformar a verificação rodada no chat em prova gravada com hash.",
+    importa: "Sem esta coleta, o fecho não teria como confirmar DONE.",
+    liga: ["provas", "h_cursor"] },
+  ad_cc: { tipo: "Coleta de prova · em curso", chip: "warn", t: "claude_code/prova.py", onde: "adaptadores/claude_code/prova.py",
+    oque: "Equivalente da coleta para o Claude Code (D-CC), hoje parcial e testado sobre fixture.",
+    serve: "Permitir DONE comprovado também no Claude Code.",
+    importa: "Até concluir, use BLOCKED com a condição de retomada no Claude Code, ou execute no Cursor.",
+    liga: ["provas", "h_cc"] },
+  prova_cli: { tipo: "CLI", chip: "neutral", t: "prova.py (CLI)", onde: "adaptadores/prova.py",
+    oque: "Comandos iniciar, estado e fechar da fatia.",
+    serve: "Abrir a fatia com contrato, consultar o andamento e pedir o fecho.",
+    importa: "O fecho confere cada critério obrigatório. Sem prova atual, recusa o DONE.",
+    liga: ["provas", "cfg_contrato", "ev_fechos"] },
+
+  g_nucleo: { tipo: "Grupo · núcleo", chip: "bad", t: "Núcleo", onde: "implementacao/",
+    oque: "O código que decide: guardas que negam e provas que registram e fecham.",
+    serve: "Concentrar a regra num lugar só, testado pela suíte do harness.",
+    importa: "É o coração do “autonomia com prova”. Tudo ao redor apenas leva a chamada até aqui.",
+    liga: ["guardas", "provas", "cfg_politica"] },
+  guardas: { tipo: "Guarda", chip: "bad", t: "Guardas", onde: "implementacao/ · guardas/",
+    oque: "guarda_cwd confere diretório, bundle e comando literal. guarda_efeito confere target e a ordem plan → deploy.",
+    serve: "Negar antes de executar: pipe, wrapper, cwd fora do bundle, run/destroy/sync, deploy sem plan vigente, SQL com escrita.",
+    importa: "A guarda confere o efeito real e não concede autorização: target fora de sandbox exige autorização explícita.",
+    liga: ["s4", "s5", "cfg_politica"] },
+  provas: { tipo: "Provas", chip: "ok", t: "Provas", onde: "implementacao/provas.py, formas.py",
+    oque: "Gerencia a fatia, o manifesto de hashes, a invalidação e o fecho. formas.py valida o schema 3.2.",
+    serve: "Gravar cada verificação com o estado sobre o qual rodou.",
+    importa: "Editou um arquivo relevante depois da prova? Ela perde a validade e o critério precisa rodar de novo.",
+    liga: ["s_grava", "ad_cursor", "prova_cli"] },
+  cfg_politica: { tipo: "Configuração", chip: "neutral", t: "configuracao/politica.json", onde: "",
+    oque: "Autorizações e agentes obrigatórios por trilha.",
+    serve: "Dizer ao núcleo o que é permitido e quais papéis precisam atuar.",
+    importa: "Muda o comportamento sem mexer no código das guardas.",
+    liga: ["guardas", "subagentes"] },
+  cfg_rot: { tipo: "Configuração", chip: "neutral", t: "agentes/roteamento.yaml", onde: "",
+    oque: "O mesmo roteamento do plano de instrução, agora lido pelo código.",
+    serve: "Permitir que o núcleo saiba os papéis e a ordem da trilha.",
+    importa: "Instrução e controle leem a mesma fonte, então não divergem.",
+    liga: ["roteamento"] },
+  cfg_contrato: { tipo: "Configuração", chip: "neutral", t: "contrato.yaml da fatia", onde: "contratos/ (campos) · .execucoes/provas/…",
+    oque: "O contrato criado ao iniciar a fatia: escopo, critérios e o esperado de cada um.",
+    serve: "Definir o que precisa ser provado para fechar.",
+    importa: "Sem contrato não há fecho estruturado. O caminho simples dispensa contrato.",
+    liga: ["prova_cli", "ev_provas"] },
+
+  g_efeito: { tipo: "Grupo", chip: "info", t: "Efeito externo", onde: "",
+    oque: "Onde a chamada permitida produz efeito: a CLI do Databricks, o workspace e o produto.",
+    serve: "Receber só o que passou pelas guardas.",
+    importa: "É o que se quer proteger. Toda negação acontece antes de chegar aqui.",
+    liga: ["dbcli", "workspace", "produto"] },
+  dbcli: { tipo: "Efeito", chip: "neutral", t: "Databricks CLI", onde: "",
+    oque: "bundle validate, plan e deploy, com -t sandbox e perfil -p explícito.",
+    serve: "Executar os degraus validate → plan → deploy no bundle local.",
+    importa: "Só em sandbox. run e qualquer outro target, dev inclusive, exigem autorização explícita.",
+    liga: ["s5", "workspace"] },
+  workspace: { tipo: "Efeito", chip: "neutral", t: "Workspace Databricks", onde: "",
+    oque: "O ambiente remoto onde o bundle é implantado.",
+    serve: "Receber o deploy aprovado.",
+    importa: "Efeito real e compartilhado; por isso a guarda exige plan vigente e --select antes do deploy.",
+    liga: ["dbcli"] },
+  produto: { tipo: "Produto", chip: "warn", t: "prj-avante-analytics-adb/", onde: "prj-avante-analytics-adb/",
+    oque: "O código do produto, com Git e AGENTS.md próprios.",
+    serve: "É o que o agente realmente altera para entregar a tarefa.",
+    importa: "Fica fora do harness: provas e registros nunca entram no repositório do produto.",
+    liga: ["s_edit"] },
+
+  ev_sessoes: { tipo: "Registro", chip: "neutral", t: "sessoes/<hash>/ativa.json", onde: ".execucoes/sessoes/",
+    oque: "Aponta qual fatia está ativa em cada sessão.",
+    serve: "Saber a qual fatia atribuir cada evento que o hook recebe.",
+    importa: "Permite sessões paralelas sem misturar provas.",
+    liga: ["ev_provas"] },
+  ev_provas: { tipo: "Registro", chip: "neutral", t: "provas/<execução>/principal/", onde: ".execucoes/provas/",
+    oque: "contrato.yaml, baseline.json (estado anterior) e estado.json com hashes.",
+    serve: "Guardar o ponto de partida e o andamento da fatia; a retomada parte daqui.",
+    importa: "O baseline inclui arquivo não rastreado: Git limpo não é pré-condição.",
+    liga: ["ev_tentativas", "cfg_contrato"] },
+  ev_tentativas: { tipo: "Registro", chip: "neutral", t: "tentativas/NNN/", onde: ".execucoes/provas/…/tentativas/",
+    oque: "Cada tentativa guarda manifesto, eventos imutáveis e logs.",
+    serve: "Mostrar comando, cwd, exit code e o estado testado.",
+    importa: "Toda tentativa nova preserva as anteriores. Edição posterior relevante invalida a prova.",
+    liga: ["ev_fechos"] },
+  ev_fechos: { tipo: "Fecho", chip: "ok", t: "fechos/", onde: ".execucoes/provas/…/fechos/",
+    oque: "O resultado final da fatia: status, resultado, prova e limite.",
+    serve: "Declarar DONE, REVIEW, DECIDE, BLOCKED ou FAILED.",
+    importa: "DONE só com prova atual em todo critério obrigatório; senão o fecho diz o motivo e a condição de retomada.",
+    liga: ["coordenador", "provas"] },
+
+  s1: { tipo: "Passo 1", chip: "info", t: "Chamada de ferramenta", onde: "",
+    oque: "O agente pede ao runtime para rodar algo, por exemplo databricks bundle deploy.",
+    serve: "Iniciar a ação que a trilha exige.", importa: "O runtime não executa direto: chama o hook primeiro.",
+    liga: ["coordenador", "s2"] },
+  s2: { tipo: "Passo 2", chip: "info", t: "Evento do hook", onde: "",
+    oque: "O hook entrega a chamada ao adaptador, no formato próprio do runtime.",
+    serve: "Dar ao harness a chance de decidir antes do efeito.", importa: "Cada runtime fala um protocolo; o adaptador traduz.",
+    liga: ["s1", "s3", "entrada"] },
+  s3: { tipo: "Passo 3", chip: "info", t: "Operação normalizada", onde: "",
+    oque: "O adaptador entrega ao núcleo uma operação padrão: comando, cwd, sessão.",
+    serve: "Permitir que a mesma guarda avalie qualquer runtime.", importa: "A decisão não depende de qual ferramenta o time usa.",
+    liga: ["s2", "guardas"] },
+  s4: { tipo: "Passo 4 · negação", chip: "bad", t: "Nega antes do efeito", onde: "",
+    oque: "Se uma guarda reprova, a chamada volta ao agente sem executar, com motivo e correção.",
+    serve: "O agente corrige e tenta de novo sem intervenção humana.", importa: "Nada chega ao Databricks. A negação isolada de um comando não é BLOCKED.",
+    liga: ["guardas", "coordenador"] },
+  s5: { tipo: "Passo 5 · permitido", chip: "ok", t: "Permite", onde: "",
+    oque: "Passou em todas as guardas: o runtime executa o comando.",
+    serve: "Produzir o efeito no sandbox.", importa: "Permitir não é autorizar: a guarda confere o efeito, a autorização humana é outra coisa.",
+    liga: ["dbcli", "s_grava"] },
+  s_grava: { tipo: "Evidência", chip: "ok", t: "Grava com hash", onde: ".execucoes/provas/",
+    oque: "O resultado da verificação é gravado junto com os hashes do estado testado.",
+    serve: "Alimentar o fecho com prova verificável.", importa: "O hash permite detectar edição posterior e invalidar a prova.",
+    liga: ["provas", "ev_provas"] },
+  s_edit: { tipo: "Edição", chip: "warn", t: "Edição do produto", onde: "prj-avante-analytics-adb/",
+    oque: "O agente edita o código do produto diretamente, fora do harness.",
+    serve: "Entregar a mudança pedida.", importa: "Editar depois de provar invalida a prova: o critério precisa rodar de novo.",
+    liga: ["produto", "ev_tentativas"] }
+};
+
+const arqSvg = document.getElementById("arq-svg");
+/* Ícone "i" e área clicável dos rótulos de plano e grupo, pela largura real do texto. */
+arqSvg.querySelectorAll(".hd").forEach(h => {
+  const t = h.querySelector("text.bl, text.gl"), w = t.getBBox().width, x = +t.getAttribute("x");
+  h.querySelector(".ii").setAttribute("cx", x + w + 14);
+  h.querySelector(".iit").setAttribute("x", x + w + 14);
+  h.querySelector(".hdr").setAttribute("width", w + 38);
+});
+function arq_alvo(id) { return arqSvg.querySelector(`.arq-hit[data-arq="${id}"]`); }
+const arqFlow = {
+  clear() {
+    arqSvg.querySelectorAll('.arq-hit[aria-pressed="true"]').forEach(g => g.setAttribute("aria-pressed", "false"));
+    arqSvg.querySelectorAll(".sel").forEach(g => g.classList.remove("sel"));
+    if (activeFlow === arqFlow) activeFlow = null;
+  },
+  select(g, id) {
+    if (activeFlow && activeFlow !== arqFlow) activeFlow.clear();
+    arqFlow.clear();
+    activeFlow = arqFlow;
+    g.setAttribute("aria-pressed", "true");
+    const grp = arqSvg.querySelector(`[data-grp="${id}"]`);
+    if (grp) grp.classList.add("sel");
+    const n = ARQ[id];
+    const rel = (n.liga || []).filter(k => ARQ[k]).map(k => `<button type="button" data-ir="${k}">${escapar(ARQ[k].t)}</button>`).join("");
+    popBody.innerHTML =
+      `<span class="chip ${n.chip || "neutral"}">${escapar(n.tipo)}</span>
+       <h4 id="pop-title">${escapar(n.t)}</h4>
+       ${n.onde ? `<div class="who"><b>Onde:</b> <code>${escapar(n.onde)}</code></div>` : ""}
+       <dl><dt>O que é</dt><dd><p>${escapar(n.oque)}</p></dd>
+       <dt>Para que</dt><dd><p>${escapar(n.serve)}</p></dd>
+       <dt>Por que importa</dt><dd><p>${escapar(n.importa)}</p></dd>
+       ${rel ? `<dt>Liga com</dt><dd><div class="rel">${rel}</div></dd>` : ""}</dl>
+       <p class="pop-hint">Esc fecha · clique em outra caixa para trocar</p>`;
+    pop.classList.add("arq-pop");
+    pop.hidden = false;
+    popAnchor = g;
+    posicionar_detalhe();
+  }
+};
+arqSvg.querySelectorAll(".arq-hit").forEach(g => {
+  g.addEventListener("click", ev => {
+    ev.stopPropagation();
+    if (g.getAttribute("aria-pressed") === "true") limpar_selecao();
+    else arqFlow.select(g, g.dataset.arq);
+  });
+  g.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); g.dispatchEvent(new MouseEvent("click", { bubbles: true })); }
+  });
+});
+popBody.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-ir]");
+  if (!b) return;
+  ev.stopPropagation();
+  const g = arq_alvo(b.dataset.ir);
+  if (g) { arqFlow.select(g, b.dataset.ir); g.focus({ preventScroll: true }); }
+});
+const arqFit = document.getElementById("arq-fit"), arqMap = document.getElementById("arq-map");
+arqFit.addEventListener("click", () => {
+  arqMap.classList.toggle("real");
+  arqFit.textContent = arqMap.classList.contains("real") ? "Ajustar à largura" : "Tamanho real";
+  posicionar_detalhe();
+});
+const FORMAS = [{"id": "contrato", "titulo": "Contrato", "estado": "adotada", "pacote": null, "versao": "3.1 e 3.2", "uso": "Critérios tipados; superfície de produto separada de artefatos.", "produtor": "coordenador", "consumidor": "executores, verificador", "validacao": "Aceite não vazio, IDs únicos, tipo permitido e esperado verificável. Superfície e artefatos separados. Em 3.1, verificacao exige comando, cwd e caminhos. Em 3.2, teste, ambiente, validacao_dados e paridade exigem os tres; inspecao_documental e analise_codigo exigem caminhos, checagens e produtor (coordenador ou refute), sem comando. autorizacao_ref é caminho relativo opcional apenas em aceite[].tipo=ambiente 3.2; 3.1 preserva o contrato anterior. A exigencia estatica preserva a leitura 3.1; as regras condicionais descrevem as excecoes 3.2.", "campos": ["objetivo", "termino_fatia", "trilha", "superficie", "artefatos_raiz", "fora", "fontes", "prazo", "aceite", "orcamento", "responsaveis"], "yaml": "schema_versao: '3.2'\ntipo: contrato\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_contrato_001\nprodutor: coordenador\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  objetivo: Ajustar a regra de vigência do contrato de compra na etapa 03.\n  termino_fatia: Regra alterada, teste do contrato verde e revisão sem achado procedente.\n  trilha: manutencao\n  superficie:\n  - bundles/src/notebooks/saneamento_migracao/mm/contrato_de_compra/03_saneamento/contrato_de_compra.py\n  artefatos_raiz: .execucoes/exemplo/T1\n  fora:\n  - deploy\n  - alterar_outros_objetos\n  fontes:\n  - AGENTS.md do produto\n  - irmão vivo da etapa 03\n  prazo: null\n  aceite:\n  - id: vigencia\n    tipo: teste\n    obrigatorio: true\n    esperado: Contrato vencido vai para exceções.\n    verificacao:\n      comando: py -3 -m pytest testes/teste_contrato_de_compra.py\n      cwd: prj-avante-analytics-adb\n      caminhos:\n      - bundles/src/notebooks/saneamento_migracao/mm/contrato_de_compra/03_saneamento/contrato_de_compra.py\n  - id: sem_excesso\n    tipo: analise_codigo\n    obrigatorio: true\n    esperado: Sem código morto nem parâmetro sem uso.\n    verificacao:\n      caminhos:\n      - bundles/src/notebooks/saneamento_migracao/mm/contrato_de_compra/03_saneamento/contrato_de_compra.py\n      checagens:\n      - id: codigo_morto\n        esperado: nenhum\n      produtor: refute\n  orcamento:\n    ciclos_correcao_max: 3\n    ciclos_sem_progresso_max: 2\n    repeticoes_operacao_max: 2\n  responsaveis:\n    executor: implement\n    verificador: test\n    coordenador: principal\n"}, {"id": "guarda", "titulo": "Guarda", "estado": "adotada", "pacote": null, "versao": "3.1 e 3.2", "uso": "Evento próprio do hook, sem sobrescrever brief.", "produtor": "hook", "consumidor": "coordenador", "validacao": "nao_aplica exige justificativa de escopo; nao_verificado não aprova critério obrigatório. Decisão negar impede somente a chamada dependente.", "campos": ["operacao", "checagens", "decisao", "recuperacao"], "yaml": "schema_versao: '3.2'\ntipo: guarda\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_guarda_001\nprodutor: hook\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  operacao: bundle_deploy\n  checagens:\n  - id: target\n    resultado: limpo\n  - id: plan_vigente\n    resultado: bloqueio\n    motivo: Nenhum plan atual para este estado.\n  decisao: negar\n  recuperacao: Rodar plan -t sandbox no bundle local e repetir o deploy com --select.\n"}, {"id": "teste", "titulo": "Teste", "estado": "adotada", "pacote": null, "versao": "3.1 e 3.2", "uso": "Resultado do executor, vinculado ao estado; não basta o agente afirmar pass.", "produtor": "executor_teste", "consumidor": "coordenador", "validacao": "Exit code inteiro ou null em execução incompleta; pass/fail casa com o comando e o esperado. Log real e manifesto referenciado existem. O produtor é sempre o executor observado pelo hook, também quando o comando roda num subagente; agente_id é o ID desse subagente nos eventos do runtime e, com a trilha ativada, precisa casar com uma chamada observada do papel test. exit_code_origem diz de onde veio o código: campo_resultado (campo numérico do runtime), evento_sucesso (evento de sucesso sem código, vale 0) ou texto_falha (código lido do texto do evento de falha, diferente de 0).", "campos": ["criterio_id", "chamada_id", "cwd", "comando", "inicio", "fim", "exit_code", "log_ref", "log_sha256", "estado_testado", "resultado", "validade"], "yaml": "schema_versao: '3.2'\ntipo: teste\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_teste_001\nprodutor: executor_teste\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  criterio_id: vigencia\n  chamada_id: shell-0007\n  agente_id: conv-test-41\n  cwd: prj-avante-analytics-adb\n  comando: py -3 -m pytest testes/teste_contrato_de_compra.py\n  inicio: '2026-10-05T12:00:00+00:00'\n  fim: '2026-10-05T12:00:09+00:00'\n  exit_code: 0\n  exit_code_origem: campo_resultado\n  log_ref: tentativas/001/logs/teste_0007.txt\n  log_sha256: 836ff184e7b41b1e13cb5fd89fa1de98dbbab99e9d2918913ff43b86a5c7c213\n  estado_testado: 2e7f8e8c72e5a9178f4766338083a5b482c2d385cfacf26c41fd2086a8a420ce\n  resultado: pass\n  validade: valida\n"}, {"id": "ataque", "titulo": "Revisão independente", "estado": "adotada", "pacote": null, "versao": "3.2", "uso": "Payload referencia intenção e aceite, baseline, provas e estado revisado (manifesto); sem racional persuasivo do autor.", "produtor": "refute", "consumidor": "coordenador", "validacao": "O manifesto_ref do envelope identifica o estado revisado. com_achados exige achados com evidência; simplificacao é uma categoria válida. nao_quebrei exige tentativas e cobertura. Inconclusivo não aprova critério obrigatório.", "campos": ["entrada", "veredito", "tentativas", "achados", "cobertura"], "yaml": "schema_versao: '3.2'\ntipo: ataque\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_ataque_001\nprodutor: refute\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  entrada:\n    intencao_ref: eventos/contrato_001.yaml\n    aceite_ref: eventos/contrato_001.yaml\n    baseline_ref: baseline.json\n    provas_refs:\n    - eventos/teste_0007.yaml\n  veredito: com_achados\n  tentativas:\n  - id: T1\n    procedimento: Contrato com fim de vigência igual à data de corte.\n    resultado: pass\n  achados:\n  - id: A1\n    categoria: simplificacao\n    severidade: baixa\n    local: contrato_de_compra.py:212\n    evidencia_ref: revisoes/A1.txt\n  cobertura:\n  - criterio_id: vigencia\n    coberto: true\n  - criterio_id: sem_excesso\n    coberto: true\n"}, {"id": "triagem", "titulo": "Triagem de achado", "estado": "adotada", "pacote": null, "versao": "3.2", "uso": "Registra a decisao do coordenador sobre um achado da revisao e sua resolucao ou descarte fundamentado.", "produtor": "coordenador", "consumidor": "autor, refute, coordenador", "validacao": "Procedente exige evidencia da resolucao; descartado exige motivo. A triagem referencia, por revisao_ref, um achado da revisao registrada na fatia.", "campos": ["revisao_ref", "achado_id", "decisao", "responsavel"], "yaml": "schema_versao: '3.2'\ntipo: triagem\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_triagem_001\nprodutor: coordenador\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  revisao_ref: eventos/ataque_001.yaml\n  achado_id: A1\n  decisao: procedente\n  responsavel: implement\n  evidencia_resolucao_ref: eventos/teste_0009.yaml\n"}, {"id": "inspecao", "titulo": "Inspecao", "estado": "adotada", "pacote": null, "versao": "3.2", "uso": "Resultado do criterio documental ou analise de codigo, vinculado ao manifesto do estado inspecionado.", "produtor": "coordenador, refute", "consumidor": "coordenador", "validacao": "Cada checagem referencia um criterio e um estado. Mudanca relevante em qualquer caminho invalida a inspecao, como invalida um teste.", "campos": ["criterio_id", "caminhos", "manifesto_sha256", "checagens", "resultado", "validade"], "yaml": "schema_versao: '3.2'\ntipo: inspecao\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_inspecao_001\nprodutor: refute\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  criterio_id: sem_excesso\n  caminhos:\n  - bundles/src/notebooks/saneamento_migracao/mm/contrato_de_compra/03_saneamento/contrato_de_compra.py\n  manifesto_sha256: 856e0cd02f3352d6b5b2b641c9d7e2586482f528ce32358ac99e77f9a4b8012b\n  checagens:\n  - id: codigo_morto\n    resultado: pass\n  resultado: pass\n  validade: valida\n"}, {"id": "chamada", "titulo": "Chamada observada", "estado": "adotada", "pacote": null, "versao": "3.2", "uso": "Evidencia observada pelo adaptador de que um papel foi chamado; relato do coordenador nao basta.", "produtor": "adaptador", "consumidor": "coordenador", "validacao": "IDs devem vir dos eventos observados do runtime. Inicio e fim delimitam a chamada. O produtor adaptador nao pode ser substituido pelo coordenador.", "campos": ["chamada_id", "papel", "runtime", "ids_observados", "inicio", "fim", "status"], "yaml": "schema_versao: '3.2'\ntipo: chamada\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_chamada_001\nprodutor: adaptador\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  chamada_id: tool-use-91\n  papel: test\n  runtime: cursor\n  ids_observados:\n  - nome: subagent_id\n    valor: tool-use-91\n  - nome: agente_id\n    valor: conv-test-41\n  inicio: '2026-10-05T11:59:50+00:00'\n  fim: '2026-10-05T12:00:20+00:00'\n  status: concluida\n"}, {"id": "brief", "titulo": "Fecho", "estado": "adotada", "pacote": null, "versao": "3.1 e 3.2", "uso": "Somente coordenador publica; resultados por critério sustentam o status.", "produtor": "coordenador", "consumidor": "pessoa, retomada", "validacao": "DONE exige critérios obrigatórios atendidos e evidências válidas; nenhuma pendência obrigatória ou ação humana. REVIEW exige revisão prevista. Um novo fecho não apaga o anterior.", "campos": ["escopo_conclusao", "status", "outcome", "criterios", "pendencias", "acao_humana"], "yaml": "schema_versao: '3.2'\ntipo: brief\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_brief_001\nprodutor: coordenador\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  escopo_conclusao: fatia_T1\n  status: DONE\n  outcome: Regra de vigência ajustada; teste verde e achado de simplificação resolvido.\n  criterios:\n  - id: vigencia\n    atendido: true\n    evidencia_ref: eventos/teste_0009.yaml\n    validade: valida\n  - id: sem_excesso\n    atendido: true\n    evidencia_ref: eventos/inspecao_002.yaml\n    validade: valida\n  pendencias: []\n  acao_humana: null\n"}, {"id": "diagnostico", "titulo": "Diagnóstico", "estado": "aprovada", "pacote": "C6", "versao": "3.2", "uso": "Registro mínimo do diagnóstico na correção: causa sustentada ou hipótese com próximo experimento, ligada ao critério de reprodução.", "produtor": "coordenador, map", "consumidor": "executor, coordenador", "validacao": "Na correção ativada, a escrita de config ou implement exige um diagnóstico na tentativa; criterio_reproducao existe no contrato.", "campos": ["sintoma", "hipotese_causa", "base", "evidencia_ref", "criterio_reproducao", "proximo_passo"], "yaml": "schema_versao: '3.2'\ntipo: diagnostico\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_diagnostico_001\nprodutor: coordenador\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  sintoma: Contrato vencido aparece no saneado.\n  hipotese_causa: Comparação de vigência usa a data de carga, não a data de corte.\n  base: direct\n  evidencia_ref: logs/run_123_vigencia.txt\n  criterio_reproducao: vigencia\n  proximo_passo: test reproduz com contrato vencido na data de corte.\n"}, {"id": "sandbox", "titulo": "Ambiente", "estado": "aprovada", "pacote": "C6", "versao": "3.2", "uso": "Pré-condições distintas por operação. Nomes são confirmação adicional.", "produtor": "dab", "consumidor": "coordenador", "validacao": "Deploy exige plan válido e compatível. Run de ingestão ou espinha exige coordenação verificada para escopo e rodada. Guardas e autorização anteriores ao efeito. Vinculado à chamada dab observada e ao registro teste do comando. Campo sem observação integrada vale nao_verificado e não aprova critério ambiente obrigatório.", "campos": ["operacao", "cwd", "bundle", "target", "perfil", "selecao", "plan_ref", "plan_estado_compativel", "autorizacao_ref", "identidade", "destinos_resolvidos", "coordenacao", "resultado", "teste_ref"], "yaml": "schema_versao: '3.2'\ntipo: sandbox\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_sandbox_001\nprodutor: dab\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  operacao: deploy\n  cwd: prj-avante-analytics-adb/bundles/src/notebooks/saneamento_migracao\n  bundle: saneamento_migracao\n  target: sandbox\n  perfil: <perfil>\n  selecao:\n  - pipelines.dlt_trusted_mm_contrato_de_compra\n  plan_ref: eventos/teste_plan_003.yaml\n  plan_estado_compativel: true\n  autorizacao_ref: autorizacoes/sandbox_001.yaml\n  identidade: nao_verificado\n  destinos_resolvidos: nao_verificado\n  coordenacao:\n    resultado: nao_aplica\n    motivo: Somente deploy; run exige coordenação própria.\n  resultado: inconclusivo\n  teste_ref: eventos/teste_deploy_004.yaml\n"}, {"id": "paridade", "titulo": "Paridade", "estado": "aprovada", "pacote": "C6", "versao": "3.2", "uso": "Mesmo recorte, insumos identificados, cálculo reproduzível e gap tratado.", "produtor": "test", "consumidor": "coordenador", "validacao": "Diferença deriva dos insumos do mesmo recorte. Gap sem explicação comprovada impede aprovação quando paridade é obrigatória, mesmo com exit 0. Vinculado ao registro teste do comando de paridade e ao hash do artefato.", "campos": ["criterio_id", "recorte", "insumos", "contas", "divergencias", "resultado", "teste_ref"], "yaml": "schema_versao: '3.2'\ntipo: paridade\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_paridade_001\nprodutor: test\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  criterio_id: paridade_objeto\n  recorte: <data de corte e filtros exatos>\n  insumos:\n    legado_ref: <arquivo e hash>\n    esteira_ref: <tabela e versão>\n  contas:\n  - nome: aba_sap\n    legado: 1180\n    esteira: 1174\n    diferenca: -6\n  divergencias:\n  - motivo: Seis registros sem explicação comprovada.\n    tratamento: pendente\n  resultado: fail\n  teste_ref: eventos/teste_paridade_005.yaml\n"}];
+const FORMAS_FORA = [{"formas": "config, implement, docs", "motivo": "Repetem o relato do autor; o núcleo calcula manifesto e invalida provas por edição. A superfície por papel de config e implement vira conferência do núcleo (C5)."}, {"formas": "mapa", "motivo": "map é opcional e só lê; nenhum fecho depende do mapa. A chamada comprova a execução."}, {"formas": "destilar", "motivo": "A trilha fecha por critério inspecao_documental (forma inspecao); fonte e destino viram checagens."}, {"formas": "intencao", "motivo": "O objetivo mora no contrato; ataque.entrada.intencao_ref aponta para ele."}, {"formas": "resposta", "motivo": "Entendimento fecha pelo brief; preservação de estado já é medida por baseline e manifesto."}];
+
+let forma_atual = "contrato";
+const ESTADO_CHIP = { adotada: ["ok", "Adotada"], aprovada: ["decisao", "Aprovada · C6"] };
+function renderizar_formas() {
+  const botoes = document.getElementById("forma-pills");
+  botoes.innerHTML = FORMAS.map(f => `<button type="button" data-forma="${escapar(f.id)}" aria-pressed="${f.id === forma_atual}">${escapar(f.titulo)}${f.estado === "aprovada" ? '<span class="est">C6</span>' : ""}</button>`).join("");
+  const f = FORMAS.find(x => x.id === forma_atual);
+  const [chip, rotulo] = ESTADO_CHIP[f.estado];
+  const nota = f.estado === "aprovada" ? "Campos propostos no pacote C6; o validador ainda recusa esta forma." : `Schema ${escapar(f.versao)}; exemplo conferido com o validador.`;
+  document.getElementById("forma-detalhe").innerHTML = `<article class="forma-card" id="forma-${escapar(f.id)}">
+    <span class="chip ${chip}">${rotulo}</span><h3>${escapar(f.titulo)} <code>${escapar(f.id)}</code></h3>
+    <p class="forma-meta">${escapar(f.uso)}</p>
+    <p class="forma-meta"><b>Produz:</b> ${escapar(f.produtor)} · <b>Consome:</b> ${escapar(f.consumidor)}</p>
+    ${f.validacao ? `<p class="forma-meta"><b>Validação:</b> ${escapar(f.validacao)}</p>` : ""}
+    <p class="forma-meta"><b>${f.estado === "aprovada" ? "Campos propostos" : "Chaves obrigatórias em dados"}:</b> ${f.campos.map(escapar).join(", ")}</p>
+    <p class="forma-meta">${nota}</p>
+    <pre class="forma-yaml"><code>${escapar(f.yaml)}</code></pre></article>`;
+  botoes.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    forma_atual = b.dataset.forma;
+    renderizar_formas();
+    document.querySelector(`[data-forma="${forma_atual}"]`).focus();
+  }));
+}
+document.getElementById("formas-fora").innerHTML = FORMAS_FORA.map(x => `<tr><td><code>${escapar(x.formas)}</code></td><td>${escapar(x.motivo)}</td></tr>`).join("");
+renderizar_formas();
 </script>
 </body></html>

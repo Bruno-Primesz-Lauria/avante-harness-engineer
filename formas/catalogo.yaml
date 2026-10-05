@@ -5,7 +5,9 @@ nota: >
   Contrato de campos. Exemplos com exemplo:true ficam em testes/teste_formas.py e
   o consumidor operacional os rejeita. As formas contrato, guarda, brief,
   teste, ataque, triagem, inspecao e chamada estao adotadas; C2 validou os
-  payloads 3.2. Registros 3.1 continuam legiveis. A adocao do schema nao
+  payloads 3.2. diagnostico, sandbox e paridade estao aprovadas (2026-10-05)
+  e sao adotadas no pacote C6; ate la o validador as recusa. As demais candidatas
+  nao serao adotadas (PLANO-AGENTES-TRILHAS.md, secao 3.3). Registros 3.1 continuam legiveis. A adocao do schema nao
   significa que os eventos dos runtimes foram observados: P0.4 (Claude Code)
   e P0.5 (Cursor) foram observadas; a ativacao depende de G2.
   Baseline, manifesto e estado estao descritos em evidencia/uso.md.
@@ -315,29 +317,33 @@ formas:
 
   - id: diagnostico
     titulo: Diagnóstico
-    estado: candidata
-    uso: "Causa sustentada ou hipótese com próximo experimento."
-    produtor: map
+    estado: aprovada
+    pacote: C6
+    uso: "Registro mínimo do diagnóstico na correção: causa sustentada ou hipótese com próximo experimento, ligada ao critério de reprodução."
+    produtor: [coordenador, map]
     consumidor: [executor, coordenador]
-    campos: [sintoma, causa, base, locator, proximo_passo]
+    validacao: "Na correção ativada, a escrita de config ou implement exige um diagnóstico na tentativa; criterio_reproducao existe no contrato."
+    campos: [sintoma, hipotese_causa, base, evidencia_ref, criterio_reproducao, proximo_passo]
 
   - id: sandbox
     titulo: Ambiente
-    estado: candidata
+    estado: aprovada
+    pacote: C6
     uso: "Pré-condições distintas por operação. Nomes são confirmação adicional."
     produtor: dab
     consumidor: coordenador
-    validacao: "Deploy exige plan válido e compatível. Run de ingestão ou espinha exige coordenação verificada para escopo e rodada. Guardas e autorização anteriores ao efeito."
-    campos: [operacao, cwd, bundle, target, identidade, selecao, destinos_resolvidos, autorizacao_ref, plan_ref, plan_estado_compativel, coordenacao, resultado, log_ref]
+    validacao: "Deploy exige plan válido e compatível. Run de ingestão ou espinha exige coordenação verificada para escopo e rodada. Guardas e autorização anteriores ao efeito. Vinculado à chamada dab observada e ao registro teste do comando. Campo sem observação integrada vale nao_verificado e não aprova critério ambiente obrigatório."
+    campos: [operacao, cwd, bundle, target, perfil, selecao, plan_ref, plan_estado_compativel, autorizacao_ref, identidade, destinos_resolvidos, coordenacao, resultado, teste_ref]
 
   - id: paridade
     titulo: Paridade
-    estado: candidata
+    estado: aprovada
+    pacote: C6
     uso: "Mesmo recorte, insumos identificados, cálculo reproduzível e gap tratado."
     produtor: test
     consumidor: coordenador
-    validacao: "Diferença deriva dos insumos do mesmo recorte. Gap sem explicação comprovada impede aprovação quando paridade é obrigatória."
-    campos: [criterio_id, recorte, insumos, contas, divergencias, resultado]
+    validacao: "Diferença deriva dos insumos do mesmo recorte. Gap sem explicação comprovada impede aprovação quando paridade é obrigatória, mesmo com exit 0. Vinculado ao registro teste do comando de paridade e ao hash do artefato."
+    campos: [criterio_id, recorte, insumos, contas, divergencias, resultado, teste_ref]
 
   - id: resposta
     titulo: Resposta

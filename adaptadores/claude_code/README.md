@@ -4,11 +4,12 @@ Visão geral e tabela: [adaptadores](../README.md).
 
 - Instruções: `CLAUDE.md` importa `@AGENTS.md`. Confira a carga numa sessão nova.
 - Configuração: `.claude/settings.json`, gerada com `py -3 adaptadores/gerenciar.py claude_code --instalar`. Mescla com o que já existe (permissões e outros hooks ficam).
-- `PreToolUse` com matcher `^(Bash|PowerShell)$`. No Windows o hook roda em `powershell` e usa `CLAUDE_PROJECT_DIR` para achar `adaptadores/entrada.py`.
-- O `cwd` do envelope é da sessão e não vale como prova. Prefixe o comando com `Set-Location -LiteralPath '...' -ErrorAction Stop;` (PowerShell) ou `cd -- '...' &&` (Bash).
-- Decisão positiva devolve só contexto. Negação usa `permissionDecision: deny`.
-- Não coleta prova nem retoma fecho.
-- Até D-CC passar pelo gate G2, o `fechar` não comprova `DONE` no Claude Code. Feche a fatia como `BLOCKED`, com motivo e condição de retomada, ou execute-a no Cursor. Um relato de agente não substitui a prova observada.
+- `SessionStart` identifica a sessão pelo `session_id`, igual a `CLAUDE_CODE_SESSION_ID`. No Windows o hook roda em `powershell` e usa `CLAUDE_PROJECT_DIR` para achar `adaptadores/entrada.py`.
+- `PreToolUse` cobre Bash/PowerShell para a guarda e a prova, e Agent para marcar o início de uma chamada. `PostToolUse` coleta sucesso de shell e o retorno de Agent; `PostToolUseFailure` coleta falhas de shell.
+- O `cwd` do envelope é da sessão e não vale como prova. A guarda interpreta somente `Set-Location -LiteralPath '...' -ErrorAction Stop;` (PowerShell) ou `cd -- '...' &&` (Bash). Uma verificação declarada sem esse prefixo é negada com orientação para informar o diretório.
+- `Stop` confere a fatia e bloqueia uma saída sem fecho válido. Quando `stop_hook_active` é `true`, não bloqueia de novo.
+- O adaptador e os testes foram exercitados sobre fixtures com payloads P0.4. O evento P0.4 de Agent usou o tipo `sonda`, fora dos sete papéis, e não foi registrado como chamada.
+- D-CC está implementado sobre fixture e conclui depois de G1/B2; nenhuma observação de uso real foi feita pelo adaptador. Até G2, o `fechar` não comprova `DONE` no Claude Code. Feche a fatia como `BLOCKED`, com motivo e condição de retomada, ou execute-a no Cursor. Um relato de agente não substitui a prova observada.
 - Confira: `/hooks`.
 
 ## Sondagem P0.4 (2026-10-04, refeita em 2026-10-05)

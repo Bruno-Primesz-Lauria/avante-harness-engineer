@@ -129,6 +129,23 @@ class GuardaCwdTestes(unittest.TestCase):
         del corrigido["tool_input"]["workdir"]
         self.assertEqual(avaliar_evento(corrigido, self.politica).decisao, "permitir")
 
+    def test_prefixo_literal_expoe_cwd_em_comando_fora_do_recorte(self):
+        comandos = (
+            f"Set-Location -LiteralPath '{self.local}' -ErrorAction Stop; python -m unittest",
+            f"cd -- '{self.local.as_posix()}' && pytest -q",
+        )
+        for comando in comandos:
+            with self.subTest(comando=comando):
+                resultado = self.avaliar(comando, self.oficial)
+                self.assertEqual(resultado.decisao, "nao_aplica")
+                self.assertEqual(resultado.codigo, "comando_fora_do_recorte")
+                self.assertEqual(Path(resultado.cwd).resolve(), self.local.resolve())
+
+    def test_comando_fora_do_recorte_sem_prefixo_nao_inventa_cwd(self):
+        resultado = self.avaliar("pytest -q", self.local)
+        self.assertEqual(resultado.decisao, "nao_aplica")
+        self.assertIsNone(resultado.cwd)
+
     def test_prefixo_relativo_negado(self):
         self.assertEqual(self.avaliar("Set-Location -LiteralPath '.' -ErrorAction Stop; databricks bundle validate -t sandbox -p teste").decisao, "negar")
 
