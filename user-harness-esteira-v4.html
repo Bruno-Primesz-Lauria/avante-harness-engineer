@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Harness da esteira</title>
 <style>
+
 /* ============================================================
    DB — Color tokens
    Official brand palette (fixed — do not alter).
@@ -130,23 +131,38 @@
   --lh-heading: 1.15; --lh-snug: 1.35; --lh-body: 1.55;
   --ls-tight: -0.02em; --ls-overline: 0.14em;
 }
-/* v4 — aliases sobre os tokens DB */
-:root{
-  --bg:var(--surface-page); --card:var(--surface-card); --ink:var(--text-primary); --muted:var(--text-secondary); --line:var(--border-default);
-  --accent:var(--db-pink); --accent-bg:var(--db-pink-06);
-  --ok:#1f8f62; --ok-bg:var(--db-green-12); --deny:var(--db-red); --deny-bg:var(--db-red-06);
-  --warn:#a36f00; --warn-bg:var(--db-yellow-12); --start:var(--db-dark-blue); --start-ink:var(--db-white);
-  --decision:var(--db-pink); --decision-bg:var(--db-pink-06);
+/* ============================================================
+   Base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; font-family: var(--font-brand); font-size: var(--fs-body); line-height: var(--lh-body);
+  font-weight: var(--fw-regular); color: var(--text-primary); background: var(--surface-page);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility;
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#16143a; --card:#221F52; --ink:#f4f4f8; --muted:#c9c8d2; --line:#4a4780;
-    --accent:#ff4f9f; --accent-bg:#3a1f4f;
-    --ok:var(--db-green); --ok-bg:#163a3a; --deny:#ff6b7a; --deny-bg:#3d1a35;
-    --warn:var(--db-yellow); --warn-bg:#3a3020; --start:var(--db-light-blue); --start-ink:var(--db-dark-blue);
-    --decision:#ff4f9f; --decision-bg:#3a1f4f;
-  }
+h1, h2, h3, h4, h5, h6 { margin: 0; font-family: var(--font-brand); font-weight: var(--fw-bold); line-height: var(--lh-heading); letter-spacing: var(--ls-tight); color: var(--text-primary); }
+p { margin: 0; }
+a { color: var(--text-link); text-decoration: none; transition: color var(--dur-fast) var(--ease-standard); }
+a:hover { text-decoration: underline; }
+code, pre, kbd, samp, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+button { font-family: inherit; }
+:focus-visible { outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm); }
+::selection { background: var(--db-pink); color: #fff; }
+
+:root { color-scheme: light; }
+:root {
+  --bg: var(--surface-page); --surface: var(--surface-card); --surface-2: var(--surface-sunken);
+  --ink: var(--text-primary); --ink-2: var(--text-secondary); --muted: var(--text-muted);
+  --line: var(--border-subtle); --hair: var(--border-subtle);
+  --accent: var(--db-pink); --accent-deep: var(--db-pink); --accent-tint: var(--db-pink-06);
+  --good: var(--status-approved); --warn: var(--status-pending); --critical: var(--status-reproved);
+  --good-tint: var(--status-approved-bg); --warn-tint: var(--status-pending-bg); --critical-tint: var(--status-reproved-bg);
+  --neutral-tint: var(--status-neutral-bg);
+  --mono: var(--font-mono); --sans: var(--font-brand);
 }
+
 /* ============================================================
    Brand bar
    ============================================================ */
@@ -163,111 +179,202 @@
 }
 @media (max-width: 720px) { .rx-tagline { display: none; } }
 .db-overline { font-size: var(--fs-xs); font-weight: var(--fw-bold); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--text-muted); }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--font-brand)}
-code,.mono{font-family:var(--font-mono);font-size:.88em}
-code{background:var(--accent-bg);padding:1px 5px;border-radius:4px}
-header.page{padding:28px 16px 12px;max-width:1000px;margin:0 auto}
-h1{margin:0 0 6px;font-size:2rem;font-weight:var(--fw-black);letter-spacing:var(--ls-tight)}
-header.page p{margin:0;color:var(--muted)}
-nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-nav div{max-width:1000px;margin:0 auto;padding:8px 16px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap}
-nav a{color:var(--ink);text-decoration:none;font-size:.85rem;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
-nav a:hover{border-color:var(--accent);color:var(--accent)}
-main{max-width:1000px;margin:0 auto;padding:0 16px 48px}
-section{margin-top:36px}
-h2{font-size:1.25rem;margin:0 0 4px}
-h2 .n{display:inline-block;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;border-radius:50%;background:var(--accent);color:#fff;font-size:.8rem;margin-right:8px}
-.lead{margin:0 0 14px;color:var(--muted)}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
-.flow{overflow-x:auto;padding:4px 0}
-.flow svg{display:block;margin:0 auto;height:auto}
-.legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:.78rem;color:var(--muted);margin-top:10px}
-.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1.5px solid var(--line);vertical-align:-2px;margin-right:5px}
-.k-start{background:var(--start);border-color:var(--start)!important}
-.k-stop{background:var(--ok-bg);border-color:var(--ok)!important}
-.k-deny{background:var(--deny-bg);border-color:var(--deny)!important}
-.k-decision{background:var(--decision-bg);border-color:var(--decision)!important}
-/* svg */
-.nd rect{fill:var(--card);stroke:var(--line);stroke-width:1.5}
-.nd.start rect{fill:var(--start);stroke:var(--start)}
-.nd.stop rect{fill:var(--ok-bg);stroke:var(--ok)}
-.nd.deny rect{fill:var(--deny-bg);stroke:var(--deny)}
-.nd.decision rect{fill:var(--decision-bg);stroke:var(--decision)}
-.nd text{fill:var(--ink);font-size:12.5px;font-weight:700;text-anchor:middle}
-.nd text.ag{fill:var(--accent);font-size:11px;font-weight:600}
-.nd.start text{fill:var(--start-ink)} .nd.start text.ag{fill:var(--start-ink);opacity:.8}
-.nd.deny text.ag{fill:var(--deny)} .nd.stop text.ag{fill:var(--ok)}
-.eg path{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-linejoin:round}
-.eg.back path{stroke-dasharray:5 4;stroke:var(--accent)}
-.eg.long path{stroke:var(--warn)}
-.eg .lb rect{fill:var(--bg);stroke:var(--line);stroke-width:1}
-.eg .lb text{fill:var(--muted);font-size:10.5px;text-anchor:middle}
-.arrow{fill:var(--muted)}
-/* principio */
-.steps{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:stretch}
-.step{border:1.5px solid var(--line);border-radius:12px;padding:12px;background:var(--card)}
-.step b{display:block;margin-bottom:4px}
-.step small{color:var(--muted)}
-.step.s1{border-color:var(--accent)} .step.s2{border-color:var(--deny)} .step.s3{border-color:var(--ok)}
-.arr{align-self:center;font-size:1.6rem;color:var(--muted)}
-@media (max-width:640px){.steps{grid-template-columns:1fr}.arr{transform:rotate(90deg);text-align:center}}
-/* arquitetura */
-.arch{display:flex;flex-direction:column;gap:6px}
-.layer{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card)}
-.layer h3{margin:0 0 6px;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
-.row{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:5px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font-size:.88rem}
-.chip.a{background:var(--accent-bg);border-color:var(--accent)}
-.chip.o{background:var(--ok-bg);border-color:var(--ok)}
-.chip.d{background:var(--deny-bg);border-color:var(--deny)}
-.chip.w{background:var(--warn-bg);border-color:var(--warn)}
-.down{text-align:center;color:var(--muted);font-size:.8rem;line-height:1.1}
-.arch-grid{display:grid;grid-template-columns:2fr 1fr;gap:12px}
-@media (max-width:700px){.arch-grid{grid-template-columns:1fr}}
-.prod{border:1.5px dashed var(--warn);border-radius:12px;padding:10px 12px;background:var(--warn-bg);align-self:start}
-.prod h3{margin:0 0 6px;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--warn)}
-/* papeis */
-.roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:14px}
-.role{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--card);font-size:.9rem}
-.role b{display:block;color:var(--accent)}
-.role.main{border-color:var(--accent);background:var(--accent-bg)}
-.role em{font-style:normal;font-size:.72rem;color:var(--muted);margin-left:6px}
-.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.tabs button{font:inherit;font-size:.88rem;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);cursor:pointer}
-.tabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-#uso{margin:0 0 4px}
-#papeis{font-size:.85rem;color:var(--muted);margin:0 0 6px}
-/* status */
-.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:12px}
-.status div{border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.84rem;background:var(--card)}
-.status b{display:block;font-family:ui-monospace,Consolas,monospace}
-.status .ok b{color:var(--ok)} .status .no b{color:var(--deny)} .status .dc b{color:var(--warn)}
-.note{margin-top:10px;padding:8px 12px;border-left:4px solid var(--warn);background:var(--warn-bg);font-size:.88rem;border-radius:4px}
-/* arvore */
-.tree{font-size:.88rem}
-.tree div{display:grid;grid-template-columns:minmax(150px,230px) 1fr;gap:10px;padding:3px 0;border-bottom:1px dashed var(--line)}
-.tree div:last-child{border:0}
-.tree .root{font-weight:700}
-.tree .sub{padding-left:14px}
-@media (max-width:520px){.tree div{grid-template-columns:1fr;gap:0}}
-/* tabela */
-table{width:100%;border-collapse:collapse;font-size:.88rem}
-th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-td.m{text-align:center;width:84px;font-size:1.05rem}
-.tblwrap{overflow-x:auto}
-.road{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;margin-top:14px}
-.gate{border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--card);min-width:120px;flex:1}
-.gate b{display:block}
-.gate small{color:var(--muted)}
-.gate.cur{border-color:var(--warn);background:var(--warn-bg)}
-.road .arr{font-size:1.2rem;transform:none}
-footer{max-width:1000px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:.82rem}
-</style>
-</head>
-<body>
+
+/* ============================================================
+   Páginas (abas do documento) — padrão do Raio-X
+   ============================================================ */
+.tabs {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--surface-page) 94%, transparent);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.tabs-inner {
+  max-width: var(--container-max); margin: 0 auto; padding: 0 clamp(16px, 3vw, 40px);
+  display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
+}
+.tabs-inner::-webkit-scrollbar { display: none; }
+.tabs button {
+  appearance: none; background: transparent; border: 0; border-bottom: 2.5px solid transparent; margin-bottom: -1px;
+  padding: 15px 16px 12px; font: var(--fw-semibold) var(--fs-sm) var(--font-brand); color: var(--text-muted);
+  cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 9px;
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+.tabs button .n {
+  font-size: var(--fs-2xs); font-weight: var(--fw-bold); width: 19px; height: 19px; border-radius: var(--radius-full);
+  display: inline-grid; place-items: center; background: var(--db-grey-12); color: var(--text-muted); line-height: 1;
+}
+.tabs button:hover { color: var(--text-primary); }
+.tabs button[aria-selected="true"] { color: var(--db-dark-blue); border-bottom-color: var(--db-pink); font-weight: var(--fw-bold); }
+.tabs button[aria-selected="true"] .n { background: var(--db-pink); color: #fff; }
+.tabs button:focus-visible { box-shadow: var(--ring); border-radius: var(--radius-sm); }
+.tab-panel[hidden] { display: none; }
+
+main { max-width: var(--container-max); margin: 0 auto; padding: 8px clamp(16px, 3vw, 40px) 96px; }
+
+/* ---- cabeçalho de página ---- */
+.eyebrow { font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--text-muted); font-weight: var(--fw-bold); margin: 0 0 6px; }
+h1 { font-size: clamp(28px, 4vw, var(--fs-h2)); line-height: var(--lh-heading); margin: 0 0 12px; font-weight: var(--fw-black); letter-spacing: var(--ls-tight); text-wrap: balance; }
+.lede { color: var(--ink-2); max-width: 78ch; margin: 0 0 8px; font-size: 16.5px; }
+header.page, .page-head { padding: 30px 0 6px; }
+.page-title { font-size: clamp(24px, 3vw, 30px); font-weight: var(--fw-black); letter-spacing: var(--ls-tight); margin: 0 0 6px; text-wrap: balance; }
+.subnav { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
+.subnav a {
+  font-size: 12.5px; font-weight: 600; color: var(--ink-2); border: 1px solid var(--border-subtle);
+  background: var(--surface-card); border-radius: var(--radius-pill); padding: 4px 12px;
+}
+.subnav a:hover { color: var(--accent-deep); border-color: var(--accent); text-decoration: none; }
+
+section { margin: 44px 0; scroll-margin-top: calc(var(--tabs-h) + 16px); }
+h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 4px; text-wrap: balance; }
+.h2-eyebrow { font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--db-pink); font-weight: var(--fw-bold); margin: 0 0 4px; }
+.section-note { color: var(--ink-2); max-width: 74ch; margin: 6px 0 18px; font-size: 14.5px; }
+h3 { font-size: 15.5px; font-weight: 700; margin: 26px 0 8px; }
+
+/* ---- tiles (KPIs clicáveis) ---- */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 22px; }
+.tile {
+  display: block; color: inherit; text-decoration: none;
+  background: var(--surface); border: 1px solid var(--hair); border-radius: var(--radius-lg); padding: 16px 18px 14px; box-shadow: var(--shadow-xs);
+  transition: box-shadow var(--dur-normal) var(--ease-standard), transform var(--dur-normal) var(--ease-standard), border-color var(--dur-fast);
+}
+a.tile:hover { text-decoration: none; border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.tile .v { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+.tile .k { font-size: 12.5px; color: var(--muted); margin-top: 5px; line-height: 1.35; }
+.tile .go { display: block; margin-top: 10px; font-size: var(--fs-2xs); font-weight: 700; letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--db-pink); }
+
+/* ---- tabelas ---- */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-card); box-shadow: var(--shadow-sm); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 640px; }
+#aceite-trilha table { min-width: 920px; table-layout: fixed; }
+#aceite-trilha th:nth-child(1), #aceite-trilha td:nth-child(1) { width: 12%; min-width: 128px; white-space: nowrap; }
+#aceite-trilha th:nth-child(2), #aceite-trilha td:nth-child(2) { width: 30%; }
+#aceite-trilha th:nth-child(3), #aceite-trilha td:nth-child(3) { width: 30%; }
+#aceite-trilha th:nth-child(4), #aceite-trilha td:nth-child(4) { width: 28%; min-width: 280px; }
+th {
+  text-align: left; font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase;
+  color: var(--text-muted); font-weight: var(--fw-bold); padding: 12px 14px 9px; border-bottom: 1px solid var(--line); background: var(--surface-sunken);
+}
+td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.5; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--accent-tint); }
+table.kv td:first-child { font-weight: 700; color: var(--ink); white-space: nowrap; }
+table.kv td.mono:first-child { font-weight: 500; }
+.duo .tbl-wrap table { min-width: 0; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: var(--fs-2xs); font-weight: var(--fw-bold); border-radius: var(--radius-pill); padding: 3px 10px;
+}
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: var(--radius-full); background: currentColor; flex: none; }
+.chip.ok { background: var(--good-tint); color: var(--status-approved); }
+.chip.info { background: var(--status-info-bg); color: var(--db-dark-blue); }
+.chip.warn { background: var(--warn-tint); color: var(--ink); }
+.chip.decisao { background: var(--accent-tint); color: var(--accent-deep); }
+.chip.neutral { background: var(--neutral-tint); color: var(--ink-2); }
+.chip.bad { background: var(--status-reproved-bg); color: var(--status-reproved); }
+
+.callout {
+  background: var(--status-info-bg); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); border-top: 3px solid var(--status-info);
+  padding: 14px 18px; font-size: var(--fs-sm); margin: 18px 0; box-shadow: var(--shadow-xs); line-height: 1.55;
+}
+.callout.critical { background: var(--status-reproved-bg); border-top-color: var(--status-reproved); }
+.callout.warn { background: var(--warn-tint); border-top-color: var(--status-pending); }
+
+.panel { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px 22px; }
+
+/* ---- pílulas (tipo de pedido / camada) ---- */
+.pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 14px; }
+.pills button {
+  appearance: none; background: var(--surface); border: 1px solid var(--hair);
+  border-radius: var(--radius-pill); padding: 7px 14px; font: 650 13px var(--sans);
+  color: var(--ink-2); cursor: pointer; transition: border-color var(--dur-fast), color var(--dur-fast), background var(--dur-fast);
+}
+.pills button:hover { border-color: var(--border-strong); color: var(--ink); }
+.pills button[aria-pressed="true"] { background: var(--db-dark-blue); border-color: var(--db-dark-blue); color: #fff; }
+.pills button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* ============================================================
+   Fluxogramas
+   ============================================================ */
+.flow-board { position: relative; background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-top: 12px; }
+.flow-legend { display: flex; flex-wrap: wrap; gap: 10px 22px; padding: 11px 18px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--ink-2); font-weight: 600; }
+.flow-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.flow-legend svg { width: 36px; height: 20px; flex: none; }
+.flow-legend .fit {
+  margin-left: auto; appearance: none; border: 1px solid var(--border-subtle); background: var(--surface-card);
+  border-radius: var(--radius-pill); padding: 4px 12px; font: 600 11.5px var(--sans); color: var(--ink-2); cursor: pointer;
+}
+.flow-legend .fit:hover { border-color: var(--accent); color: var(--accent-deep); }
+.flow-map { margin: 0; padding: 14px 12px 6px; overflow-x: auto; }
+.flow-map svg { display: block; height: auto; max-width: none; font-family: var(--font-brand); }
+.flow-map.fit svg { width: 100% !important; min-width: 0 !important; max-width: 100%; height: auto !important; }
+figcaption { font-size: 13px; color: var(--muted); margin: 6px 8px 12px; max-width: 80ch; }
+
+.dag-node { cursor: pointer; transition: opacity var(--dur-fast) var(--ease-standard); outline: none; }
+.dag-node.dim { opacity: 0.28; }
+.dag-node .hit { transition: stroke var(--dur-fast), fill var(--dur-fast), stroke-width var(--dur-fast); }
+.dag-node:hover .hit, .dag-node:focus-visible .hit { stroke: var(--db-pink); }
+.dag-node[aria-pressed="true"] .hit { stroke: var(--db-pink); stroke-width: 2.4; }
+.dag-node[aria-pressed="true"][data-kind="action"] .hit { fill: var(--db-pink-06); }
+.dag-node text { pointer-events: none; }
+.dag-edge { transition: opacity var(--dur-fast) var(--ease-standard); }
+.dag-edge.dim { opacity: 0.16; }
+.dag-edge .wire { fill: none; stroke: var(--db-grey-50); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke var(--dur-fast), stroke-width var(--dur-fast); }
+.dag-edge.back .wire { stroke-dasharray: 6 5; }
+.dag-edge.hi .wire { stroke: var(--db-pink); stroke-width: 2.2; }
+.dag-edge .lbl rect { fill: var(--surface-card); stroke: var(--border-subtle); stroke-width: 1; }
+.dag-edge .lbl.pos rect { fill: var(--db-green-12); stroke: color-mix(in srgb, var(--db-green) 55%, transparent); }
+.dag-edge .lbl.neg rect { fill: var(--db-red-12); stroke: color-mix(in srgb, var(--db-red) 40%, transparent); }
+.dag-edge .lbl text { fill: var(--db-dark-blue); font-size: 11px; font-weight: 600; }
+.dag-edge.hi .lbl rect { stroke: var(--db-pink); }
+
+/* ---- pop-up de detalhe do nó ---- */
+.flow-pop {
+  position: fixed; z-index: 60; width: min(360px, calc(100vw - 24px));
+  background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); padding: 16px 18px 16px; font-size: 13px; line-height: 1.5;
+}
+.flow-pop[hidden] { display: none; }
+.flow-pop .pop-close {
+  position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle); background: var(--surface-card); color: var(--ink-2); cursor: pointer;
+  font-size: 16px; line-height: 1; display: grid; place-items: center;
+}
+.flow-pop .pop-close:hover { background: var(--surface-hover); color: var(--ink); }
+.flow-pop h4 { font-size: 16px; margin: 8px 28px 1px 0; letter-spacing: -0.01em; }
+.flow-pop .who { color: var(--muted); font-size: 12.5px; }
+.flow-pop dl { margin: 12px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; }
+.flow-pop dt { font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--muted); font-weight: 700; padding-top: 3px; }
+.flow-pop dd { margin: 0; }
+.flow-pop dd ul { list-style: none; margin: 0; padding: 0; }
+.flow-pop dd li { padding: 2px 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.flow-pop .when { font-size: 11px; font-weight: 600; border-radius: var(--radius-pill); padding: 1px 8px; background: var(--neutral-tint); color: var(--ink-2); white-space: nowrap; }
+.flow-pop .when.pos { background: var(--db-green-12); }
+.flow-pop .when.neg { background: var(--db-red-12); }
+.flow-pop .when.back { border: 1px dashed var(--border-strong); background: transparent; }
+.flow-pop .pop-hint { margin-top: 12px; font-size: 11.5px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---- componentes próprios do v4, só sobre tokens DB ---- */
+.duo .tbl-wrap table { min-width: 0; }
+td.m, th.m { text-align: center; }
+.tile.cur { background: var(--warn-tint); border-color: var(--status-pending); }
+.tile .v.sm { font-size: 22px; }
+.tiles.fixed { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.arch-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 800px) { .arch-grid { grid-template-columns: 1fr; } }
+.layer { padding: 4px 0; }
+.layer .lab { font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--text-muted); font-weight: var(--fw-bold); margin: 0 0 8px; }
+.layer .lab code { text-transform: none; letter-spacing: 0; }
+.layer .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.layer .chip { white-space: normal; }
+.down { text-align: center; color: var(--text-muted); font-size: 12px; margin: 4px 0; }
+.arch-grid .callout { margin: 0; }
+.note-uso { margin: 0 0 6px; }
+.note-papeis { font-size: 13px; color: var(--ink-2); margin: 0 0 4px; }
+
+</style></head><body>
 <header class="rx-brand">
   <div class="rx-brand-inner">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 395.5 156" fill="#FFFFFF" role="img" aria-label="db" width="72" height="28">
@@ -283,291 +390,536 @@ footer{max-width:1000px;margin:0 auto;padding:0 16px 40px;color:var(--muted);fon
     <span class="rx-tagline">design and build the future</span>
   </div>
 </header>
-<header class="page">
-<h1>Harness da esteira</h1>
-<p>Guia visual: o princípio, o que o harness faz e como ele se organiza. Fluxos conforme <code>agentes/roteamento.yaml</code>. Versão 4, enxuta.</p>
-</header>
-<nav><div>
-<a href="#principio">1 Princípio</a><a href="#arquitetura">2 Arquitetura</a><a href="#caminho">3 Simples × estruturado</a><a href="#ciclo">4 Ciclo da fatia</a><a href="#trilhas">5 Trilhas e agentes</a><a href="#guardas">6 Guardas</a><a href="#pastas">7 Pastas</a><a href="#estado">8 Estado</a>
-</div></nav>
+<nav class="tabs" aria-label="Seções do guia"><div class="tabs-inner" id="tabs"><button type="button" data-target="principio" aria-selected="true"><span class="n">1</span>Princípio</button><button type="button" data-target="arquitetura" aria-selected="false"><span class="n">2</span>Arquitetura</button><button type="button" data-target="caminho" aria-selected="false"><span class="n">3</span>Simples × estruturado</button><button type="button" data-target="ciclo" aria-selected="false"><span class="n">4</span>Ciclo da fatia</button><button type="button" data-target="trilhas" aria-selected="false"><span class="n">5</span>Trilhas e agentes</button><button type="button" data-target="guardas" aria-selected="false"><span class="n">6</span>Guardas</button><button type="button" data-target="pastas" aria-selected="false"><span class="n">7</span>Pastas</button><button type="button" data-target="estado" aria-selected="false"><span class="n">8</span>Estado</button></div></nav>
 <main>
+<header class="page">
+<p class="eyebrow">Arquitetura de agente · saneamento_migracao</p>
+<h1>Autonomia com prova.</h1>
+<p class="lede">Guia visual: o princípio, o que o harness faz e como ele se organiza. Fluxos conforme <code>agentes/roteamento.yaml</code>. Versão 4, enxuta.</p>
+</header>
 
 <section id="principio">
-<h2><span class="n">1</span>Princípio: autonomia com prova</h2>
-<p class="lead">O agente trabalha sozinho. O harness não confia em relato: nega o efeito perigoso antes que aconteça e só aceita “pronto” com prova atual.</p>
-<div class="steps">
-<div class="step s1"><b>O agente age</b><small>Edita, roda verificações, segue a trilha. Faz a menor mudança que resolve.</small></div>
-<div class="arr" aria-hidden="true">→</div>
-<div class="step s2"><b>Guardas negam antes</b><small>Hooks conferem o efeito real da chamada (cwd, target, plano) antes de ela executar.</small></div>
-<div class="arr" aria-hidden="true">→</div>
-<div class="step s3"><b>DONE só com prova</b><small>O fecho recusa critério sem prova atual. Editou depois? A prova perde a validade.</small></div>
+<h2>Princípio: autonomia com prova</h2>
+<p class="section-note">O agente trabalha sozinho. O harness não confia em relato: nega o efeito perigoso antes que aconteça e só aceita “pronto” com prova atual.</p>
+<div class="tiles fixed">
+<div class="tile"><p class="h2-eyebrow">1 · O agente age</p><div class="k">Edita, roda verificações, segue a trilha. Faz a menor mudança que resolve.</div></div>
+<div class="tile"><p class="h2-eyebrow">2 · Guardas negam antes</p><div class="k">Hooks conferem o efeito real da chamada (cwd, target, plano) antes de ela executar.</div></div>
+<div class="tile"><p class="h2-eyebrow">3 · DONE só com prova</p><div class="k">O fecho recusa critério sem prova atual. Editou depois? A prova perde a validade.</div></div>
 </div>
 </section>
 
 <section id="arquitetura">
-<h2><span class="n">2</span>Arquitetura</h2>
-<p class="lead">Cada runtime traduz seu evento para a mesma guarda. A política mora no núcleo; os registros ficam fora do produto.</p>
+<h2>Arquitetura</h2>
+<p class="section-note">Cada runtime traduz seu evento para a mesma guarda. A política mora no núcleo; os registros ficam fora do produto.</p>
 <div class="arch-grid">
-<div class="arch">
-<div class="layer"><h3>Runtime (onde o agente roda)</h3><div class="row"><span class="chip a">Cursor (principal)</span><span class="chip a">Claude Code</span><span class="chip a">Codex</span><span class="chip a">OpenCode</span></div></div>
+<div class="panel">
+<div class="layer"><p class="lab">Runtime (onde o agente roda)</p><div class="row"><span class="chip info">Cursor (principal)</span><span class="chip info">Claude Code</span><span class="chip info">Codex</span><span class="chip info">OpenCode</span></div></div>
 <div class="down">▼ hook antes da chamada de shell</div>
-<div class="layer"><h3>Adaptadores · <code>adaptadores/</code></h3><div class="row"><span class="chip">traduz o evento do runtime</span><span class="chip">mesma guarda para todos</span><span class="chip w">prova coletada só no Cursor</span></div></div>
+<div class="layer"><p class="lab">Adaptadores · <code>adaptadores/</code></p><div class="row"><span class="chip neutral">traduz o evento do runtime</span><span class="chip neutral">mesma guarda para todos</span><span class="chip warn">prova coletada só no Cursor</span></div></div>
 <div class="down">▼ consulta</div>
-<div class="layer"><h3>Núcleo · <code>implementacao/</code> + <code>configuracao/politica.json</code></h3><div class="row"><span class="chip d">guardas: cwd, efeito, plan→deploy</span><span class="chip o">provas e fecho</span><span class="chip">política de autorizações</span></div></div>
+<div class="layer"><p class="lab">Núcleo · <code>implementacao/</code> + <code>configuracao/politica.json</code></p><div class="row"><span class="chip bad">guardas: cwd, efeito, plan→deploy</span><span class="chip ok">provas e fecho</span><span class="chip neutral">política de autorizações</span></div></div>
 <div class="down">▼ grava</div>
-<div class="layer"><h3>Registros · <code>.execucoes/</code></h3><div class="row"><span class="chip">provas</span><span class="chip">sessões</span><span class="chip">diagnósticos</span><span class="chip">fora do Git</span></div></div>
+<div class="layer"><p class="lab">Registros · <code>.execucoes/</code></p><div class="row"><span class="chip neutral">provas</span><span class="chip neutral">sessões</span><span class="chip neutral">diagnósticos</span><span class="chip neutral">fora do Git</span></div></div>
 </div>
-<div class="prod"><h3>Produto, separado</h3><b><code>prj-avante-analytics-adb/</code></b><p style="margin:6px 0 0;font-size:.88rem">Git próprio e <code>AGENTS.md</code> próprio, que prevalece ali. É onde o agente altera código; o bundle <code>saneamento_migracao</code> fica aqui. O harness nunca grava registros nele.</p></div>
+<div class="callout warn"><b>Produto, separado</b><br><code>prj-avante-analytics-adb/</code><br>Git próprio e <code>AGENTS.md</code> próprio, que prevalece ali. É onde o agente altera código; o bundle <code>saneamento_migracao</code> fica aqui. O harness nunca grava registros nele.</div>
 </div>
 </section>
 
 <section id="caminho">
-<h2><span class="n">3</span>Caminho simples × estruturado</h2>
-<p class="lead">Proporcional ao pedido. Só o caminho estruturado exige contrato e prova.</p>
-<div class="panel"><div class="flow" id="g-caminho"></div>
-<div class="legend"><span><i class="k-decision"></i>decisão</span><span><i class="k-start"></i>início</span><span><i class="k-stop"></i>fim</span></div></div>
+<h2>Caminho simples × estruturado</h2>
+<p class="section-note">Proporcional ao pedido. Só o caminho estruturado exige contrato e prova.</p>
+<div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop"></div><figure class="flow-map"><div id="g-caminho"></div><figcaption>Selecione um nó para ver entradas e saídas.</figcaption></figure></div>
 </section>
 
 <section id="ciclo">
-<h2><span class="n">4</span>Ciclo de vida da fatia</h2>
-<p class="lead">A fatia nasce com um contrato. As verificações rodam pelo chat e o hook registra a prova. Editar invalida; fechar confere.</p>
-<div class="panel"><div class="flow" id="g-ciclo"></div>
-<div class="status">
-<div class="ok"><b>DONE</b>critérios obrigatórios provados</div>
-<div class="ok"><b>REVIEW</b>aceite técnico fechou; falta revisão humana</div>
-<div class="dc"><b>DECIDE</b>falta decisão ou autorização humana</div>
-<div class="no"><b>BLOCKED</b>acesso, capacidade ou estado externo impede</div>
-<div class="no"><b>FAILED</b>a verificação rodou e reprovou</div>
-</div>
-<div class="note">Limite atual: no Claude Code o adaptador ainda não coleta prova de shell, então <code>fechar</code> não comprova DONE lá. Use <code>BLOCKED</code> com a condição de retomada, ou execute no Cursor.</div></div>
+<h2>Ciclo de vida da fatia</h2>
+<p class="section-note">A fatia nasce com um contrato. As verificações rodam pelo chat e o hook registra a prova. Editar invalida; fechar confere.</p>
+<div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny,back"></div><figure class="flow-map"><div id="g-ciclo"></div><figcaption>Selecione um nó para ver entradas e saídas.</figcaption></figure></div>
+<div class="duo" style="margin-top:16px"><div class="tbl-wrap"><table>
+<thead><tr><th scope="col">Status</th><th scope="col">Quando</th></tr></thead><tbody>
+<tr><td><span class="chip ok">DONE</span></td><td>critérios obrigatórios provados</td></tr>
+<tr><td><span class="chip info">REVIEW</span></td><td>aceite técnico fechou; falta revisão humana</td></tr>
+<tr><td><span class="chip decisao">DECIDE</span></td><td>falta decisão ou autorização humana</td></tr>
+<tr><td><span class="chip warn">BLOCKED</span></td><td>acesso, capacidade ou estado externo impede</td></tr>
+<tr><td><span class="chip bad">FAILED</span></td><td>a verificação rodou e reprovou</td></tr>
+</tbody></table></div></div>
+<div class="callout warn">Limite atual: no Claude Code o adaptador ainda não coleta prova de shell, então <code>fechar</code> não comprova DONE lá. Use <code>BLOCKED</code> com a condição de retomada, ou execute no Cursor.</div>
 </section>
 
 <section id="trilhas">
-<h2><span class="n">5</span>Trilhas e agentes</h2>
-<p class="lead">O coordenador escolhe a trilha e delega a sete papéis. Quem escreve não verifica nem revisa. Escolha uma trilha para ver o fluxo.</p>
-<div class="roles">
-<div class="role main"><b>coordenador<em>principal</em></b>Escolhe trilha e recorte, define o aceite, delega, trata retornos e emite o fecho único.</div>
-<div class="role"><b>map<em>opcional</em></b>Investiga fontes e dependências sem editar o produto.</div>
-<div class="role"><b>config</b>Altera só a superfície YAML atribuída (negócio, ingestão, recurso).</div>
-<div class="role"><b>implement</b>Altera só notebook, Python ou SQL atribuídos. Não muda o aceite.</div>
-<div class="role"><b>test</b>Executa o esperado contratado. Não corrige produto.</div>
-<div class="role"><b>refute</b>Revisa de forma independente e somente leitura, sem o racional do autor.</div>
-<div class="role"><b>docs</b>Escreve ou destila só os documentos atribuídos, com fonte.</div>
-<div class="role"><b>dab</b>Executa só operação de ambiente contratada e autorizada; registra IDs e logs.</div>
-</div>
-<div class="panel">
-<div class="tabs" id="tabs" role="group" aria-label="Trilha"></div>
-<p id="uso"></p><p id="papeis"></p>
-<div class="flow" id="g-trilha"></div>
-<div class="legend"><span><i class="k-decision"></i>decisão</span><span><i class="k-start"></i>início</span><span><i class="k-stop"></i>fecho</span><span><i class="k-deny"></i>fecho sem DONE</span><span style="color:var(--accent)">tracejado: volta ao passo anterior</span></div>
-</div>
-<div class="note">As definições dos papéis estão em <code>agentes/</code>. As versões nativas (<code>.claude/agents/</code>, <code>.cursor/agents/</code>) são planejadas e ainda não foram geradas. Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
+<h2>Trilhas e agentes</h2>
+<p class="section-note">O coordenador escolhe a trilha e delega a sete papéis. Quem escreve não verifica nem revisa. Escolha uma trilha para ver o fluxo.</p>
+<div class="duo"><div class="tbl-wrap"><table>
+<thead><tr><th scope="col">Papel</th><th scope="col">O que faz</th></tr></thead><tbody>
+<tr><td>coordenador <span class="chip decisao">principal</span></td><td>Escolhe trilha e recorte, define o aceite, delega, trata retornos e emite o fecho único.</td></tr>
+<tr><td><code>map</code> <span class="chip neutral">opcional</span></td><td>Investiga fontes e dependências sem editar o produto.</td></tr>
+<tr><td><code>config</code></td><td>Altera só a superfície YAML atribuída (negócio, ingestão, recurso).</td></tr>
+<tr><td><code>implement</code></td><td>Altera só notebook, Python ou SQL atribuídos. Não muda o aceite.</td></tr>
+<tr><td><code>test</code></td><td>Executa o esperado contratado. Não corrige produto.</td></tr>
+<tr><td><code>refute</code></td><td>Revisa de forma independente e somente leitura, sem o racional do autor.</td></tr>
+<tr><td><code>docs</code></td><td>Escreve ou destila só os documentos atribuídos, com fonte.</td></tr>
+<tr><td><code>dab</code></td><td>Executa só operação de ambiente contratada e autorizada; registra IDs e logs.</td></tr>
+</tbody></table></div></div>
+<div class="pills" id="tabs-trilha" role="group" aria-label="Trilha"></div>
+<p class="note-uso" id="uso"></p><p class="note-papeis" id="papeis"></p>
+<div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny,back"></div><figure class="flow-map"><div id="g-trilha"></div><figcaption>Selecione um nó para ver entradas e saídas. Fecho sem DONE: DECIDE, BLOCKED ou FAILED.</figcaption></figure></div>
+<div class="callout">As definições dos papéis estão em <code>agentes/</code>. As versões nativas (<code>.claude/agents/</code>, <code>.cursor/agents/</code>) são planejadas e ainda não foram geradas. Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
 </section>
 
 <section id="guardas">
-<h2><span class="n">6</span>Guardas Databricks</h2>
-<p class="lead">Os degraus validate → plan → deploy valem só em <code>sandbox</code>, no bundle local. A guarda confere o efeito real e nega antes de executar; ela não concede autorização.</p>
-<div class="panel"><div class="flow" id="g-guarda"></div>
-<div class="legend"><span><i class="k-deny"></i>negado</span><span><i class="k-decision"></i>decisão</span><span><i class="k-stop"></i>efeito permitido</span></div>
-<div class="status">
-<div class="no"><b>Negado</b>pipe, <code>;</code>, <code>&amp;&amp;</code>, <code>$</code> e wrapper no comando</div>
-<div class="no"><b>Negado</b>cwd fora do bundle, perfil ausente</div>
-<div class="no"><b>Negado</b><code>run</code>, <code>destroy</code>, <code>sync</code></div>
-<div class="no"><b>Negado</b>deploy sem plan vigente ou sem <code>--select</code></div>
-<div class="no"><b>Negado</b>SQL ad hoc com escrita (só lê)</div>
-<div class="dc"><b>Autorização explícita</b><code>run</code> e qualquer target diferente de sandbox, <code>dev</code> inclusive</div>
-</div></div>
+<h2>Guardas Databricks</h2>
+<p class="section-note">Os degraus validate → plan → deploy valem só em <code>sandbox</code>, no bundle local. A guarda confere o efeito real e nega antes de executar; ela não concede autorização.</p>
+<div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny"></div><figure class="flow-map"><div id="g-guarda"></div><figcaption>Selecione um nó para ver entradas e saídas.</figcaption></figure></div>
+<div class="duo" style="margin-top:16px"><div class="tbl-wrap"><table>
+<thead><tr><th scope="col">Resultado</th><th scope="col">Caso</th></tr></thead><tbody>
+<tr><td><span class="chip bad">Negado</span></td><td>pipe, <code>;</code>, <code>&amp;&amp;</code>, <code>$</code> e wrapper no comando</td></tr>
+<tr><td><span class="chip bad">Negado</span></td><td>cwd fora do bundle, perfil ausente</td></tr>
+<tr><td><span class="chip bad">Negado</span></td><td><code>run</code>, <code>destroy</code>, <code>sync</code></td></tr>
+<tr><td><span class="chip bad">Negado</span></td><td>deploy sem plan vigente ou sem <code>--select</code></td></tr>
+<tr><td><span class="chip bad">Negado</span></td><td>SQL ad hoc com escrita (só lê)</td></tr>
+<tr><td><span class="chip decisao">Autorização explícita</span></td><td><code>run</code> e qualquer target diferente de sandbox, <code>dev</code> inclusive</td></tr>
+</tbody></table></div></div>
 </section>
 
 <section id="pastas">
-<h2><span class="n">7</span>Estrutura de pastas</h2>
-<p class="lead">Raiz: <code>avante-harness-engineer/</code>. Regras curtas na entrada; o resto é lido sob demanda.</p>
-<div class="panel tree">
-<div class="root"><span>avante-harness-engineer/</span><span>raiz do harness</span></div>
-<div class="sub"><span>AGENTS.md, CLAUDE.md</span><span>regras para todo pedido (CLAUDE.md aponta para AGENTS.md)</span></div>
-<div class="sub"><span>nucleo/</span><span>política (modus operandi) e contexto do projeto Avante</span></div>
-<div class="sub"><span>trilhas/</span><span>as oito trilhas: passos, aceite e fecho</span></div>
-<div class="sub"><span>agentes/</span><span>roteamento.yaml (fonte única dos fluxos) e os sete papéis</span></div>
-<div class="sub"><span>contratos/</span><span>campos do contrato da fatia</span></div>
-<div class="sub"><span>guardas/</span><span>o que o código nega e a conduta sem código</span></div>
-<div class="sub"><span>evidencia/</span><span>prova, validade, status de fecho, layout dos registros</span></div>
-<div class="sub"><span>formas/</span><span>schema dos registros</span></div>
-<div class="sub"><span>adaptadores/</span><span>Cursor, Claude Code, Codex e OpenCode</span></div>
-<div class="sub"><span>implementacao/</span><span>código das guardas e das provas</span></div>
-<div class="sub"><span>configuracao/</span><span>politica.json: autorizações e agentes obrigatórios</span></div>
-<div class="sub"><span>testes/</span><span>suíte do harness</span></div>
-<div class="sub"><span>avaliacao/, acervo/</span><span>cenários e métricas; peças do desenho e seu estado</span></div>
-<div class="sub"><span>.agents/skills/</span><span>skills Databricks</span></div>
-<div class="sub"><span>.execucoes/</span><span>registros locais, fora do Git</span></div>
-<div class="sub"><span>prj-avante-analytics-adb/</span><span>produto, com Git e AGENTS.md próprios</span></div>
-</div>
+<h2>Estrutura de pastas</h2>
+<p class="section-note">Raiz: <code>avante-harness-engineer/</code>. Regras curtas na entrada; o resto é lido sob demanda.</p>
+<div class="duo"><div class="tbl-wrap"><table class="kv">
+<thead><tr><th scope="col">Pasta</th><th scope="col">Conteúdo</th></tr></thead><tbody>
+<tr><td class="mono">avante-harness-engineer/</td><td>raiz do harness</td></tr>
+<tr><td class="mono">AGENTS.md, CLAUDE.md</td><td>regras para todo pedido (CLAUDE.md aponta para AGENTS.md)</td></tr>
+<tr><td class="mono">nucleo/</td><td>política (modus operandi) e contexto do projeto Avante</td></tr>
+<tr><td class="mono">trilhas/</td><td>as oito trilhas: passos, aceite e fecho</td></tr>
+<tr><td class="mono">agentes/</td><td>roteamento.yaml (fonte única dos fluxos) e os sete papéis</td></tr>
+<tr><td class="mono">contratos/</td><td>campos do contrato da fatia</td></tr>
+<tr><td class="mono">guardas/</td><td>o que o código nega e a conduta sem código</td></tr>
+<tr><td class="mono">evidencia/</td><td>prova, validade, status de fecho, layout dos registros</td></tr>
+<tr><td class="mono">formas/</td><td>schema dos registros</td></tr>
+<tr><td class="mono">adaptadores/</td><td>Cursor, Claude Code, Codex e OpenCode</td></tr>
+<tr><td class="mono">implementacao/</td><td>código das guardas e das provas</td></tr>
+<tr><td class="mono">configuracao/</td><td>politica.json: autorizações e agentes obrigatórios</td></tr>
+<tr><td class="mono">testes/</td><td>suíte do harness</td></tr>
+<tr><td class="mono">avaliacao/, acervo/</td><td>cenários e métricas; peças do desenho e seu estado</td></tr>
+<tr><td class="mono">.agents/skills/</td><td>skills Databricks</td></tr>
+<tr><td class="mono">.execucoes/</td><td>registros locais, fora do Git</td></tr>
+<tr><td class="mono">prj-avante-analytics-adb/</td><td>produto, com Git e AGENTS.md próprios</td></tr>
+</tbody></table></div></div>
 </section>
 
 <section id="estado">
-<h2><span class="n">8</span>Estado</h2>
-<p class="lead">Só o que existe no repositório ou no plano. “Testado” é cobertura da suíte. Verificado, isto é, observado em sessão real de um runtime, ainda não há nada.</p>
-<div class="panel tblwrap">
-<table>
-<thead><tr><th>Capacidade</th><th>Proposto</th><th>Implementado</th><th>Testado</th></tr></thead>
-<tbody>
-<tr><td>Guarda de shell Databricks e SQL só leitura</td><td class="m">●</td><td class="m">●</td><td class="m">●</td></tr>
-<tr><td>Prova e fecho (<code>prova.py</code>); coleta só no Cursor</td><td class="m">●</td><td class="m">●</td><td class="m">●</td></tr>
-<tr><td>Roteamento e definições neutras dos agentes</td><td class="m">●</td><td class="m">●</td><td class="m">●</td></tr>
-<tr><td>Coleta de prova no Claude Code (sobre fixture)</td><td class="m">●</td><td class="m">◐</td><td class="m">—</td></tr>
-<tr><td>Agentes nativos por runtime e observação (G2)</td><td class="m">●</td><td class="m">—</td><td class="m">—</td></tr>
-<tr><td>Guardas de run, identidade, dados compartilhados, fronteira do produto</td><td class="m">●</td><td class="m">—</td><td class="m">—</td></tr>
-<tr><td>Skills do projeto; <code>docs-distill</code></td><td class="m">●</td><td class="m">—</td><td class="m">—</td></tr>
-</tbody></table>
-<div class="legend"><span>● sim</span><span>◐ parcial</span><span>— ainda não</span></div>
-</div>
-<h3 style="margin:18px 0 0;font-size:1rem">Roteiro até o aceite final</h3>
-<div class="road">
-<div class="gate cur"><b>G1</b><small>suíte, consistência e geração estáveis; decisão humana pendente</small></div><div class="arr">→</div>
-<div class="gate"><b>G2</b><small>agentes observados em sessão nova, por runtime</small></div><div class="arr">→</div>
-<div class="gate"><b>E0 / E1</b><small>ativação gradual da primeira onda de trilhas</small></div><div class="arr">→</div>
-<div class="gate"><b>E2</b><small>ativação da segunda onda, trilha a trilha</small></div><div class="arr">→</div>
-<div class="gate"><b>G4</b><small>medição e aceite final</small></div>
+<h2>Estado</h2>
+<p class="section-note">Só o que existe no repositório ou no plano. “Testado” é cobertura da suíte. Verificado, isto é, observado em sessão real de um runtime, ainda não há nada.</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th scope="col">Capacidade</th><th scope="col" class="m">Proposto</th><th scope="col" class="m">Implementado</th><th scope="col" class="m">Testado</th></tr></thead><tbody>
+<tr><td>Guarda de shell Databricks e SQL só leitura</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
+<tr><td>Prova e fecho (<code>prova.py</code>); coleta só no Cursor</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
+<tr><td>Roteamento e definições neutras dos agentes</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
+<tr><td>Coleta de prova no Claude Code (sobre fixture)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">parcial</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
+<tr><td>Agentes nativos por runtime e observação (G2)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
+<tr><td>Guardas de run, identidade, dados compartilhados, fronteira do produto</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
+<tr><td>Skills do projeto; <code>docs-distill</code></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
+</tbody></table></div>
+<h3>Roteiro até o aceite final</h3>
+<div class="tiles fixed">
+<div class="tile cur"><div class="v sm">G1</div><div class="k">suíte, consistência e geração estáveis; decisão humana pendente</div></div>
+<div class="tile"><div class="v sm">G2</div><div class="k">agentes observados em sessão nova, por runtime</div></div>
+<div class="tile"><div class="v sm">E0 / E1</div><div class="k">ativação gradual da primeira onda de trilhas</div></div>
+<div class="tile"><div class="v sm">E2</div><div class="k">ativação da segunda onda, trilha a trilha</div></div>
+<div class="tile"><div class="v sm">G4</div><div class="k">medição e aceite final</div></div>
 </div>
 </section>
 </main>
-<footer>Fonte dos fluxos: <code>agentes/roteamento.yaml</code>. Estado: <code>PLANO-AGENTES-TRILHAS.md</code>. Regras: <code>AGENTS.md</code>. Este guia visual não é fonte de autoridade.</footer>
-
+<footer style="max-width:var(--container-max);margin:0 auto;padding:0 clamp(16px,3vw,40px) 40px;color:var(--text-muted);font-size:13px">Fonte dos fluxos: <code>agentes/roteamento.yaml</code>. Estado: <code>PLANO-AGENTES-TRILHAS.md</code>. Regras: <code>AGENTS.md</code>. Este guia visual não é fonte de autoridade.</footer>
+<div class="flow-pop" id="flow-pop" role="dialog" aria-modal="false" aria-labelledby="pop-title" hidden><button type="button" class="pop-close" id="pop-close" aria-label="Fechar">×</button><div id="pop-body"></div></div>
 <script>
 const DADOS = {"jobs": [{"id": "novo", "label": "Novo", "uso": "criar ou migrar objeto, ou parte dele"}, {"id": "manutencao", "label": "Manutenção", "uso": "mudança pontual com aceite claro"}, {"id": "correcao", "label": "Correção", "uso": "bug sustentado por log, observação ou reprodução"}, {"id": "docs", "label": "Docs", "uso": "escrever ou atualizar documento"}, {"id": "destilar", "label": "Destilar", "uso": "transformar padrão recorrente em instrução com fonte"}, {"id": "validacao", "label": "Validação", "uso": "verificar até um degrau, sem corrigir código"}, {"id": "review", "label": "Review", "uso": "revisar um recorte, sem reescrever"}, {"id": "entendimento", "label": "Entendimento", "uso": "responder pergunta sem alterar produto"}], "playbooks": {"novo": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Contrato e aceite", "agent": "coordenador", "kind": "action"}, {"id": "escrita", "title": "Escrever por superfície", "agent": "config + implement", "kind": "action"}, {"id": "teste", "title": "Verificar", "agent": "test", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "ambiente", "title": "Exige ambiente?", "agent": "coordenador", "kind": "decision"}, {"id": "dab", "title": "Operação autorizada", "agent": "dab", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}, {"id": "blocked", "title": "BLOCKED", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "escrita"}, {"from": "escrita", "to": "teste"}, {"from": "teste", "to": "refute", "when": "passou"}, {"from": "teste", "to": "escrita", "when": "reprovou"}, {"from": "refute", "to": "ambiente", "when": "sem achado"}, {"from": "refute", "to": "escrita", "when": "achado procedente"}, {"from": "ambiente", "to": "dab", "when": "autorizado"}, {"from": "ambiente", "to": "decide", "when": "sem autorização"}, {"from": "ambiente", "to": "fim", "when": "não"}, {"from": "dab", "to": "blocked", "when": "guarda nega"}, {"from": "dab", "to": "fim"}]}, "manutencao": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Contrato e aceite", "agent": "coordenador", "kind": "action"}, {"id": "caso_cobre", "title": "Casos existentes decidem?", "agent": "coordenador", "kind": "decision"}, {"id": "preparar", "title": "Preparar caso", "agent": "test", "kind": "action"}, {"id": "escrita", "title": "Escrever por superfície", "agent": "config + implement", "kind": "action"}, {"id": "teste", "title": "Verificar", "agent": "test", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "ambiente", "title": "Exige ambiente?", "agent": "coordenador", "kind": "decision"}, {"id": "dab", "title": "Operação autorizada", "agent": "dab", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}, {"id": "blocked", "title": "BLOCKED", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "caso_cobre"}, {"from": "caso_cobre", "to": "escrita", "when": "sim"}, {"from": "caso_cobre", "to": "preparar", "when": "não"}, {"from": "preparar", "to": "escrita"}, {"from": "escrita", "to": "teste"}, {"from": "teste", "to": "refute", "when": "passou"}, {"from": "teste", "to": "escrita", "when": "reprovou"}, {"from": "refute", "to": "ambiente", "when": "sem achado"}, {"from": "refute", "to": "escrita", "when": "achado procedente"}, {"from": "ambiente", "to": "dab", "when": "autorizado"}, {"from": "ambiente", "to": "decide", "when": "sem autorização"}, {"from": "ambiente", "to": "fim", "when": "não"}, {"from": "dab", "to": "blocked", "when": "guarda nega"}, {"from": "dab", "to": "fim"}]}, "correcao": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "diagnostico", "title": "Diagnosticar", "agent": "coordenador", "kind": "action"}, {"id": "coordenador", "title": "Contrato e aceite", "agent": "coordenador", "kind": "action"}, {"id": "reproduz", "title": "Reproduzir: deve falhar", "agent": "test", "kind": "action"}, {"id": "escrita", "title": "Corrigir por superfície", "agent": "config + implement", "kind": "action"}, {"id": "revalida", "title": "Revalidar o mesmo critério", "agent": "test", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "ambiente", "title": "Exige ambiente?", "agent": "coordenador", "kind": "decision"}, {"id": "dab", "title": "Operação autorizada", "agent": "dab", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}, {"id": "blocked", "title": "BLOCKED", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "diagnostico"}, {"from": "map", "to": "diagnostico"}, {"from": "diagnostico", "to": "coordenador"}, {"from": "coordenador", "to": "reproduz"}, {"from": "reproduz", "to": "escrita", "when": "falhou como esperado"}, {"from": "reproduz", "to": "decide", "when": "passou"}, {"from": "reproduz", "to": "blocked", "when": "inconclusivo"}, {"from": "escrita", "to": "revalida"}, {"from": "revalida", "to": "refute", "when": "passou"}, {"from": "revalida", "to": "escrita", "when": "reprovou"}, {"from": "refute", "to": "ambiente", "when": "sem achado"}, {"from": "refute", "to": "escrita", "when": "achado procedente"}, {"from": "ambiente", "to": "dab", "when": "autorizado"}, {"from": "ambiente", "to": "decide", "when": "sem autorização"}, {"from": "ambiente", "to": "fim", "when": "não"}, {"from": "dab", "to": "blocked", "when": "guarda nega"}, {"from": "dab", "to": "fim"}]}, "docs": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Delimitar documento", "agent": "coordenador", "kind": "action"}, {"id": "escrita_docs", "title": "Escrever", "agent": "docs", "kind": "action"}, {"id": "inspecao", "title": "Inspeção documental", "agent": "coordenador", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "escrita_docs"}, {"from": "escrita_docs", "to": "inspecao"}, {"from": "escrita_docs", "to": "decide", "when": "sem superfície documental"}, {"from": "inspecao", "to": "refute"}, {"from": "refute", "to": "fim", "when": "sem achado"}, {"from": "refute", "to": "escrita_docs", "when": "achado procedente"}]}, "destilar": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Fonte e destino", "agent": "coordenador", "kind": "action"}, {"id": "destilar_docs", "title": "Destilar com fonte", "agent": "docs", "kind": "action"}, {"id": "inspecao", "title": "Inspeção documental", "agent": "coordenador", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "destilar_docs", "when": "autorizados"}, {"from": "coordenador", "to": "decide", "when": "sem autorização"}, {"from": "destilar_docs", "to": "inspecao"}, {"from": "inspecao", "to": "refute"}, {"from": "refute", "to": "fim", "when": "sem achado"}, {"from": "refute", "to": "destilar_docs", "when": "achado procedente"}]}, "validacao": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Degrau e aceite", "agent": "coordenador", "kind": "action"}, {"id": "teste", "title": "Verificar", "agent": "test", "kind": "action"}, {"id": "ambiente", "title": "Exige ambiente?", "agent": "coordenador", "kind": "decision"}, {"id": "dab", "title": "Operação autorizada", "agent": "dab", "kind": "action"}, {"id": "paridade", "title": "Paridade, se exigida", "agent": "test", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}, {"id": "blocked", "title": "BLOCKED", "agent": "coordenador", "kind": "deny"}, {"id": "failed", "title": "FAILED", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "teste"}, {"from": "teste", "to": "ambiente", "when": "passou"}, {"from": "teste", "to": "failed", "when": "reprovou"}, {"from": "ambiente", "to": "dab", "when": "autorizado"}, {"from": "ambiente", "to": "decide", "when": "sem autorização"}, {"from": "ambiente", "to": "paridade", "when": "não"}, {"from": "dab", "to": "paridade"}, {"from": "dab", "to": "blocked", "when": "guarda nega"}, {"from": "dab", "to": "failed", "when": "reprovou"}, {"from": "paridade", "to": "refute", "when": "passou"}, {"from": "paridade", "to": "failed", "when": "reprovou"}, {"from": "refute", "to": "fim"}]}, "review": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Delimitar recorte e aceite", "agent": "coordenador", "kind": "action"}, {"id": "refute", "title": "Revisar (somente leitura)", "agent": "refute", "kind": "action"}, {"id": "veredito", "title": "Veredito do artefato", "agent": "coordenador", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "blocked", "title": "BLOCKED", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "refute"}, {"from": "refute", "to": "veredito"}, {"from": "refute", "to": "blocked", "when": "refute indisponível"}, {"from": "veredito", "to": "fim"}]}, "entendimento": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Responder com fontes e inferências", "agent": "coordenador", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "fim"}]}}};
-const DIAGRAMAS = {"caminho": {"nodes": [{"id": "p", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "q", "title": "Pergunta delimitada ou mudança pequena e reversível?", "agent": "coordenador", "kind": "decision"}, {"id": "s", "title": "Simples: responde com fontes, ou altera e verifica", "agent": "sem contrato", "kind": "action"}, {"id": "e", "title": "Estruturado: iniciar a fatia", "agent": "prova.py iniciar", "kind": "action"}, {"id": "m", "title": "Trilha com agentes obrigatórios no runtime?", "agent": "politica.json", "kind": "decision"}, {"id": "a", "title": "Coordena e delega aos papéis", "agent": "coordenador + papéis", "kind": "action"}, {"id": "u", "title": "Executa a trilha sozinho", "agent": "agente único", "kind": "action"}, {"id": "f", "title": "Fecho", "agent": "status, resultado, prova, limite", "kind": "stop"}], "edges": [{"from": "p", "to": "q"}, {"from": "q", "to": "s", "when": "sim"}, {"from": "q", "to": "e", "when": "não"}, {"from": "e", "to": "m"}, {"from": "m", "to": "a", "when": "sim"}, {"from": "m", "to": "u", "when": "não"}, {"from": "s", "to": "f"}, {"from": "a", "to": "f"}, {"from": "u", "to": "f"}]}, "ciclo": {"nodes": [{"id": "i", "title": "Iniciar a fatia", "agent": "prova.py iniciar contrato.yaml", "kind": "start"}, {"id": "v", "title": "Verificar pelo chat", "agent": "hook registra a prova", "kind": "action"}, {"id": "ed", "title": "Editou depois da prova?", "agent": "arquivo relevante mudou", "kind": "decision"}, {"id": "inv", "title": "Prova invalidada", "agent": "hash do estado difere", "kind": "action"}, {"id": "c", "title": "Fechar", "agent": "prova.py fechar", "kind": "action"}, {"id": "ac", "title": "Prova atual em todo critério obrigatório?", "agent": "fecho", "kind": "decision"}, {"id": "ok", "title": "DONE / REVIEW", "agent": "fecho aceito", "kind": "stop"}, {"id": "no", "title": "BLOCKED / FAILED / DECIDE", "agent": "motivo e condição de retomada", "kind": "deny"}], "edges": [{"from": "i", "to": "v"}, {"from": "v", "to": "ed"}, {"from": "ed", "to": "inv", "when": "sim"}, {"from": "inv", "to": "v", "when": "verificar de novo"}, {"from": "ed", "to": "c", "when": "não"}, {"from": "c", "to": "ac"}, {"from": "ac", "to": "ok", "when": "sim"}, {"from": "ac", "to": "v", "when": "recusado"}, {"from": "ac", "to": "no", "when": "sem como provar"}]}, "guarda": {"nodes": [{"id": "c", "title": "Chamada de shell", "agent": "databricks bundle ...", "kind": "start"}, {"id": "g1", "title": "Comando literal, dentro do bundle local?", "agent": "cwd-bundle", "kind": "decision"}, {"id": "g2", "title": "Target sandbox e perfil -p explícito?", "agent": "target-dev", "kind": "decision"}, {"id": "g3", "title": "Qual subcomando?", "agent": "validate, plan, deploy ou outro", "kind": "decision"}, {"id": "val", "title": "1. validate", "agent": "sandbox", "kind": "action"}, {"id": "pl", "title": "2. plan", "agent": "grava o recibo do plan", "kind": "action"}, {"id": "dep", "title": "3. deploy", "agent": "plan vigente, -p, --select", "kind": "action"}, {"id": "neg", "title": "NEGADO antes do efeito", "agent": "corrigir e repetir", "kind": "deny"}, {"id": "aut", "title": "Exige autorização explícita", "agent": "run, dev e outros targets", "kind": "deny"}, {"id": "fx", "title": "Efeito no sandbox", "agent": "", "kind": "stop"}], "edges": [{"from": "c", "to": "g1"}, {"from": "g1", "to": "g2", "when": "sim"}, {"from": "g1", "to": "neg", "when": "não"}, {"from": "g2", "to": "g3", "when": "sim"}, {"from": "g2", "to": "aut", "when": "não"}, {"from": "g3", "to": "val", "when": "validate"}, {"from": "val", "to": "pl"}, {"from": "pl", "to": "dep"}, {"from": "g3", "to": "neg", "when": "run, destroy, sync"}, {"from": "dep", "to": "fx", "when": "ok"}, {"from": "dep", "to": "neg", "when": "sem plan vigente"}]}};
+const DIAGRAMAS = {"caminho": {"nodes": [{"id": "p", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "q", "title": "Pedido pequeno e reversível?", "agent": "coordenador", "kind": "decision", "who": "Pergunta delimitada ou mudança pequena e reversível."}, {"id": "s", "title": "Simples: responde ou altera", "agent": "sem contrato", "kind": "action", "who": "Responde com fontes, ou altera e verifica, sem contrato."}, {"id": "e", "title": "Estruturado: iniciar a fatia", "agent": "prova.py iniciar", "kind": "action"}, {"id": "m", "title": "Agentes obrigatórios?", "agent": "politica.json", "kind": "decision", "who": "Trilha com agentes obrigatórios no runtime."}, {"id": "a", "title": "Coordena e delega aos papéis", "agent": "coordenador + papéis", "kind": "action"}, {"id": "u", "title": "Executa a trilha sozinho", "agent": "agente único", "kind": "action"}, {"id": "f", "title": "Fecho", "agent": "status, resultado, prova, limite", "kind": "stop"}], "edges": [{"from": "p", "to": "q"}, {"from": "q", "to": "s", "when": "sim"}, {"from": "q", "to": "e", "when": "não"}, {"from": "e", "to": "m"}, {"from": "m", "to": "a", "when": "sim"}, {"from": "m", "to": "u", "when": "não"}, {"from": "s", "to": "f"}, {"from": "a", "to": "f"}, {"from": "u", "to": "f"}]}, "ciclo": {"nodes": [{"id": "i", "title": "Iniciar a fatia", "agent": "prova.py iniciar contrato.yaml", "kind": "start"}, {"id": "v", "title": "Verificar pelo chat", "agent": "hook registra a prova", "kind": "action"}, {"id": "ed", "title": "Editou depois da prova?", "agent": "arquivo relevante mudou", "kind": "decision"}, {"id": "inv", "title": "Prova invalidada", "agent": "hash do estado difere", "kind": "action"}, {"id": "c", "title": "Fechar", "agent": "prova.py fechar", "kind": "action"}, {"id": "ac", "title": "Todo critério provado?", "agent": "fecho", "kind": "decision", "who": "Prova atual em todo critério obrigatório."}, {"id": "ok", "title": "DONE / REVIEW", "agent": "fecho aceito", "kind": "stop"}, {"id": "no", "title": "BLOCKED / FAILED / DECIDE", "agent": "motivo e condição de retomada", "kind": "deny"}], "edges": [{"from": "i", "to": "v"}, {"from": "v", "to": "ed"}, {"from": "ed", "to": "inv", "when": "sim"}, {"from": "inv", "to": "v", "when": "verificar de novo"}, {"from": "ed", "to": "c", "when": "não"}, {"from": "c", "to": "ac"}, {"from": "ac", "to": "ok", "when": "sim"}, {"from": "ac", "to": "v", "when": "recusado"}, {"from": "ac", "to": "no", "when": "sem como provar"}]}, "guarda": {"nodes": [{"id": "c", "title": "Chamada de shell", "agent": "databricks bundle ...", "kind": "start"}, {"id": "g1", "title": "Comando literal no bundle?", "agent": "cwd-bundle", "kind": "decision", "who": "Comando literal, dentro do bundle local."}, {"id": "g2", "title": "Sandbox e perfil -p?", "agent": "target-dev", "kind": "decision", "who": "Target sandbox e perfil -p explícito."}, {"id": "g3", "title": "Qual subcomando?", "agent": "validate, plan, deploy ou outro", "kind": "decision", "who": "validate, plan e deploy seguem; run, destroy e sync são negados."}, {"id": "val", "title": "1. validate", "agent": "sandbox", "kind": "action"}, {"id": "pl", "title": "2. plan", "agent": "grava o recibo do plan", "kind": "action"}, {"id": "dep", "title": "3. deploy", "agent": "plan vigente, -p, --select", "kind": "action"}, {"id": "neg", "title": "NEGADO antes do efeito", "agent": "corrigir e repetir", "kind": "deny"}, {"id": "aut", "title": "Exige autorização explícita", "agent": "run, dev e outros targets", "kind": "deny"}, {"id": "fx", "title": "Efeito no sandbox", "agent": "", "kind": "stop"}], "edges": [{"from": "c", "to": "g1"}, {"from": "g1", "to": "g2", "when": "sim"}, {"from": "g1", "to": "neg", "when": "não"}, {"from": "g2", "to": "g3", "when": "sim"}, {"from": "g2", "to": "aut", "when": "não"}, {"from": "g3", "to": "val", "when": "validate"}, {"from": "val", "to": "pl"}, {"from": "pl", "to": "dep"}, {"from": "g3", "to": "neg", "when": "run, destroy, sync"}, {"from": "dep", "to": "fx", "when": "ok"}, {"from": "dep", "to": "neg", "when": "sem plan vigente"}]}};
 
-const NW = 164, NH = 66, GX = 30, GY = 44, LANE = 16;
+const NW = 240, NH = 84, RGAP = 112, NGAP = 40, PAD = 32, R = 16, LANE = 28, DX = 14, DY = 10;
+const POS_WORDS = new Set(["sim", "passou", "limpo", "fechado"]);
+const NEG_WORDS = new Set(["não", "falhou", "vago", "falhas", "copia", "revalidar"]);
+const KIND_LABEL = { start: "Início", action: "Ação", decision: "Decisão", stop: "Fim", deny: "Fim sem DONE" };
+const KIND_CHIP  = { start: "neutral", action: "info", decision: "decisao", stop: "ok", deny: "bad" };
 
-function esc(s) {
-  return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function escapar(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
-function wrap(txt, max) {
+function tom(when) {
+  if (!when) return "";
+  const w = when.toLowerCase();
+  if (POS_WORDS.has(w)) return "pos";
+  if (NEG_WORDS.has(w)) return "neg";
+  return "";
+}
+/* Rótulo longo quebra em linhas curtas nas vírgulas. */
+function quebrar_rotulo(text) {
+  if (text.length <= 14 || !text.includes(", ")) return [text];
+  const parts = text.split(", ").map((p, i, a) => i < a.length - 1 ? p + "," : p);
+  const lines = [];
+  parts.forEach(p => {
+    const last = lines[lines.length - 1];
+    if (last !== undefined && (last + " " + p).length <= 14) lines[lines.length - 1] = last + " " + p;
+    else lines.push(p);
+  });
+  return lines;
+}
+
+function posicionar_grafo(graph) {
+  const nodes = graph.nodes, edges = graph.edges;
+  const ids = nodes.map(n => n.id);
+  const byId = Object.fromEntries(nodes.map(n => [n.id, n]));
+  const incoming = Object.fromEntries(ids.map(id => [id, []]));
+  const outgoing = Object.fromEntries(ids.map(id => [id, []]));
+  edges.forEach(e => { incoming[e.to].push(e.from); outgoing[e.from].push(e.to); });
+
+  /* Nós entram no array na ordem de leitura. Aresta para um nó anterior é volta. */
+  const idx = Object.fromEntries(ids.map((id, i) => [id, i]));
+  const isLoop = (from, to) => idx[to] <= idx[from];
+
+  const rank = Object.fromEntries(ids.map(id => [id, 0]));
+  let changed = true, guard = 0;
+  while (changed && guard++ < 40) {
+    changed = false;
+    ids.forEach(id => {
+      const preds = incoming[id].filter(p => !isLoop(p, id));
+      if (!preds.length) return;
+      const r = Math.max(...preds.map(p => rank[p] + 1));
+      if (r > rank[id]) { rank[id] = r; changed = true; }
+    });
+  }
+
+  /* Espinha: caminho para a frente mais longo a partir da primeira coluna. */
+  const best = {}, next = {};
+  ids.slice().sort((a, b) => rank[b] - rank[a]).forEach(id => {
+    let b = 0, n = null;
+    outgoing[id].forEach(t => {
+      if (isLoop(id, t) || rank[t] <= rank[id]) return;
+      if (best[t] + 1 > b) { b = best[t] + 1; n = t; }
+    });
+    best[id] = b; next[id] = n;
+  });
+  let head = ids.find(id => rank[id] === 0);
+  ids.forEach(id => { if (rank[id] === 0 && best[id] > best[head]) head = id; });
+  const spine = new Set();
+  for (let c = head; c; c = next[c]) spine.add(c);
+
+  const byRank = {};
+  ids.forEach(id => (byRank[rank[id]] || (byRank[rank[id]] = [])).push(id));
+  const maxRank = Math.max(0, ...Object.keys(byRank).map(Number));
+  const colSize = {}, pos = {};
+  let maxRows = 1;
+  for (let r = 0; r <= maxRank; r++) {
+    const col = (byRank[r] || []).slice().sort((a, b) => (spine.has(b) - spine.has(a)) || (idx[a] - idx[b]));
+    colSize[r] = col.length;
+    maxRows = Math.max(maxRows, col.length);
+    col.forEach((id, i) => { pos[id] = { x: PAD + DX + r * (NW + RGAP), y: 0, r, i }; });
+  }
+
+  /* Roteamento: adjacente na mesma direção = direto; o resto vai por faixa. */
+  const lanes = { top: [], bottom: [] };
+  const above = id => pos[id].i > 0;
+  const below = id => pos[id].i < colSize[rank[id]] - 1;
+  const specs = edges.map(e => {
+    const rf = rank[e.from], rt = rank[e.to];
+    const back = isLoop(e.from, e.to) || rt <= rf;
+    if (!back && rt - rf === 1) return { e, kind: "fwd", back: false };
+    const topOk = !above(e.from) && !above(e.to);
+    const botOk = !below(e.from) && !below(e.to);
+    const side = back ? (topOk ? "top" : "bottom") : (botOk ? "bottom" : "top");
+    const lo = Math.min(rf, rt), hi = Math.max(rf, rt);
+    const arr = lanes[side];
+    let k = arr.findIndex(iv => !iv.some(([a, b]) => lo <= b && a <= hi));
+    if (k < 0) { k = arr.length; arr.push([]); }
+    arr[k].push([lo, hi]);
+    /* A faixa de baixo fica logo abaixo da linha mais funda das colunas atravessadas. */
+    let rows = 1;
+    for (let r = lo; r <= hi; r++) rows = Math.max(rows, colSize[r] || 1);
+    return { e, kind: "lane", side, k, back, rows };
+  });
+  const nTop = lanes.top.length;
+  const topSpace = nTop ? 26 + (nTop - 1) * LANE + 8 : 0;
+  const TOP = PAD + DY + topSpace;
+  ids.forEach(id => { pos[id].y = TOP + pos[id].i * (NH + NGAP); });
+  const rowsBottom = TOP + maxRows * NH + (maxRows - 1) * NGAP;
+  const laneTop = s => TOP - DY - 26 - s.k * LANE;
+  const laneBot = s => TOP + s.rows * NH + (s.rows - 1) * NGAP + DY + 26 + s.k * LANE;
+  const width = PAD * 2 + DX * 2 + (maxRank + 1) * NW + maxRank * RGAP;
+  let height = rowsBottom + PAD;
+  specs.forEach(s => { if (s.kind === "lane" && s.side === "bottom") height = Math.max(height, laneBot(s) + 12 + PAD); });
+  return { nodes, edges, byId, pos, rank, width, height, incoming, outgoing, isLoop, specs, laneTop, laneBot };
+}
+
+function porta(L, id, side, off = 0) {
+  const p = L.pos[id], n = L.byId[id];
+  const cx = p.x + NW / 2, cy = p.y + NH / 2;
+  const dec = n.kind === "decision";
+  const ex = dec ? DX : 0, ey = dec ? DY : 0;
+  /* No losango, um porta deslocado do centro cai na aresta inclinada. */
+  const slope = dec ? Math.abs(off) * (NH / 2 + DY) / (NW / 2 + DX) : 0;
+  if (side === "right") return { x: p.x + NW + ex, y: cy };
+  if (side === "left")  return { x: p.x - ex, y: cy };
+  if (side === "top")   return { x: cx + off, y: p.y - ey + slope };
+  return { x: cx + off, y: p.y + NH + ey - slope };
+}
+
+function caminho_aresta(L, s, portUse) {
+  const e = s.e;
+  if (s.kind === "fwd") {
+    const a = porta(L, e.from, "right"), b = porta(L, e.to, "left");
+    if (Math.abs(a.y - b.y) < 1) return { d: `M ${a.x} ${a.y} H ${b.x}`, lx: (a.x + b.x) / 2, ly: a.y };
+    const mid = (a.x + b.x) / 2, sy = b.y > a.y ? 1 : -1;
+    /* Ramo que muda de linha: rótulo sobre o trecho final, junto ao destino. */
+    const lines = e.when ? quebrar_rotulo(e.when) : [""];
+    const lw = Math.max(30, Math.round(Math.max(...lines.map(l => l.length)) * 6.6 + 16));
+    const lh = lines.length * 13 + 7;
+    return {
+      d: `M ${a.x} ${a.y} H ${mid - R} Q ${mid} ${a.y} ${mid} ${a.y + sy * R} V ${b.y - sy * R} Q ${mid} ${b.y} ${mid + R} ${b.y} H ${b.x}`,
+      lx: b.x - 6 - lw / 2, ly: b.y - 6 - lh / 2
+    };
+  }
+  const side = s.side;
+  const take = id => {
+    const key = id + "|" + side;
+    const n = portUse[key] = (portUse[key] || 0) + 1;
+    return [0, 18, -18, 36, -36][(n - 1) % 5];
+  };
+  const a = porta(L, e.from, side, take(e.from)), b = porta(L, e.to, side, take(e.to));
+  const laneY = side === "top" ? L.laneTop(s) : L.laneBot(s);
+  const dir = b.x > a.x ? 1 : -1;
+  const vs = laneY > a.y ? 1 : -1;
+  const d = `M ${a.x} ${a.y} V ${laneY - vs * R} Q ${a.x} ${laneY} ${a.x + dir * R} ${laneY} H ${b.x - dir * R} Q ${b.x} ${laneY} ${b.x} ${laneY - vs * R} V ${b.y}`;
+  return { d, lx: (a.x + b.x) / 2, ly: laneY };
+}
+
+function rotulo_aresta(text, x, y) {
+  const lines = quebrar_rotulo(text);
+  const w = Math.max(30, Math.round(Math.max(...lines.map(l => l.length)) * 6.6 + 16));
+  const h = lines.length * 13 + 7;
+  const y0 = y - h / 2;
+  const tspans = lines.map((l, i) => `<tspan x="${x}" dy="${i === 0 ? 0 : 13}">${escapar(l)}</tspan>`).join("");
+  return `<g class="lbl ${tom(text)}"><rect x="${x - w / 2}" y="${y0}" width="${w}" height="${h}" rx="${Math.min(10, h / 2)}"/>
+    <text x="${x}" y="${y0 + 13.5}" text-anchor="middle">${tspans}</text></g>`;
+}
+
+function forma_no(n, p) {
+  const cx = p.x + NW / 2, cy = p.y + NH / 2;
+  if (n.kind === "decision") {
+    const pts = `${cx},${p.y - DY} ${p.x + NW + DX},${cy} ${cx},${p.y + NH + DY} ${p.x - DX},${cy}`;
+    return `<polygon class="hit" points="${pts}" fill="var(--db-pink-06)" stroke="var(--db-pink)" stroke-width="1.5"/>`;
+  }
+  const box = `x="${p.x}" y="${p.y}" width="${NW}" height="${NH}"`;
+  if (n.kind === "start") return `<rect class="hit" ${box} rx="32" fill="var(--db-dark-blue)" stroke="var(--db-dark-blue)" stroke-width="1.5"/>`;
+  if (n.kind === "stop")  return `<rect class="hit" ${box} rx="32" fill="var(--db-green-12)" stroke="var(--db-green)" stroke-width="1.5"/>`;
+  if (n.kind === "deny")  return `<rect class="hit" ${box} rx="32" fill="var(--db-red-12)" stroke="var(--db-red)" stroke-width="1.5"/>`;
+  return `<rect class="hit" ${box} rx="10" fill="var(--surface-card)" stroke="var(--border-default)" stroke-width="1.5"/>`;
+}
+
+/* ---- pop-up de detalhe do nó ---- */
+const pop = document.getElementById("flow-pop");
+const popBody = document.getElementById("pop-body");
+let popAnchor = null;
+let activeFlow = null;
+
+function posicionar_detalhe() {
+  if (pop.hidden || !popAnchor) return;
+  const r = popAnchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  let left = r.left + r.width / 2 - w / 2;
+  left = Math.max(12, Math.min(left, window.innerWidth - w - 12));
+  let top = r.bottom + 10;
+  if (top + h > window.innerHeight - 12) top = r.top - h - 10;
+  if (top < 12) top = 12;
+  pop.style.left = left + "px";
+  pop.style.top = top + "px";
+}
+function abrir_detalhe(g, L, id) {
+  const n = L.byId[id];
+  const isBack = e => L.isLoop(e.from, e.to) || L.rank[e.to] <= L.rank[e.from];
+  const ins = L.edges.filter(e => e.to === id).map(e => ({ t: L.byId[e.from].title, w: e.when, back: isBack(e) }));
+  const outs = L.edges.filter(e => e.from === id).map(e => ({ t: L.byId[e.to].title, w: e.when, back: isBack(e) }));
+  const li = x => `<li>${x.w ? `<span class="when ${tom(x.w)}${x.back ? " back" : ""}">${escapar(x.w)}</span>` : ""}<span>${escapar(x.t)}</span></li>`;
+  popBody.innerHTML =
+    `<span class="chip ${KIND_CHIP[n.kind] || "neutral"}">${KIND_LABEL[n.kind] || escapar(n.kind)}</span>
+     <h4 id="pop-title">${escapar(n.title)}</h4>
+     ${n.agent ? `<div class="who"><b>Responsável:</b> ${escapar(n.agent)}</div>` : ""}
+     ${n.who ? `<div class="who"><b>Trabalho:</b> ${escapar(n.who)}</div>` : ""}
+     <dl>${ins.length ? `<dt>Entra</dt><dd><ul>${ins.map(li).join("")}</ul></dd>` : ""}${outs.length ? `<dt>Sai</dt><dd><ul>${outs.map(li).join("")}</ul></dd>` : ""}</dl>
+     <p class="pop-hint">Esc fecha · clique em outro nó para trocar</p>`;
+  pop.hidden = false;
+  popAnchor = g;
+  posicionar_detalhe();
+}
+function fechar_detalhe() { pop.hidden = true; popAnchor = null; }
+function limpar_selecao() { if (activeFlow) activeFlow.clear(); fechar_detalhe(); }
+
+document.getElementById("pop-close").addEventListener("click", limpar_selecao);
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !pop.hidden) limpar_selecao(); });
+document.addEventListener("click", ev => {
+  if (pop.hidden) return;
+  if (pop.contains(ev.target) || ev.target.closest(".dag-node")) return;
+  limpar_selecao();
+});
+document.addEventListener("scroll", posicionar_detalhe, true);
+window.addEventListener("resize", posicionar_detalhe);
+
+function renderizar_fluxo(mountId, graph, uid) {
+  const L = posicionar_grafo(graph);
+  let svg = `<svg viewBox="0 0 ${L.width} ${L.height}" width="${L.width}" height="${L.height}" class="svg-ink" role="group" aria-label="Fluxograma interativo">
+    <defs>
+      <marker id="${uid}" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" fill="var(--db-grey-50)"/>
+      </marker>
+      <marker id="${uid}-hi" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" fill="var(--db-pink)"/>
+      </marker>
+    </defs>`;
+  const portUse = {};
+  L.specs.forEach(s => {
+    const e = s.e;
+    const { d, lx, ly } = caminho_aresta(L, s, portUse);
+    svg += `<g class="dag-edge${s.back ? " back" : ""}" data-from="${escapar(e.from)}" data-to="${escapar(e.to)}">
+      <path class="wire" d="${d}" marker-end="url(#${uid})"/>
+      ${e.when ? rotulo_aresta(e.when, lx, ly) : ""}
+    </g>`;
+  });
+  L.nodes.forEach(n => {
+    const p = L.pos[n.id];
+    const cx = p.x + NW / 2, cy = p.y + NH / 2;
+    const start = n.kind === "start";
+    const tl = quebrar_titulo(n.title, n.kind === "decision" ? 22 : 26);
+    const ag = n.agent ? [n.agent] : [];
+    const nl = tl.length + ag.length, y0 = cy - (nl * 15) / 2 + 11;
+    const tx = tl.map((t, i) => `<text x="${cx}" y="${y0 + i * 15}" text-anchor="middle" fill="${start ? "#fff" : "var(--ink)"}" font-size="13" font-weight="700">${escapar(t)}</text>`).join("")
+      + ag.map((t, i) => `<text x="${cx}" y="${y0 + (tl.length + i) * 15}" text-anchor="middle" fill="${start ? "#fff" : "var(--db-pink)"}" font-size="11" font-weight="700">${escapar(t)}</text>`).join("");
+    svg += `<g class="dag-node" tabindex="0" role="button" data-id="${escapar(n.id)}" data-kind="${escapar(n.kind)}" aria-pressed="false" aria-label="${escapar(n.title)}${n.agent ? " — " + escapar(n.agent) : ""}">
+      ${forma_no(n, p)}
+      ${tx}
+    </g>`;
+  });
+  svg += "</svg>";
+
+  const mount = document.getElementById(mountId);
+  mount.innerHTML = svg;
+  const svgEl = mount.querySelector("svg");
+  svgEl.style.width = L.width + "px";
+  svgEl.style.minWidth = L.width + "px";
+
+  const flow = {
+    clear() {
+      svgEl.querySelectorAll(".dag-node").forEach(g => { g.classList.remove("dim"); g.setAttribute("aria-pressed", "false"); });
+      svgEl.querySelectorAll(".dag-edge").forEach(g => {
+        g.classList.remove("dim", "hi");
+        g.querySelector(".wire").setAttribute("marker-end", `url(#${uid})`);
+      });
+      if (activeFlow === flow) activeFlow = null;
+    },
+    select(g, id) {
+      if (activeFlow && activeFlow !== flow) activeFlow.clear();
+      activeFlow = flow;
+      const keep = new Set([id, ...(L.incoming[id] || []), ...(L.outgoing[id] || [])]);
+      svgEl.querySelectorAll(".dag-node").forEach(n => {
+        const nid = n.getAttribute("data-id");
+        n.classList.toggle("dim", !keep.has(nid));
+        n.setAttribute("aria-pressed", nid === id ? "true" : "false");
+      });
+      svgEl.querySelectorAll(".dag-edge").forEach(ed => {
+        const on = ed.getAttribute("data-from") === id || ed.getAttribute("data-to") === id;
+        ed.classList.toggle("dim", !on);
+        ed.classList.toggle("hi", on);
+        ed.querySelector(".wire").setAttribute("marker-end", `url(#${uid}${on ? "-hi" : ""})`);
+      });
+      abrir_detalhe(g, L, id);
+    }
+  };
+  svgEl.querySelectorAll(".dag-node").forEach(g => {
+    g.addEventListener("click", () => {
+      if (g.getAttribute("aria-pressed") === "true") limpar_selecao();
+      else flow.select(g, g.getAttribute("data-id"));
+    });
+    g.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); g.click(); }
+    });
+  });
+
+  /* Botão "ajustar à largura" na legenda do quadro. */
+  const board = mount.closest(".flow-board");
+  const legend = board && board.querySelector(".flow-legend");
+  if (legend && !legend.querySelector(".fit")) {
+    const btn = document.createElement("button");
+    btn.type = "button"; btn.className = "fit";
+    const fig = mount.closest(".flow-map");
+    const sync = () => { btn.textContent = fig.classList.contains("fit") ? "Tamanho real" : "Ajustar à largura"; };
+    btn.addEventListener("click", () => { fig.classList.toggle("fit"); sync(); posicionar_detalhe(); });
+    sync();
+    legend.appendChild(btn);
+  }
+  return flow;
+}
+
+/* Título do nó quebrado por palavras em até 3 linhas (o v3 usa títulos curtos de uma linha). */
+function quebrar_titulo(text, max) {
   const out = []; let cur = "";
-  String(txt).split(" ").forEach(w => {
-    if ((cur + " " + w).trim().length > max && cur) { out.push(cur); cur = w; }
-    else cur = (cur + " " + w).trim();
+  String(text).split(" ").forEach(w => {
+    if (cur && (cur + " " + w).length > max) { out.push(cur); cur = w; } else cur = cur ? cur + " " + w : w;
   });
   if (cur) out.push(cur);
-  return out;
+  return out.slice(0, 3);
 }
 
-function layout(g) {
-  const by = {}, out = {};
-  g.nodes.forEach(n => { by[n.id] = n; out[n.id] = []; });
-  g.edges.forEach(e => out[e.from].push(e));
-  const st = {}, back = new Set();
-  (function dfs(u) {
-    st[u] = 1;
-    out[u].forEach(e => { if (st[e.to] === 1) back.add(e); else if (!st[e.to]) dfs(e.to); });
-    st[u] = 2;
-  })(g.nodes[0].id);
-  const rank = {};
-  g.nodes.forEach(n => { rank[n.id] = 0; });
-  for (let i = 0; i < g.nodes.length; i++)
-    g.edges.forEach(e => { if (!back.has(e) && rank[e.to] < rank[e.from] + 1) rank[e.to] = rank[e.from] + 1; });
-  const maxR = Math.max(...Object.values(rank));
-  const rows = [];
-  for (let r = 0; r <= maxR; r++) rows.push(g.nodes.filter(n => rank[n.id] === r));
-  // lanes laterais
-  let nr = 0, nl = 0;
-  const side = new Map();
-  g.edges.forEach(e => {
-    const dr = rank[e.to] - rank[e.from];
-    if (back.has(e)) side.set(e, { dir: "r", i: nr++ });
-    else if (dr !== 1) side.set(e, { dir: "l", i: nl++ });
-  });
-  const maxK = Math.max(...rows.map(r => r.length));
-  const cw = maxK * NW + (maxK - 1) * GX;
-  const mL = 18 + nl * LANE + (nl ? 30 : 0), mR = 18 + nr * LANE + (nr ? 40 : 0);
-  const W = cw + mL + mR;
-  const pos = {};
-  // ordenação por baricentro dos pais (passada única, de cima para baixo)
-  rows.forEach((row, r) => {
-    if (r > 0) {
-      const bc = n => {
-        const ps = g.edges.filter(e => e.to === n.id && !back.has(e) && pos[e.from]).map(e => pos[e.from].x);
-        return ps.length ? ps.reduce((a, b) => a + b, 0) / ps.length : null;
-      };
-      row.forEach((n, i) => { n._o = i; n._b = bc(n); });
-      row.sort((a, b) => (a._b === null || b._b === null) ? a._o - b._o : (a._b - b._b) || (a._o - b._o));
-    }
-    const k = row.length, tw = k * NW + (k - 1) * GX;
-    const x0 = mL + (cw - tw) / 2;
-    row.forEach((n, i) => { pos[n.id] = { x: x0 + i * (NW + GX), y: 12 + r * (NH + GY) }; });
-  });
-  const H = 12 + (maxR + 1) * (NH + GY) - GY + 12;
-  return { by, rank, back, side, pos, W, H, mL, cw };
-}
+/* Legenda com as formas do fluxo, em SVG. */
+const LEG = {
+  start:    ['<rect x="1" y="3" width="34" height="14" rx="7" fill="var(--db-dark-blue)"/>', "início"],
+  action:   ['<rect x="1" y="3" width="34" height="14" rx="3" fill="var(--surface-card)" stroke="var(--border-default)" stroke-width="1.5"/>', "ação"],
+  decision: ['<polygon points="18,1 35,10 18,19 1,10" fill="var(--db-pink-06)" stroke="var(--db-pink)" stroke-width="1.5"/>', "decisão"],
+  stop:     ['<rect x="1" y="3" width="34" height="14" rx="7" fill="var(--db-green-12)" stroke="var(--db-green)" stroke-width="1.5"/>', "fim"],
+  deny:     ['<rect x="1" y="3" width="34" height="14" rx="7" fill="var(--db-red-12)" stroke="var(--db-red)" stroke-width="1.5"/>', "fim sem DONE"],
+  back:     ['<path d="M2 10 H34" stroke="var(--db-grey-50)" stroke-width="1.6" stroke-dasharray="6 5" fill="none"/>', "retorno"]
+};
+document.querySelectorAll(".flow-legend[data-leg]").forEach(el => {
+  el.innerHTML = el.dataset.leg.split(",").map(k => `<span><svg viewBox="0 0 36 20" aria-hidden="true">${LEG[k][0]}</svg>${LEG[k][1]}</span>`).join("");
+});
 
-function draw(g, mount) {
-  const L = layout(g);
-  let s = `<svg viewBox="0 0 ${L.W} ${L.H}" role="img" style="width:100%;min-width:${Math.min(L.W, 520)}px;max-width:${L.W}px">
-<defs><marker id="ar-${mount.id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="arrow" d="M0 0L10 5L0 10z"/></marker></defs>`;
-  g.edges.forEach(e => {
-    const a = L.pos[e.from], b = L.pos[e.to], sd = L.side.get(e);
-    let d, lx, ly, cls = "eg";
-    if (!sd) {
-      const x1 = a.x + NW / 2, y1 = a.y + NH, x2 = b.x + NW / 2, y2 = b.y, m = (y2 - y1) / 2;
-      d = `M${x1} ${y1}C${x1} ${y1 + m} ${x2} ${y2 - m} ${x2} ${y2}`;
-      lx = (x1 + x2) / 2; ly = (y1 + y2) / 2;
-      if (e.when && Math.abs(x1 - x2) < 4) { lx = x1; }
-    } else if (sd.dir === "r") {
-      cls += " back";
-      const lane = L.mL + L.cw + 12 + sd.i * LANE, y1 = a.y + NH / 2, y2 = b.y + NH / 2;
-      const sx = a.x + NW, tx = b.x + NW;
-      d = `M${sx} ${y1}L${lane} ${y1}L${lane} ${y2}L${tx} ${y2}`;
-      lx = lane; ly = (y1 + y2) / 2;
-    } else {
-      cls += " long";
-      const lane = L.mL - 12 - sd.i * LANE, y1 = a.y + NH / 2, y2 = b.y + NH / 2;
-      d = `M${a.x} ${y1}L${lane} ${y1}L${lane} ${y2}L${b.x} ${y2}`;
-      lx = lane; ly = (y1 + y2) / 2;
-    }
-    let lb = "";
-    if (e.when) {
-      const w = Math.max(24, e.when.length * 5.6 + 12);
-      lb = `<g class="lb"><rect x="${lx - w / 2}" y="${ly - 9}" width="${w}" height="17" rx="8"/><text x="${lx}" y="${ly + 3}">${esc(e.when)}</text></g>`;
-    }
-    s += `<g class="${cls}"><path d="${d}" marker-end="url(#ar-${mount.id})"/>${lb}</g>`;
-  });
-  g.nodes.forEach(n => {
-    const p = L.pos[n.id], cx = p.x + NW / 2;
-    const tl = wrap(n.title, 23).slice(0, 3);
-    const al = n.agent ? wrap(n.agent, 30).slice(0, 2) : [];
-    const lines = tl.length + al.length, lh = 14.5;
-    let y = p.y + (NH - lines * lh) / 2 + 11;
-    let t = "";
-    tl.forEach(x => { t += `<text x="${cx}" y="${y}">${esc(x)}</text>`; y += lh; });
-    al.forEach(x => { t += `<text class="ag" x="${cx}" y="${y}">${esc(x)}</text>`; y += lh; });
-    s += `<g class="nd ${esc(n.kind)}"><rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="${n.kind === "decision" ? 26 : 10}"/>${t}</g>`;
-  });
-  mount.innerHTML = s + "</svg>";
-  mount.setAttribute("aria-label", "Fluxograma: " + g.nodes.map(n => n.title).join(", "));
-}
-
-draw(DIAGRAMAS.caminho, document.getElementById("g-caminho"));
-draw(DIAGRAMAS.ciclo, document.getElementById("g-ciclo"));
-draw(DIAGRAMAS.guarda, document.getElementById("g-guarda"));
+renderizar_fluxo("g-caminho", DIAGRAMAS.caminho, "arr-caminho");
+renderizar_fluxo("g-ciclo", DIAGRAMAS.ciclo, "arr-ciclo");
+renderizar_fluxo("g-guarda", DIAGRAMAS.guarda, "arr-guarda");
 
 const PAPEIS = ["coordenador", "map", "config", "implement", "test", "refute", "docs", "dab"];
-const tabs = document.getElementById("tabs");
+const pillsEl = document.getElementById("tabs-trilha");
 function mostrar(id, clique) {
   const job = DADOS.jobs.find(j => j.id === id), pb = DADOS.playbooks[id];
-  tabs.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === id)));
-  document.getElementById("uso").innerHTML = "<b>" + esc(job.label) + "</b>: " + esc(job.uso) + ".";
+  pillsEl.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === id)));
+  document.getElementById("uso").innerHTML = "<b>" + escapar(job.label) + "</b>: " + escapar(job.uso) + ".";
   const usados = PAPEIS.filter(p => pb.nodes.some(n => new RegExp("\\b" + p + "\\b").test(n.agent)));
   document.getElementById("papeis").textContent = "Papéis neste fluxo: " + usados.join(", ") + ".";
-  draw(pb, document.getElementById("g-trilha"));
+  limpar_selecao();
+  renderizar_fluxo("g-trilha", { nodes: pb.nodes, edges: pb.edges }, "arr-pb");
   if (clique) try { history.replaceState(null, "", "#trilha-" + id); } catch (e) {}
 }
 DADOS.jobs.forEach(j => {
   const b = document.createElement("button");
   b.type = "button"; b.dataset.id = j.id; b.textContent = j.label;
   b.addEventListener("click", () => mostrar(j.id, true));
-  tabs.appendChild(b);
+  pillsEl.appendChild(b);
 });
-const h = (location.hash.match(/^#trilha-(\w+)/) || [])[1];
-mostrar(DADOS.playbooks[h] ? h : DADOS.jobs[0].id);
+const hsh = (location.hash.match(/^#trilha-(\w+)/) || [])[1];
+mostrar(DADOS.playbooks[hsh] ? hsh : DADOS.jobs[0].id);
+
+/* Navegação: botões numerados levam à seção; o ativo acompanha a seção visível. */
+const abas = [...document.querySelectorAll("#tabs button")];
+function ativar(id) {
+  abas.forEach(b => b.setAttribute("aria-selected", String(b.dataset.target === id)));
+  const a = abas.find(b => b.dataset.target === id);
+  if (a) a.scrollIntoView({ inline: "nearest", block: "nearest" });
+}
+abas.forEach(b => b.addEventListener("click", () => {
+  document.getElementById(b.dataset.target).scrollIntoView({ behavior: "smooth", block: "start" });
+  ativar(b.dataset.target);
+}));
+if ("IntersectionObserver" in window) {
+  const obs = new IntersectionObserver(es => {
+    const vis = es.filter(e => e.isIntersecting).sort((x, y) => x.boundingClientRect.top - y.boundingClientRect.top)[0];
+    if (vis) ativar(vis.target.id);
+  }, { rootMargin: "-20% 0px -65% 0px" });
+  abas.forEach(b => obs.observe(document.getElementById(b.dataset.target)));
+}
 </script>
-</body>
-</html>
+</body></html>
