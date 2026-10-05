@@ -3,30 +3,174 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Harness da esteira — visão v4</title>
+<title>Harness da esteira</title>
 <style>
+/* ============================================================
+   DB — Color tokens
+   Official brand palette (fixed — do not alter).
+   Source: [DB] MIV.pdf · [Nova DB] MIV - Cores e fontes.pdf
+   ============================================================ */
+:root {
+  /* ---- Brand palette (raw, immutable) ---- */
+  --db-dark-blue:  #221F52; /* primary · text · headers      */
+  --db-pink:       #ED0973; /* highlight · primary actions    */
+  --db-red:        #FF1229; /* error · reproved               */
+  --db-yellow:     #FFB400; /* warning · pending              */
+  --db-green:      #42CE95; /* success · approved · validated */
+  --db-light-blue: #14B6EF; /* info · links · progress        */
+  --db-white:      #FFFFFF;
+
+  /* ---- Tint / shade ramps (derived, for surfaces & states) ---- */
+  --db-dark-blue-90: #38356a;
+  --db-dark-blue-70: #6562a0;
+  --db-dark-blue-12: #e9e9f0;
+  --db-dark-blue-06: #f4f4f8;
+
+  --db-pink-12:  #fde0ee;
+  --db-pink-06:  #fef0f7;
+  --db-red-12:   #ffe1e4;
+  --db-red-06:   #fff0f1;
+  --db-yellow-12:#fff4dc;
+  --db-yellow-06:#fffaef;
+  --db-green-12: #e1f7ee;
+  --db-green-06: #f0fbf6;
+  --db-lblue-12: #def4fd;
+  --db-lblue-06: #eff9fe;
+
+  /* ---- Neutrals (cool grey, tuned toward the dark-blue) ---- */
+  --db-ink:    #221F52;
+  --db-grey-90:#2f2d4d;
+  --db-grey-70:#5b5972;
+  --db-grey-50:#8a8898;
+  --db-grey-40:#a6a4b2;
+  --db-grey-30:#c9c8d2;
+  --db-grey-20:#e3e2e9;
+  --db-grey-12:#ececf1;
+  --db-grey-08:#f3f3f7;
+  --db-grey-04:#f9f9fb;
+
+  /* ---- Semantic aliases ---- */
+  --text-primary:   var(--db-dark-blue);
+  --text-secondary: var(--db-grey-70);
+  --text-muted:     var(--db-grey-50);
+  --text-inverse:   var(--db-white);
+  --text-link:      var(--db-light-blue);
+  --text-accent:    var(--db-pink);
+
+  --surface-page:   var(--db-grey-04);
+  --surface-card:   var(--db-white);
+  --surface-sunken: var(--db-grey-08);
+  --surface-inverse:var(--db-dark-blue);
+  --surface-hover:  var(--db-grey-08);
+
+  --border-subtle:  var(--db-grey-20);
+  --border-default: var(--db-grey-30);
+  --border-strong:  var(--db-grey-40);
+  --border-focus:   var(--db-light-blue);
+
+  --action-primary:        var(--db-pink);
+  --action-primary-hover:  #d2076a;
+  --action-primary-active: #b80659;
+  --action-neutral:        var(--db-dark-blue);
+  --action-neutral-hover:  #1a1840;
+
+  --status-approved:   var(--db-green);
+  --status-approved-bg:var(--db-green-12);
+  --status-pending:    var(--db-yellow);
+  --status-pending-bg: var(--db-yellow-12);
+  --status-reproved:   var(--db-red);
+  --status-reproved-bg:var(--db-red-12);
+  --status-info:       var(--db-light-blue);
+  --status-info-bg:    var(--db-lblue-12);
+  --status-neutral:    var(--db-grey-50);
+  --status-neutral-bg: var(--db-grey-12);
+
+  --ring: 0 0 0 3px color-mix(in srgb, var(--db-light-blue) 35%, transparent);
+}
+/* ============================================================
+   DB — Spacing, radii, shadows, motion, layout (8px base grid)
+   ============================================================ */
+:root {
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --space-6: 32px; --space-7: 40px; --space-8: 48px; --space-9: 64px; --space-10: 80px;
+
+  --radius-xs: 4px; --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-xl: 24px;
+  --radius-pill: 999px; --radius-full: 50%;
+
+  --shadow-xs: 0 1px 2px rgba(34, 31, 82, 0.06);
+  --shadow-sm: 0 1px 3px rgba(34, 31, 82, 0.08), 0 1px 2px rgba(34, 31, 82, 0.04);
+  --shadow-md: 0 4px 12px rgba(34, 31, 82, 0.08), 0 2px 4px rgba(34, 31, 82, 0.04);
+  --shadow-lg: 0 12px 28px rgba(34, 31, 82, 0.12), 0 4px 8px rgba(34, 31, 82, 0.06);
+  --shadow-xl: 0 24px 48px rgba(34, 31, 82, 0.16);
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast:   120ms;
+  --dur-normal: 200ms;
+  --dur-slow:   320ms;
+
+  --container-max: 1280px;
+  --header-h:      64px;
+  --tabs-h:        50px;
+}
+/* ============================================================
+   DB — Typography tokens
+   Brand face: TT Supermolot — substituted with "Saira".
+   ============================================================ */
+:root {
+  --font-brand: "TT Supermolot", "Saira", "Montserrat", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans:  var(--font-brand);
+  --font-mono:  "JetBrains Mono", "SFMono-Regular", ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700; --fw-black: 800;
+
+  --fs-h2: 2.441rem; --fs-h3: 1.953rem; --fs-h4: 1.563rem; --fs-h5: 1.25rem;
+  --fs-lg: 1.125rem; --fs-body: 1rem; --fs-sm: 0.875rem; --fs-xs: 0.75rem; --fs-2xs: 0.6875rem;
+
+  --lh-heading: 1.15; --lh-snug: 1.35; --lh-body: 1.55;
+  --ls-tight: -0.02em; --ls-overline: 0.14em;
+}
+/* v4 — aliases sobre os tokens DB */
 :root{
-  --bg:#f7f7f5; --card:#fff; --ink:#1b1f24; --muted:#5b6470; --line:#cfd5dc;
-  --accent:#1f5fbf; --accent-bg:#e8f0fc;
-  --ok:#17794a; --ok-bg:#e3f4ea; --deny:#b3261e; --deny-bg:#fbe9e7;
-  --warn:#9a5b00; --warn-bg:#fdf1dc; --start:#1b2a41; --start-ink:#fff;
+  --bg:var(--surface-page); --card:var(--surface-card); --ink:var(--text-primary); --muted:var(--text-secondary); --line:var(--border-default);
+  --accent:var(--db-pink); --accent-bg:var(--db-pink-06);
+  --ok:#1f8f62; --ok-bg:var(--db-green-12); --deny:var(--db-red); --deny-bg:var(--db-red-06);
+  --warn:#a36f00; --warn-bg:var(--db-yellow-12); --start:var(--db-dark-blue); --start-ink:var(--db-white);
+  --decision:var(--db-pink); --decision-bg:var(--db-pink-06);
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#14171b; --card:#1d2227; --ink:#e8ebee; --muted:#9aa4af; --line:#3a424b;
-    --accent:#6ea8ff; --accent-bg:#1c2a40;
-    --ok:#5fd29a; --ok-bg:#16301f; --deny:#ff8a80; --deny-bg:#3a1c1a;
-    --warn:#f0b35a; --warn-bg:#3a2c12; --start:#2d4263; --start-ink:#fff;
+    --bg:#16143a; --card:#221F52; --ink:#f4f4f8; --muted:#c9c8d2; --line:#4a4780;
+    --accent:#ff4f9f; --accent-bg:#3a1f4f;
+    --ok:var(--db-green); --ok-bg:#163a3a; --deny:#ff6b7a; --deny-bg:#3d1a35;
+    --warn:var(--db-yellow); --warn-bg:#3a3020; --start:var(--db-light-blue); --start-ink:var(--db-dark-blue);
+    --decision:#ff4f9f; --decision-bg:#3a1f4f;
   }
 }
+/* ============================================================
+   Brand bar
+   ============================================================ */
+.rx-brand { background: var(--surface-inverse); color: var(--text-inverse); min-height: var(--header-h); }
+.rx-brand-inner {
+  max-width: var(--container-max); margin: 0 auto; padding: 0 clamp(16px, 3vw, 40px);
+  min-height: var(--header-h); display: flex; align-items: center; gap: 16px;
+}
+.rx-brand svg { height: 28px; width: auto; flex: none; }
+.rx-brand-title { font-weight: var(--fw-bold); font-size: var(--fs-sm); letter-spacing: var(--ls-tight); }
+.rx-tagline {
+  margin-left: auto; font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase;
+  color: color-mix(in srgb, var(--db-white) 62%, transparent); font-weight: var(--fw-semibold);
+}
+@media (max-width: 720px) { .rx-tagline { display: none; } }
+.db-overline { font-size: var(--fs-xs); font-weight: var(--fw-bold); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--text-muted); }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-code,.mono{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:.88em}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--font-brand)}
+code,.mono{font-family:var(--font-mono);font-size:.88em}
 code{background:var(--accent-bg);padding:1px 5px;border-radius:4px}
-header{padding:28px 16px 12px;max-width:1000px;margin:0 auto}
-h1{margin:0 0 6px;font-size:1.6rem}
-header p{margin:0;color:var(--muted)}
+header.page{padding:28px 16px 12px;max-width:1000px;margin:0 auto}
+h1{margin:0 0 6px;font-size:2rem;font-weight:var(--fw-black);letter-spacing:var(--ls-tight)}
+header.page p{margin:0;color:var(--muted)}
 nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
 nav div{max-width:1000px;margin:0 auto;padding:8px 16px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap}
 nav a{color:var(--ink);text-decoration:none;font-size:.85rem;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
@@ -44,16 +188,16 @@ h2 .n{display:inline-block;min-width:1.7em;height:1.7em;line-height:1.7em;text-a
 .k-start{background:var(--start);border-color:var(--start)!important}
 .k-stop{background:var(--ok-bg);border-color:var(--ok)!important}
 .k-deny{background:var(--deny-bg);border-color:var(--deny)!important}
-.k-decision{background:var(--warn-bg);border-color:var(--warn)!important}
+.k-decision{background:var(--decision-bg);border-color:var(--decision)!important}
 /* svg */
 .nd rect{fill:var(--card);stroke:var(--line);stroke-width:1.5}
 .nd.start rect{fill:var(--start);stroke:var(--start)}
 .nd.stop rect{fill:var(--ok-bg);stroke:var(--ok)}
 .nd.deny rect{fill:var(--deny-bg);stroke:var(--deny)}
-.nd.decision rect{fill:var(--warn-bg);stroke:var(--warn)}
+.nd.decision rect{fill:var(--decision-bg);stroke:var(--decision)}
 .nd text{fill:var(--ink);font-size:12.5px;font-weight:700;text-anchor:middle}
 .nd text.ag{fill:var(--accent);font-size:11px;font-weight:600}
-.nd.start text{fill:var(--start-ink)} .nd.start text.ag{fill:#bcd3f5}
+.nd.start text{fill:var(--start-ink)} .nd.start text.ag{fill:var(--start-ink);opacity:.8}
 .nd.deny text.ag{fill:var(--deny)} .nd.stop text.ag{fill:var(--ok)}
 .eg path{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-linejoin:round}
 .eg.back path{stroke-dasharray:5 4;stroke:var(--accent)}
@@ -124,7 +268,22 @@ footer{max-width:1000px;margin:0 auto;padding:0 16px 40px;color:var(--muted);fon
 </style>
 </head>
 <body>
-<header>
+<header class="rx-brand">
+  <div class="rx-brand-inner">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 395.5 156" fill="#FFFFFF" role="img" aria-label="db" width="72" height="28">
+      <path d="M140.85 110.93 C128.12 110.93 117.77 100.57 117.77 87.85 C117.77 75.12 128.12 64.77 140.85 64.77 C153.57 64.77 163.92 75.12 163.92 87.85 C163.92 100.57 153.57 110.93 140.85 110.93 M191.42 7.02 C191.42 3.14 188.27 -0.01 184.39 -0.01 L170.96 -0.01 C167.07 -0.01 163.92 3.14 163.92 7.02 L163.92 42.90 C154.79 38.19 144.09 36.12 132.78 37.91 C110.74 41.40 93.32 59.43 90.65 81.58 C86.87 112.86 111.84 139.45 142.61 138.39 C150.37 138.13 157.61 136.02 164.05 132.59 C164.62 135.90 167.48 138.42 170.96 138.42 L184.39 138.42 C188.27 138.42 191.42 135.28 191.42 131.39 L191.42 86.67 L191.42 86.66 Z"/>
+      <path d="M254.65 110.93 C267.37 110.93 277.72 100.57 277.72 87.85 C277.72 75.12 267.37 64.77 254.65 64.77 C241.92 64.77 231.57 75.12 231.57 87.85 C231.57 100.57 241.92 110.93 254.65 110.93 M204.07 7.02 C204.07 3.14 207.22 -0.01 211.10 -0.01 L224.53 -0.01 C228.42 -0.01 231.57 3.14 231.57 7.02 L231.57 42.90 C240.70 38.19 251.40 36.12 262.71 37.91 C284.75 41.40 302.17 59.43 304.84 81.58 C308.62 112.86 283.65 139.45 252.88 138.39 C245.13 138.13 237.89 136.02 231.45 132.59 C230.87 135.90 228.01 138.42 224.53 138.42 L211.10 138.42 C207.22 138.42 204.07 135.28 204.07 131.39 L204.07 86.67 L204.07 86.66 Z"/>
+      <path d="M81.82 133.78 L35.91 87.87 L81.82 41.96 C84.62 39.16 84.62 34.61 81.82 31.81 L72.53 22.52 C69.72 19.72 65.18 19.72 62.37 22.52 L11.56 73.33 L11.38 73.49 L2.09 82.78 C0.69 84.19 -0.01 86.03 -0.01 87.87 C-0.01 89.71 0.69 91.55 2.09 92.95 L11.38 102.25 L11.56 102.41 L62.38 153.22 C65.18 156.03 69.73 156.03 72.53 153.22 L81.82 143.93 C84.63 141.13 84.63 136.58 81.82 133.78"/>
+      <path d="M313.67 133.78 L359.58 87.87 L313.67 41.96 C310.87 39.16 310.87 34.61 313.67 31.81 L322.96 22.52 C325.77 19.72 330.31 19.72 333.12 22.52 L383.93 73.33 L384.11 73.49 L393.40 82.78 C394.80 84.19 395.50 86.03 395.50 87.87 C395.50 89.71 394.80 91.55 393.40 92.95 L384.11 102.25 L383.93 102.41 L333.11 153.22 C330.31 156.03 325.76 156.03 322.96 153.22 L313.67 143.93 C310.86 141.13 310.86 136.58 313.67 133.78"/>
+    </svg>
+    <div>
+      <p class="db-overline" style="color: color-mix(in srgb, var(--db-white) 70%, transparent); margin: 0 0 2px;">Projeto Avante · Ipiranga</p>
+      <div class="rx-brand-title">Harness da esteira</div>
+    </div>
+    <span class="rx-tagline">design and build the future</span>
+  </div>
+</header>
+<header class="page">
 <h1>Harness da esteira</h1>
 <p>Guia visual: o princípio, o que o harness faz e como ele se organiza. Fluxos conforme <code>agentes/roteamento.yaml</code>. Versão 4, enxuta.</p>
 </header>
