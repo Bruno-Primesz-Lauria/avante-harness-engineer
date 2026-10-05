@@ -20,7 +20,7 @@ Estado atual dos arquivos de configuração: Cursor, Claude Code e OpenCode inst
 | Runtime | Versão |
 |---|---|
 | Cursor | 3.17.8 |
-| Claude Code | 2.1.282 |
+| Claude Code | 2.1.289 |
 | Codex CLI | 0.158.0 |
 | OpenCode | 1.18.15 |
 
