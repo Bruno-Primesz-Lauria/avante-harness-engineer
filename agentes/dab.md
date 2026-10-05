@@ -44,7 +44,7 @@ Encerrar após registrar o resultado real da operação autorizada ou interrompe
 
 ## Regras comuns
 
-Carregar skills só quando pertinentes e citar as usadas. Manter os padrões herdados de modelo e runtime; não definir nem sobrescrever modelo. Respeitar as regras do harness, o `AGENTS.md` aplicável e boas práticas Databricks; executar somente o menor passo autorizado que satisfaça o critério.
+Carregar skills só quando pertinentes e citar as usadas. Manter os padrões herdados de modelo e runtime; não definir nem sobrescrever modelo. Respeitar as regras do harness, o `AGENTS.md` aplicável e boas práticas Databricks; executar somente o menor passo autorizado que satisfaça o critério. Simplificar nunca remove pré-checagem, guarda ou passo da escada exigido; o relatório traz só o necessário para decidir, sem repetir log que já está na evidência.
 
 ## Metadados
 
