@@ -2,7 +2,7 @@ schema_versao: "3.2"
 status: implementado_parcial
 fonte: ../PLANO-AGENTES-TRILHAS.md
 nota: >
-  Contrato de campos. Exemplos com exemplo:true ficam no HTML de referencia e
+  Contrato de campos. Exemplos com exemplo:true ficam em testes/teste_formas.py e
   o consumidor operacional os rejeita. As formas contrato, guarda, brief,
   teste, ataque, triagem, inspecao e chamada estao adotadas; C2 validou os
   payloads 3.2. Registros 3.1 continuam legiveis. A adocao do schema nao
