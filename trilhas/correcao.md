@@ -9,6 +9,8 @@ Usar quando: bug sustentado por log, observação ou reprodução.
 3. **Corrigir.** Aplique a mudança mínima coerente com a causa. Feito quando: o manifesto, ou o escopo no chat, aponta o estado novo.
 4. **Validar.** Entre no [laço comum](README.md). Achado de revisão volta à correção e renova a prova. Feito quando: a regressão verificou a correção e os achados obrigatórios fecharam.
 
+Com agentes: o diagnóstico é seu, com `map` opcional; `test` reproduz no passo 2; `config` ou `implement` corrige no 3, por superfície; `test` revalida o mesmo critério e `refute` revisa no 4; `dab` se o contrato tem critério `ambiente` autorizado. Na reprodução, aprovação inesperada vai para `DECIDE` e resultado inconclusivo para `BLOCKED`.
+
 ## Aceite
 
 Superfície: a causa localizada e os arquivos necessários para corrigi-la.

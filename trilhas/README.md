@@ -1,6 +1,9 @@
 # Trilhas
 
-Escolha a trilha pelo objetivo. Um único agente executa a trilha, com verificação objetiva. Subagente e skill do [acervo](../acervo/README.md) são candidatos e não existem: não dependa deles.
+Escolha a trilha pelo objetivo. Ela roda em um de dois modos, pela chave `agentes_obrigatorios` de [`configuracao/politica.json`](../configuracao/politica.json) para o seu runtime:
+
+- **Com agentes**, se a trilha está na chave: você coordena e os papéis de [`agentes/`](../agentes/) executam, conforme [Agentes](#agentes).
+- **Agente único**, fora da chave: você executa a trilha, com verificação objetiva. Não dependa de subagente nem de skill candidata do [acervo](../acervo/README.md).
 
 | id | Use para | Arquivo |
 |---|---|---|
@@ -37,10 +40,34 @@ pode corrigir?
 
 - O revisor recebe intenção, critérios de aceite, identificadores da execução e a referência da base ou do estado. Ele descobre os arquivos pelo diff. Não envie a justificativa do autor.
 - Workspace com alteração prévia exige atribuir a mudança: `git diff` sozinho não delimita a fatia.
-- Sem agente separado, registre o modo de revisão e apoie o aceite em prova objetiva.
+- Com agentes, quem altera não verifica nem revisa: o `test` verifica e o `refute` revisa. Como agente único, registre o modo de revisão e apoie o aceite em prova objetiva.
 - Teste em outro agente continua o mesmo teste. O esperado vem do requisito, do dado de referência ou do comportamento contratado.
 - O CI do PR não executa as suítes locais. Rode-as antes do PR (regra do `AGENTS.md` do produto). Ampliação local de suíte vai separada no manifesto de entrega.
 - Orçamento do laço: [`nucleo/modus-operandi.md`](../nucleo/modus-operandi.md#recuperação).
+
+## Agentes
+
+Vale só para a trilha que está em `agentes_obrigatorios` do seu runtime. A fonte única da ordem e dos gatilhos é [`agentes/roteamento.yaml`](../agentes/roteamento.yaml); cada papel tem sua definição em `agentes/<papel>.md`.
+
+| Trilha | Sequência |
+|---|---|
+| `novo` | map opcional → coordenador → config + implement → test → refute → dab se aplicável → coordenador |
+| `manutencao` | map opcional → coordenador → test prepara se o caso existente não decide → config/implement → test → refute → dab se aplicável → coordenador |
+| `correcao` | diagnóstico (map opcional) → coordenador → test reproduz → config/implement → test revalida → refute → dab se aplicável → coordenador |
+| `docs` | map opcional → coordenador → docs → inspeção documental pelo coordenador → refute → coordenador |
+| `destilar` | map opcional → coordenador → docs com distill → inspeção documental pelo coordenador → refute → coordenador |
+| `validacao` | coordenador → test → dab se autorizado → test com paridade se exigida → refute → coordenador |
+| `review` | map opcional → coordenador → refute → coordenador |
+| `entendimento` | coordenador, com map opcional; sem refute |
+
+- **Escrita por superfície:** YAML de negócio, ingestão ou recurso vai para `config`; notebook, Python ou SQL, para `implement`. Arquivo que nenhum dos dois cobre recusa o início da fatia: declare arquivos atribuíveis ou feche com `DECIDE`.
+- **Gatilhos:** `test` entra com critério `teste`, `validacao_dados` ou `paridade`; `dab`, com critério `ambiente` e autorização registrada (sem ela, `DECIDE`); `refute`, em toda trilha estruturada exceto `entendimento`. `map` é sempre opcional.
+- **Plano de chamadas:** `iniciar` calcula as chamadas previstas e as grava no `estado.json` da fatia. Não escreva o plano à mão. Só a chamada observada pelo adaptador do runtime conta como execução do papel.
+- **Prova do teste:** vale a do comando que o `test` rodou. Teste rodado por você no lugar do `test` não fecha o critério (`teste_fora_do_test`).
+- **Entrada do refute:** intenção, aceite, baseline, estado atual e provas. Não envie o racional do autor. Achado procedente volta ao dono da superfície, conta no orçamento e pede novo teste e nova revisão; descarte exige motivo registrado na triagem.
+- **Edição depois da prova:** invalida teste, inspeção e revisão afetados.
+- **Papel ou capacidade obrigatória indisponível:** `BLOCKED` para o trabalho que depende dele; o trabalho independente continua. Falta de decisão ou autorização humana: `DECIDE`.
+- O papel não amplia autorização: guardas, permissões do runtime e o `AGENTS.md` prevalecem.
 
 ## Skills Databricks
 

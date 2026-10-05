@@ -32,7 +32,7 @@ Um hook de um produto não vale como o de outro. Guarda obrigatória indisponív
 |---|---|---|
 | Instruções | `CLAUDE.md`. Confira o que carrega. | `AGENTS.md`. Confira o que carrega. |
 | Pergunta | Cartão, se existir. Senão, texto. | Ferramenta de pergunta ou texto. |
-| Revisor | Subagente, se existir e estiver autorizado. | Delegação opcional. Sem suporte, verifique por critério objetivo. |
+| Agentes do fluxo | Papéis em `.claude/agents/`, gerados de [`agentes/`](../agentes/). Obrigatórios nas trilhas de `agentes_obrigatorios.claude_code`. | Cursor: papéis em `.cursor/agents/`, obrigatórios nas trilhas de `agentes_obrigatorios.cursor`. Codex e OpenCode ficam fora da chave: agente único, com delegação opcional. |
 | Persistência | Árvore de [`evidencia/layout.md`](../evidencia/layout.md), sob a raiz configurada. | Idem. |
 
-Não implementado: skills e subagentes.
+Subagentes: definição neutra em [`agentes/`](../agentes/) e versão nativa gerada para Claude Code e Cursor. Instalação e observação por runtime ficam nos metadados de [`agentes/roteamento.yaml`](../agentes/roteamento.yaml). Skills do projeto: não implementadas.

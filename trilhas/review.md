@@ -8,6 +8,8 @@ Usar quando: revisar um recorte identificado, sem reescrever o produto. Não usa
 2. **Revisão.** Confira invariantes e cenários relevantes. Cobertura ausente fica `nao_verificado`. Feito quando: cada achado é localizável.
 3. **Veredito.** Declare `aceitavel`, `com_achados` ou `inconclusivo`. Se falta prova essencial, é `inconclusivo`, com o motivo. Feito quando: o veredito está sustentado e não aprova o produto por autoridade.
 
+Com agentes: você delimita o recorte e, se o contrato tem critério `analise_codigo`, inspeciona; `refute` faz a revisão e o veredito. Com o `refute` indisponível, `BLOCKED`.
+
 ## Aceite
 
 Superfície: o recorte declarado (base, head e o estado local relevante). Sem corrigir o produto.

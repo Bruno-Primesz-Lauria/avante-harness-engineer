@@ -7,7 +7,9 @@ Vinte e seis peças do desenho: 1 regra, 13 skills, 7 papéis de agente e 5 hook
 | `politica` | `modus-operandi` | Há texto de política em [`nucleo/modus-operandi.md`](../nucleo/modus-operandi.md). |
 | `implementado` | `cwd-bundle`, `target-dev`, `yaml-stop` e `stop-untested` (estes dois são a guarda "Fecho") | Há código que aplica a guarda. Política e limites em [`guardas/README.md`](../guardas/README.md). |
 | `coberto` | `tech-guide` | O papel é atendido pelas skills Databricks instaladas. |
-| `candidato` | as outras 12 skills, os 7 papéis, `docs-distill` | Não implementado. Não existe como skill, subagente ou hook. |
+| `candidato` | as outras 12 skills, `docs-distill` | Não implementado. Não existe como skill ou hook. |
+
+Os 7 papéis de agente têm política aprovada e definição em [`agentes/`](../agentes/). Ordem, gatilhos e o estado instalado e observado por runtime ficam em [`agentes/roteamento.yaml`](../agentes/roteamento.yaml). Eles são obrigatórios só nas trilhas habilitadas em `agentes_obrigatorios`.
 
 A skill pessoal `grilling` não é copiada aqui.
 
@@ -15,7 +17,7 @@ As skills de plataforma `databricks-*` (aitools v0.2.10, em `.agents/skills/`) e
 
 ## Roteamento
 
-O agente principal escolhe a [trilha](../trilhas/README.md) pelo objetivo e coordena pelo [`modus-operandi`](../nucleo/modus-operandi.md). Carregar uma skill não cria agente, arquivo ou etapa.
+O agente principal escolhe a [trilha](../trilhas/README.md) pelo objetivo e coordena pelo [`modus-operandi`](../nucleo/modus-operandi.md). Nas trilhas habilitadas, delega aos papéis na ordem de [Agentes](../trilhas/README.md#agentes). Carregar uma skill não cria agente, arquivo ou etapa.
 
 Quando a ferramenta não tem a capacidade, declare a limitação. Não invente skill, hook ou revisor como se tivessem rodado.
 

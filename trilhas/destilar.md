@@ -9,6 +9,8 @@ Usar quando: transformar padrão recorrente em instrução acionável, com fonte
 3. **Inspecionar.** Cheque fato, link, exemplo e duplicação contra o documento de origem. Feito quando: o aceite da destilação está registrado.
 4. **Revisar.** Entre no [laço comum](README.md). Feito quando: não há achado obrigatório aberto.
 
+Com agentes: `docs`, com a capacidade `distill`, escreve no passo 2; sem `distill`, `BLOCKED`; sem fonte e destino autorizados, `DECIDE`. A inspeção do passo 3 é sua; `refute` revisa no 4.
+
 ## Aceite
 
 Superfície: a skill e as referências do adaptador, só se o contrato as autoriza. Escreva só nos arquivos autorizados.
