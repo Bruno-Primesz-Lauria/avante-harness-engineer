@@ -1,6 +1,6 @@
 # Plano de implementação da memória compartilhada do harness
 
-Data: 2026-10-03. Estado: proposta revisada. Conferida contra o repositório na branch `feat/engenheiro-bruno-lauria` (commit `3454154`), com `PLANO-AGENTES-TRILHAS.md` alterado e ainda não commitado.
+Data: 2026-10-03. Estado: proposta revisada, não iniciada. Reconferida em 2026-10-05 contra a branch `feat/engenheiro-bruno-lauria` (commit `a0a5604`), depois de A1–A5, C1–C3 e P0.5 do plano de agentes.
 
 ## Intenção
 
@@ -36,14 +36,14 @@ A primeira entrega cobre a memória do harness. A memória específica do produt
 | Instruções comuns | `AGENTS.md` é a entrada; `CLAUDE.md` importa `@AGENTS.md`. Leituras sob demanda seguem o padrão "Leia X quando ..." (caso de `contexto-avante.md`). | Uma linha condicional no `AGENTS.md`; a política fica em `memoria/README.md`. |
 | Contexto advisory | `nucleo/contexto-avante.md` é advisory: "nunca é fonte de regra nem de decisão". | As notas adotam o mesmo estatuto e a mesma redação. |
 | Persistência operacional | `.execucoes/` guarda provas, estado, sessões e diagnósticos e está no `.gitignore`. Hoje só contém diretórios de teste. | Preservar os registros locais e compartilhar notas destiladas em outra pasta. |
-| Destilação | `trilhas/destilar.md` limita a superfície a skills e referências do adaptador. | Incluir notas como destino e ajustar o aceite. |
+| Destilação | `trilhas/destilar.md` limita a superfície a skills e referências do adaptador. Desde o A5, prevê `docs` com `distill` no passo 2, inspeção do coordenador e `refute`, quando a trilha estiver em `agentes_obrigatorios`. | Incluir notas como destino e ajustar o aceite, sem mexer na sequência de papéis. Notas `.md` já cabem na superfície documental do `docs`. |
 | Acervo | `distill` (skill) e `docs-distill` (hook que "sinaliza candidato; não exige pergunta nem destilação") são candidatos em `acervo/catalogo.yaml`. | Reusar essas peças para destilar e sinalizar notas. Não criar peça paralela. |
-| Schema de eventos | `implementacao/formas.py` aceita `contrato`, `guarda`, `brief` e `teste`; `destilar` continua candidata. | Notas têm metadados próprios e não são apresentadas como eventos adotados. |
-| Fecho técnico | O núcleo exige verificação por comando; inspeção documental sem comando não fecha (`evidencia/fecho.md`). | A Fase 1 entrega um comando `validar` para a inspeção documental. O schema 3.2 do plano de agentes (forma `inspecao`) é o caminho futuro para critério sem comando. |
+| Schema de eventos | Schema 3.2 adotado (C1–C3): `contrato`, `guarda`, `brief`, `teste`, `ataque`, `triagem`, `inspecao` e `chamada`. `destilar` continua candidata. | Notas têm metadados próprios e não são apresentadas como eventos adotados. |
+| Fecho técnico | O núcleo já aceita critério `inspecao_documental` sem comando (`Provas.inspecionar`, forma `inspecao`), mas `adaptadores/prova.py` ainda não expõe a inspeção: só `iniciar`, `estado` e `fechar`. | A Fase 1 mantém o comando `validar`, que fecha como critério `teste` em qualquer runtime com coleta. A inspeção documental cobre o que o comando não exercita quando houver caminho de CLI para ela. |
 | Prova por runtime | Só o Cursor coleta prova. No Claude Code `fechar` recusa `DONE`, porque não há sessão nem coleta (BL2 do plano de agentes). | Fatia estruturada fecha `DONE` só no Cursor; no Claude Code fecha com impedimento declarado (DM-2). |
-| Retrato da prova | O manifesto inclui `implementacao/`, `adaptadores/`, `configuracao/`, `formas/catalogo.yaml` e `.cursor/hooks.json` (`implementacao/provas.py`). `memoria/` fica fora. | Editar nota não invalida a prova de outra fatia, salvo se o contrato declarar o caminho. Código da memória nessas pastas passa a integrar o retrato de toda fatia. |
+| Retrato da prova | O controle do manifesto inclui `implementacao/`, `adaptadores/`, `configuracao/`, `formas/catalogo.yaml` e `agentes/roteamento.yaml` (`CONTROLE` em `implementacao/provas.py`). `memoria/` fica fora. | Editar nota não invalida a prova de outra fatia, salvo se o contrato declarar o caminho. Código da memória nessas pastas passa a integrar o retrato de toda fatia. |
 | Git e revisão | Branch de referência `main` (`origin/HEAD`). Não há `.github/`, CODEOWNERS nem CI no repositório. | Revisor é decisão do time (DM-1). A validação roda localmente antes do PR, como as suítes. |
-| Plano de agentes | Em andamento sobre os mesmos arquivos: P0.6 (`AGENTS.md`), A5 (`AGENTS.md`, núcleo, trilhas, acervo, adaptadores) e C1–C3 (schema 3.2). Define a sequência de `destilar`: docs com distill → inspeção documental → refute. | Sequenciar as entregas (DM-3) e manter `trilhas/destilar.md` compatível com essa sequência. |
+| Plano de agentes | P0.6, A5 e C1–C3 concluídos; o texto do A5 já está em `AGENTS.md`, núcleo, trilhas, acervo e adaptadores. A próxima onda (B1, E0a, D-CC, D-CU) mexe em `adaptadores/` e `testes/`. Define a sequência de `destilar`: docs com distill → inspeção documental → refute. | Partir do texto do A5, sequenciar as entregas (DM-3) e manter `trilhas/destilar.md` compatível com essa sequência. |
 | Memória nativa dos runtimes | Runtimes podem manter memória própria fora do repositório (por exemplo, a auto memory do Claude Code em `~/.claude/projects/`). | Ela é pessoal e não substitui nem alimenta esta memória. Conhecimento para o time entra em `memoria/` por PR. |
 | Fronteira de repositórios | O produto tem Git próprio e está ignorado pelo Git do harness. | Conhecimento do produto acompanha o repositório do produto. |
 
@@ -158,9 +158,9 @@ O fecho técnico da tarefa e a publicação da memória são resultados distinto
 
 ### Fase 0 — Preparar a fatia
 
-1. Conferir o estado do checkout e preservar alterações preexistentes, inclusive `PLANO-AGENTES-TRILHAS.md`.
+1. Conferir o estado do checkout e preservar alterações preexistentes, inclusive as da onda do plano de agentes em curso.
 2. Registrar as decisões DM-1 a DM-3 (seção 9).
-3. Selecionar duas ou três notas iniciais com conhecimento que ainda não está em documento operacional, com fontes commitadas. Candidatas, a partir das observações do plano de agentes: no Claude Code, as skills Databricks aparecem com prefixo `databricks:` e em número diferente do citado no HTML; no Claude Code, `fechar` recusa `DONE` por falta de sessão e coleta.
+3. Selecionar duas ou três notas iniciais com conhecimento que ainda não está em documento operacional, com fontes commitadas. As candidatas da primeira revisão (prefixo `databricks:` das skills no Claude Code e `fechar` recusando `DONE` nesse runtime) já foram absorvidas pelo `AGENTS.md`, pelo README e pelos READMEs dos adaptadores e não entram, porque nota que só repete documento existente não entra. Buscar o porquê de decisões que os documentos registram sem explicar, por exemplo: a atribuição do teste no subagente do Cursor por janela de tempo, e não por ID, e o motivo de o A5 ter sido aplicado antes do E0.
 4. Definir a inspeção documental: nenhum comando existente confere metadados e links de notas. Por isso `validar` entra na Fase 1. No contrato, os `caminhos` do critério cobrem toda a superfície (`memoria/` e os documentos alterados), como exige o validador. O que o comando não exercita (precisão factual, coerência entre README e HTML) fica na revisão e é declarado como limite.
 5. Preparar o contrato da trilha `docs` e iniciar a fatia antes de editar, conforme `AGENTS.md` e `evidencia/uso.md`, no runtime definido em DM-2.
 
@@ -177,7 +177,7 @@ Dependência: Fase 0.
 | `trilhas/destilar.md` | Incluir nota como destino, com a fronteira entre nota e instrução; explicitar que a forma `destilar` segue candidata. |
 | `trilhas/README.md` | Ajustar a descrição da trilha `destilar` ao novo destino. |
 | `README.md` | Estrutura, estado implementado, fluxo Git, uso no Obsidian e comando `validar`. |
-| `user-harness-esteira-v3.html` | Atualizar as afirmações de estado atual; manter as etapas futuras como propostas. |
+| `user-harness-esteira-v3.html` | Atualizar a seção `#memoria` (página 4) com o que foi implementado; manter as etapas futuras como propostas. |
 | `.gitignore` | Ignorar `memoria/.obsidian/`. |
 | `memoria/README.md` | Política, revisores, ciclo de contribuição, configuração do Obsidian e limites. |
 | `memoria/indice.md` | Índice por assunto com as notas iniciais. |
@@ -196,7 +196,7 @@ Aceite:
 - README e HTML descrevem o mesmo nível de implementação.
 - A criação de notas é proporcional à tarefa; nada depende de Obsidian, plugin, MCP ou serviço externo.
 
-Dimensão estimada: sete arquivos existentes, três documentos novos, as notas iniciais, um módulo com CLI e um arquivo de teste. Não muda o núcleo de provas nem o schema de eventos. Como `implementacao/` e `adaptadores/` integram o retrato das provas, editar `memoria.py` durante outra fatia no mesmo checkout invalida a prova dela.
+Dimensão estimada: sete arquivos existentes, três documentos novos, as notas iniciais, um módulo com CLI e um arquivo de teste. Não muda o núcleo de provas nem o schema de eventos. Como `implementacao/` e `adaptadores/` integram o controle do manifesto, editar `memoria.py` durante outra fatia no mesmo checkout invalida a prova dela; não rodar o código da Fase 1 em paralelo com uma fatia ativa do plano de agentes no mesmo checkout.
 
 ### Fase 2 — Busca, índice gerado e revalidação
 
@@ -230,7 +230,7 @@ Aceite: pelo menos dois engenheiros, com clones independentes, demonstram compar
 
 ### Fase 4 — Automação por runtime
 
-Dependência: piloto concluído e benefício demonstrado. Registro formal depende do schema 3.2 do plano de agentes (C1–C3) e, no Claude Code, do adaptador D-CC.
+Dependência: piloto concluído e benefício demonstrado. O schema 3.2 (C1–C3) já está adotado; o registro formal no Claude Code depende do adaptador D-CC, e a destilação com papéis depende da trilha `destilar` entrar em `agentes_obrigatorios` (onda 2 do plano de agentes).
 
 1. Conferir a documentação oficial atual e os eventos disponíveis nas versões usadas pelo time.
 2. Reutilizar a política e o CLI comuns; cada adaptador traduz somente os eventos do seu runtime.
@@ -281,7 +281,7 @@ A primeira entrega está concluída quando a Fase 1 passa no aceite; o piloto co
 | 1 | Fases 0 e 1: estrutura, política, modelo, índice, notas iniciais e `validar` mínimo. | Pequeno a médio; documental, com um validador e seus testes. |
 | 2 | Fase 2: busca, índice gerado, revalidação e testes. | Médio; código local. |
 | 3 | Fase 3: observação entre engenheiros e runtimes, com ajustes na política. | Depende da participação do time e das ferramentas disponíveis. |
-| 4 | Fase 4: eventos, registros e ativação por runtime. | Maior; depende do schema 3.2 e do adaptador do Claude Code. |
+| 4 | Fase 4: eventos, registros e ativação por runtime. | Maior; depende do adaptador do Claude Code (D-CC) e da onda 2 do plano de agentes. |
 
 O piloto manual pode começar após a entrega 1 e ser repetido depois da entrega 2. Cada pacote tem um PR com escopo próprio e usa o contrato e a prova exigidos para seu modo de execução. Não estimar prazo das integrações antes de confirmar os eventos e capacidades disponíveis.
 
@@ -299,6 +299,6 @@ Busca semântica, serviço central, integração MCP ou uso da CLI do Obsidian s
 |---|---|---|
 | DM-1 | Quem aprova PRs que tocam `memoria/`. | O mesmo revisor dos PRs do harness, registrado em `memoria/README.md`. CODEOWNERS é opcional. |
 | DM-2 | Runtime da fatia da Fase 1. | Cursor, para fechar `DONE` com prova do `validar` e das suítes. No Claude Code, fechar `BLOCKED` com o motivo (sem coleta) e pedir revisão do PR. |
-| DM-3 | Ordem em relação ao plano de agentes. | Entrega 1 depois de P0.6 e antes de A1/A5, em PRs separados. A migração A5 parte do texto que já inclui a memória, e o painel do plano de agentes registra a dependência. |
+| DM-3 | Ordem em relação ao plano de agentes. | A proposta original (antes de A1/A5) ficou superada: A1–A5 foram concluídos em 2026-10-05. Nova proposta: a parte documental da Entrega 1 pode correr em paralelo com a onda B1/E0a/D-CC/D-CU, porque os arquivos são disjuntos, exceto `README.md` e o HTML; `memoria.py` e seus testes entram depois do G1, para não alterar o controle do manifesto durante a onda. Commits separados, com o ID `MEM-1`. |
 
 Referências externas consultadas para o desenho: [armazenamento de dados do Obsidian](https://obsidian.md/help/Files+and+folders/How+Obsidian+stores+data), [propriedades das notas](https://obsidian.md/help/properties) e [CLI do Obsidian](https://obsidian.md/help/cli). Revalidar requisitos de versão e instalação ao implementar uma integração opcional.
