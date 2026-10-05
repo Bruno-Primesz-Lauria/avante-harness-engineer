@@ -24,7 +24,7 @@ runtimes:
   cursor:
     skill_ref: ".agents/skills/databricks-<nome>/SKILL.md"
     instalacao_agentes: .cursor/agents/
-    observacao_habilidades_em_subagente: pendente_p0_5
+    observacao_habilidades_em_subagente: observada_p0_5
 
 regras:
   carregamento_skills: "Carregar apenas a skill pertinente ao gatilho; registrar a referência usada; não presumir que a skill do coordenador foi carregada no subagente."

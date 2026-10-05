@@ -6,7 +6,7 @@ Manual da prova estruturada: iniciar a fatia, rodar as verificações, fechar. P
 
 1. Abra o harness como raiz. O hook `sessionStart` entrega o identificador da sessão ao agente.
 2. No trabalho estruturado, prepare o contrato e inicie a fatia **antes de editar**.
-3. Rode pelo chat os comandos exatos do contrato, com `working_directory` absoluto. O `preToolUse` captura o estado; o `postToolUse` registra `exitCode` e saída; o `postToolUseFailure` registra resultado inconclusivo. Terminal manual não gera esses eventos. Só a ferramenta Shell é observada, e só o comando que casa com um critério do contrato (mesmo texto e mesmo cwd) vira prova.
+3. Rode pelo chat os comandos exatos do contrato, com o diretório absoluto no campo `cwd` da ferramenta Shell (Cursor 3.17.8; versões anteriores usavam `working_directory`). Sem diretório, a verificação declarada é negada. O `preToolUse` captura o estado; o `postToolUse` registra `exitCode` e saída; o `postToolUseFailure` registra o exit diferente de zero lido do texto `Command failed with exit code N`; negação, timeout ou texto inesperado ficam inconclusivos. Terminal manual não gera esses eventos. Só a ferramenta Shell é observada, e só o comando que casa com um critério do contrato (mesmo texto e mesmo cwd) vira prova.
 4. Consulte o estado e feche. Edição relevante depois da prova exige nova verificação.
 
 ```powershell

@@ -44,11 +44,13 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 
 **Fora da guarda**: terminal manual, MCP, SDK, REST, edição de arquivo e ferramentas que não são shell.
 
-**Skills Databricks**: as 10 de `.agents/skills/` valem para Cursor, Codex e OpenCode. O Claude Code recebe as 29 pelo plugin `databricks` do projeto.
+**Skills Databricks**: as 10 de `.agents/skills/` valem para Cursor, Codex e OpenCode. O Claude Code recebe as 31 `databricks:databricks-*` pelo plugin `databricks` do projeto (CLI 2.1.289), inclusive no subagente.
 
-**Não implementado**: skills do projeto, subagentes, 11 das 15 formas, conferência de identidade e destinos, coordenação de dados e `docs-distill`.
+**Não implementado**: skills do projeto, versões nativas dos subagentes (`.claude/agents/`, `.cursor/agents/`; definições neutras prontas em `agentes/`), 10 das 18 formas (candidatas), coleta de prova no Claude Code, conferência de identidade e destinos, coordenação de dados e `docs-distill`.
 
-**Não observado**: nenhuma sessão real mostrou o hook negando, a prova sendo coletada ou as skills carregando. Os testes locais cobrem o código, não a ativação. Os oito cenários não foram executados.
+**Observado** (sondagens P0.4 no Claude Code 2.1.289 e P0.5 no Cursor 3.17.8, com subagente de sondagem): instruções e skills chegando ao subagente, hooks de shell disparando nele e a guarda negando ali sem executar. Resumos nos READMEs de [`adaptadores/claude_code`](adaptadores/claude_code/README.md) e [`adaptadores/cursor`](adaptadores/cursor/README.md).
+
+**Não observado**: os sete papéis em sessão real, uma fatia estruturada fechando `DONE` ponta a ponta e os oito cenários de avaliação. Os testes locais cobrem o código, não a ativação.
 
 ## Preparar um clone
 

@@ -7,7 +7,7 @@ nota: >
   teste, ataque, triagem, inspecao e chamada estao adotadas; C2 validou os
   payloads 3.2. Registros 3.1 continuam legiveis. A adocao do schema nao
   significa que os eventos dos runtimes foram observados: P0.4 (Claude Code)
-  foi observada; P0.5 (Cursor) segue pendente, e a ativacao depende de G2.
+  e P0.5 (Cursor) foram observadas; a ativacao depende de G2.
   Baseline, manifesto e estado estao descritos em evidencia/uso.md.
 compatibilidade:
   registro_3_1:

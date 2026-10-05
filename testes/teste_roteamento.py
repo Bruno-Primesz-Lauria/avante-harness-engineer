@@ -331,14 +331,14 @@ class ConsistenciaRoteamentoTestes(unittest.TestCase):
         self.assertIn("coordenador", _papeis_no_rotulo(nos["veredito"]["agent"]))
         self.assertIn(("refute", "blocked"), arestas)
 
-    def test_d5_hook_de_shell_em_subagente_permanece_pendente_de_observacao(self):
+    def test_d5_hook_de_shell_em_subagente_observado_na_p0_5(self):
         self.assertEqual(
-            "pendente_p0_5",
+            "observada_p0_5",
             self.rota["runtimes"]["cursor"]["observacao_habilidades_em_subagente"],
         )
         texto = _normalizar(self.html)
-        self.assertIn("cobertura no shell de subagentes", texto)
-        self.assertIn("observada na sondagem p0.5", texto)
+        self.assertIn("cobertura no shell de subagentes observada na sondagem p0.5", texto)
+        self.assertNotIn("sera observada na sondagem p0.5", texto)
         pecas = {p["id"]: p for p in self.catalogo["pecas"] if p.get("tipo") == "subagent"}
         self.assertEqual("pendente", pecas["implement"]["observado"]["cursor"]["estado"])
 

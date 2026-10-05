@@ -198,7 +198,7 @@ Resultado bruto em `.execucoes/sondagens/`; resumo versionado no README do adapt
 | A2 | A | Sete definições neutras `agentes/<nome>.md` | A1 | Campos da seção 4 completos; capacidades obrigatórias embutidas |
 | A3 | A | Alinhar o HTML (D1–D5) e os metadados do catálogo (aprovado × instalado × observado) | P0.1 | Desenho e catálogo concordam, sem comportamento novo |
 | A4 | A | Teste de consistência entre roteamento, HTML e catálogo | A1, A3 | Falha com divergência real e passa no estado alinhado |
-| A5 | A | Preparar a migração do texto operacional (`AGENTS.md`, núcleo, trilhas, acervo, adaptadores) sem aplicar | A1 | Diff pronto; aplicado só em E0 |
+| A5 | A | Migrar o texto operacional (`AGENTS.md`, núcleo, trilhas, acervo, adaptadores), condicionado à chave `agentes_obrigatorios` | A1 | Aplicado antecipadamente em 2026-10-05 (merge `3c16e4f`), por decisão humana; com a chave vazia, o comportamento não muda |
 | C1 | C | Schema 3.2 em `formas/catalogo.yaml` | P0.3 | Catálogo versionado; registros 3.1 continuam legíveis |
 | C2 | C | `formas.py`: ataque, inspeção, triagem e chamada; produtor por papel | C1 | Testes de aceite e recusa por forma |
 | C3 | C | `provas.py`: plano de chamadas, critério sem comando, invalidação por edição, atribuição por fatia e papel, chave de ativação | C2 | Testes dos cenários da seção 8 que não dependem de runtime |
@@ -244,7 +244,7 @@ Gate G4: aceite final (seção 8).
 
 ### Schema 3.2 (P0.3)
 
-Aprovado em 2026-10-03. Reaberto depois da sondagem P0.4 para decidir o executor do teste, e decidido em 2026-10-05 (dois últimos itens da lista). A P0.5 confirma o mapeamento do lado do Cursor: qual ID do evento identifica o subagente e de onde vem o exit code.
+Aprovado em 2026-10-03. Reaberto depois da sondagem P0.4 para decidir o executor do teste, e decidido em 2026-10-05. A P0.5 (2026-10-05) mapeou o lado do Cursor; os ajustes estão no último item da lista.
 
 - Plano de chamadas calculado por `iniciar` a partir de `agentes/roteamento.yaml` e do contrato, gravado no estado, nunca no contrato escrito pelo principal.
 - `verificacao.comando` obrigatório para `teste`, `ambiente`, `validacao_dados` e `paridade`. Para `inspecao_documental` e `analise_codigo`, `caminhos` e lista de checagens, com produtor coordenador ou refute.
@@ -257,6 +257,11 @@ Aprovado em 2026-10-03. Reaberto depois da sondagem P0.4 para decidir o executor
 - Triagem, inspeção e chamada são formas próprias; as quatro formas 3.2 ficam adotadas após C2 validar os payloads. As demais formas candidatas não são adotadas.
 - Executor do teste: a forma `teste` continua produzida por `executor_teste`, observada pelo hook, inclusive quando o comando roda num subagente. Ela ganha `agente_id`, o ID do subagente lido nos eventos do runtime. Com a trilha ativada e `test` no plano, o critério `teste`, `validacao_dados` ou `paridade` só fecha se esse ID casar com um `agente_id` de uma `chamada` concluída do papel `test`; senão a pendência é `teste_fora_do_test`. Um teste rodado pelo principal não substitui o papel.
 - Exit code: a forma `teste` ganha `exit_code_origem`, com três valores. `campo_resultado` é o campo numérico do runtime (o `exitCode` do Cursor). `evento_sucesso` é o evento de sucesso sem código, que vale 0 (o `PostToolUse` do Claude Code). `texto_falha` é o código lido no texto do evento de falha, diferente de 0 (o `Exit code N` do `PostToolUseFailure`). Formato inesperado mantém `exit_code: null`, ou seja, resultado inconclusivo. Os dois campos são opcionais e aditivos, e registros anteriores continuam válidos.
+- Ajustes depois da P0.5 (decididos em 2026-10-05):
+  - **Teste no subagente, no Cursor.** O subagente tem `conversation_id` próprio, e nenhum campo do `subagentStart` o traz. O comando conta como do papel `test` quando vem de uma conversa diferente da do coordenador e acontece entre o `subagentStart` e o `subagentStop` de uma chamada `test` (`subagent_id` = `tool_use_id` do `Task`). Não há paralelismo durante o `test`: se outra chamada de subagente estiver aberta na mesma janela, a prova fica inconclusiva. O transcript interno do Cursor não é usado. Implementação em D-CU.
+  - **Exit code no Cursor.** O `exitCode` só vem no sucesso. Exit diferente de zero chega em `postToolUseFailure` como `Command failed with exit code N` e usa `texto_falha`, como no Claude Code. Implementado no adaptador.
+  - **Diretório no Cursor.** O diretório vem de `tool_input.cwd`. Vazio não é resolvido pela raiz do workspace, porque o diretório da sessão não comprova onde o comando rodou: a verificação declarada é negada com a orientação de preencher o campo. Implementado no adaptador; o comando com `cwd` informado foi observado no reteste.
+  - **Contrato de saída do `test`.** É complementar: interpreta (critério, cobertura, manifesto), mas cada item precisa casar com um registro `teste` observado pelo hook. Item sem registro correspondente impede o DONE.
 
 ## 6. Grafo de execução
 
@@ -310,7 +315,7 @@ flowchart TB
   G2CU{{"G2 · Cursor"}}
 
   subgraph F3["Fase 3 · ativação por trilha"]
-    E0["E0 aplicar A5 e habilitar manutenção e correção"]
+    E0["E0 runtime no prova.py e habilitar manutenção e correção"]
     E1["E1 onda 1: manutenção e correção"]
     E2N["E2 novo e validação"]
     E2D["E2 docs e destilar"]
@@ -400,8 +405,8 @@ flowchart LR
 
 | Gate | Pacotes | Critério de saída | Status |
 |---|---|---|---|
-| — | P0.1–P0.6 | Decisões registradas e sondagens com evidência | P0.1–P0.2 aprovados; P0.3 decidido (2026-10-05: executor do teste e origem do exit code), mapeamento do Cursor a confirmar em P0.5; P0.4 concluído (2026-10-04; refeito em 2026-10-05 no CLI 2.1.289 com brutos preservados em `.execucoes/sondagens/`; resumo no README do adaptador Claude Code); P0.5 com kit pronto, aguarda sessão real no Cursor; P0.6 concluído |
-| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | A1–A4 e C1–C3 concluídos (commit `7ead2ae`); C1–C3 fecharam antes da reabertura do P0.3 e foram complementados com a decisão de 2026-10-05; A5 aplicado antecipadamente em 2026-10-05 (merge `3c16e4f`), por decisão humana: o texto é condicionado à chave, que segue vazia, então o comportamento atual não muda; B1 aguarda P0.5; G1 pendente |
+| — | P0.1–P0.6 | Decisões registradas e sondagens com evidência | P0.1–P0.2 aprovados; P0.3 decidido (2026-10-05: executor do teste, origem do exit code e ajustes da P0.5); P0.4 concluído (2026-10-04; refeito em 2026-10-05 no CLI 2.1.289 com brutos preservados em `.execucoes/sondagens/`; resumo no README do adaptador Claude Code); P0.5 concluído (2026-10-05, Cursor 3.17.8; resumo no README do adaptador Cursor), três contradições com o desenho, decididas no mesmo dia (Schema 3.2, "Ajustes depois da P0.5"); exit code e diretório já corrigidos no adaptador do Cursor. Reteste no mesmo dia: `sessionStart` dispara em chat novo e o `cwd` informado chega absoluto; P0.6 concluído |
+| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | A1–A4 e C1–C3 concluídos (commit `7ead2ae`); C1–C3 fecharam antes da reabertura do P0.3 e foram complementados com a decisão de 2026-10-05; A5 aplicado antecipadamente em 2026-10-05 (merge `3c16e4f`), por decisão humana: o texto é condicionado à chave, que segue vazia, então o comportamento atual não muda; HTML, README, catálogos e `evidencia/uso.md` sincronizados com a P0.5 em 2026-10-05; B1 liberado (próximo pacote, seção 10); G1 pendente |
 | G2 Claude Code | B2-CC, D-CC, O-CC | Observação aceita em sessão nova | pendente |
 | G2 Cursor | B2-CU, D-CU, O-CU | Observação aceita em sessão nova | pendente |
 | G3a | E0, E1 | Onda 1 sem falso DONE e com chamadas previstas = observadas | pendente |
@@ -446,3 +451,88 @@ Aceite final (G4): matriz e gatilhos exercitados nos dois runtimes; fecho recusa
 Fora deste plano: implementar todos os candidatos do acervo de uma vez, recriar a receita perdida da esteira, mudar regras do produto, autorizar deploy/run, escolher modelos específicos ou prometer independência apenas por trocar de modelo. Herança de modelo continua sendo o padrão nas definições nativas.
 
 Referências técnicas para a implementação: [subagentes Claude Code](https://code.claude.com/docs/en/sub-agents), [subagentes Cursor](https://cursor.com/docs/subagents) e documentação oficial de hooks/skills de cada runtime. Conferir novamente nas sondagens P0.4 e P0.5, pois os recursos e campos variam por versão.
+
+## 10. Próximas fases: briefs para execução por subagentes
+
+Estado em 2026-10-05: Fase 0 concluída; na Fase 1, A1–A5 e C1–C3 concluídos. Falta B1 para fechar G1. Cada brief abaixo é autocontido: o subagente lê este plano (seções 4 e 5 e o próprio brief), o `AGENTS.md` e os arquivos listados, sem precisar do histórico da conversa.
+
+### 10.1 Regras para todo subagente
+
+- Trabalhar direto na branch `feat/engenheiro-bruno-lauria`, sem branch ou worktree paralela no Git do harness. Sondagem em sessão real pode usar cópia temporária fora do Git, como em P0.4 e P0.5.
+- Editar só os arquivos listados no brief. Dois pacotes em paralelo nunca editam o mesmo bloco; em `adaptadores/gerenciar.py` e `adaptadores/executar.py`, cada pacote toca só o ramo do seu runtime.
+- Commitar com `git add` explícito dos próprios arquivos, nunca `git add -A`. Mensagem em português, iniciada pelo ID do pacote (por exemplo, `B1: ...`).
+- Antes do commit, rodar `py -3 -m unittest discover -s testes -p teste_*.py -v` e `node testes/teste_opencode.mjs`. Suíte vermelha não é commitada.
+- Ao concluir, atualizar a linha do painel (7.3) e os metadados afetados (`agentes/roteamento.yaml`, `acervo/catalogo.yaml`, HTML), sem declarar observado o que só foi testado localmente.
+- Fechar com um status de `evidencia/fecho.md`: `DONE` com hash do commit; `BLOCKED`, `FAILED` ou `DECIDE` com motivo e ponto de retomada. Contradição com o desenho volta ao humano (P0.1), sem improvisar.
+- Não executar `databricks bundle deploy`/`run`, não editar `prj-avante-analytics-adb/` e não preencher `agentes_obrigatorios` fora do pacote E0.
+
+### 10.2 Ordem e paralelismo
+
+| Onda | Pacotes em paralelo | Libera |
+|---|---|---|
+| 1 | B1 ∥ E0a | G1 (humano confere) |
+| 2 | Claude Code: B2-CC → D-CC → O-CC ∥ Cursor: B2-CU → D-CU → O-CU | G2 por runtime (humano) |
+| 3 | E0 → E1 | G3a (humano) |
+| 4 | E2, por trilha | G3b (humano) |
+| 5 | M1 → M2 | G4 (humano) |
+
+D-CC e D-CU podem começar sobre os brutos das sondagens (`.execucoes/sondagens/brutos/`) antes de G1, mas só fecham depois dele.
+
+### 10.3 Briefs
+
+**B1 · gerador neutro → nativo** (agente; libera G1)
+- Objetivo: gerar `.claude/agents/<nome>.md` e `.cursor/agents/<nome>.md` dos sete papéis a partir de `agentes/<nome>.md` e `agentes/roteamento.yaml`.
+- Ler: seção 4; `agentes/*.md`; `agentes/roteamento.yaml`; os resumos de sondagem em `adaptadores/claude_code/README.md` e `adaptadores/cursor/README.md`; `adaptadores/gerenciar.py` como referência de gravação segura.
+- Arquivos: novo `adaptadores/gerar_agentes.py` e novo `testes/teste_gerar_agentes.py`. Não editar `gerenciar.py`.
+- Frontmatter só com campos observados. Claude Code: `name`, `description`, `tools`, `model: inherit` e `skills` com os nomes `databricks:databricks-<nome>` das skills fixas do papel. Cursor: `name`, `description` e `model: inherit`; `tools`, `skills` e `readonly` não foram sondados e ficam de fora; o corpo cita `.agents/skills/databricks-<nome>/SKILL.md`. O corpo é a definição neutra.
+- Modos: sem flag, mostra; `--verificar` sai com erro quando o instalado diverge do gerado; `--instalar <runtime>` grava com backup e não sobrescreve arquivo editado à mão (divergência detectada por cabeçalho com o hash da fonte).
+- Aceite: segunda geração sem diferença; edição manual detectada; teste falha se a definição neutra perder um campo da seção 4. Não instalar nos runtimes: isso é B2.
+
+**E0a · runtime explícito no `prova.py`** (agente; pré-requisito de E0, pode rodar já)
+- Objetivo: `adaptadores/prova.py` passa o runtime ao núcleo (`Provas(..., runtime=...)`), por `--runtime` ou por detecção (`CLAUDE_CODE_SESSION_ID` → `claude_code`). Com a chave preenchida para a trilha, `iniciar` e `fechar` sem runtime são recusados, como `Provas.ativada` já exige.
+- Arquivos: `adaptadores/prova.py`, `evidencia/uso.md` e testes em `testes/teste_provas.py`.
+- Aceite: com a chave vazia, comportamento idêntico ao atual; com a chave preenchida numa fixture, a recusa sem runtime e o aceite com runtime estão cobertos por teste.
+
+**G1 · gate** (humano): suíte verde, A4 verde e `gerar_agentes.py --verificar` estável em duas execuções.
+
+**B2-CC / B2-CU · instalar os agentes** (agente; depois de G1; um por runtime)
+- Rodar `py -3 adaptadores/gerar_agentes.py --instalar claude_code` (ou `cursor`) e commitar os sete arquivos gerados.
+- Atualizar `instalado: true` do runtime em `agentes/roteamento.yaml`, no catálogo do acervo e no `PECAS` do HTML (o A4 confere os três), o chip "Ausente" de `#estacao-cursor` ou `#estacao-claude` e a frase de `adaptadores/README.md` sobre as versões nativas.
+- Aceite: A4 verde e `--verificar` sem divergência. Instalar não ativa nada: a chave segue vazia.
+
+**D-CC · adaptador Claude Code** (agente; o maior pacote)
+- Objetivo: sessão, coleta de prova, chamada de subagente observada e fecho no Claude Code, traduzindo os eventos registrados em P0.4.
+- Ler: `adaptadores/claude_code/README.md` (sondagem), `adaptadores/cursor/prova.py` (modelo), `implementacao/provas.py` (`antes`, `depois`, `registrar_chamada`, `conferir`), Schema 3.2 (seção 5) e os brutos em `.execucoes/sondagens/brutos/claude_code/`.
+- Arquivos: novo `adaptadores/claude_code/prova.py`; o ramo `claude_code` de `adaptadores/executar.py` e de `adaptadores/gerenciar.py`; `.claude/settings.json` regenerado; README do adaptador; testes de tradução com payloads dos brutos.
+- Tradução esperada:
+  - Sessão: `session_id` (igual a `CLAUDE_CODE_SESSION_ID`). O shell do subagente chega com o mesmo `session_id` e mais `agent_id`, que vira o `agente_id` da forma `teste`.
+  - Prova: `PreToolUse` (Bash/PowerShell) chama `antes`; `PostToolUse` chama `depois` com exit 0 e `exit_code_origem: evento_sucesso`; `PostToolUseFailure` lê `Exit code N` na primeira linha de `error` (`texto_falha`); outro formato fica inconclusivo.
+  - Diretório: o `cwd` do envelope é da sessão e não vale. Usar o diretório do prefixo `Set-Location -LiteralPath` / `cd --` já interpretado pela guarda; sem prefixo, negar a verificação declarada com a orientação de informá-lo.
+  - Chamada: `PreToolUse(Agent)` marca o início; `PostToolUse(Agent)` traz `tool_response.agentId` e o tipo do subagente, e vira `registrar_chamada` (papel, `ids_observados` com `agente_id`, início, fim, status). Tipo fora dos sete papéis não é registrado.
+  - Fecho: `Stop` confere a fatia e devolve `decision: block` com o motivo; com `stop_hook_active: true`, não bloqueia de novo.
+- Aceite: testes de tradução para cada evento acima, inclusive teste no subagente casando com a chamada `test` e o cenário "teste rodado pelo principal" gerando `teste_fora_do_test` com a chave ativada numa fixture. O limite temporário do `AGENTS.md` só sai depois de G2.
+
+**D-CU · chamadas de subagente no Cursor** (agente)
+- Objetivo: observar as chamadas de subagente e associar ao coordenador o shell que roda no subagente (BL3), conforme "Ajustes depois da P0.5" (seção 5).
+- Ler: `adaptadores/cursor/README.md` (sondagem), `adaptadores/cursor/prova.py`, Schema 3.2 e os brutos em `.execucoes/sondagens/brutos/cursor/`.
+- Arquivos: `adaptadores/cursor/prova.py`; o ramo `cursor` de `gerenciar.py` (acrescentar `subagentStart`, `subagentStop` e `preToolUse` com matcher `Task`); `.cursor/hooks.json` regenerado; README do adaptador; testes.
+- Tradução esperada:
+  - `preToolUse(Task)` na conversa do coordenador: guardar `tool_use_id` e `subagent_type` (o papel) no estado da fatia.
+  - `subagentStart` abre a janela da chamada (`subagent_id` = `tool_use_id`); `subagentStop` fecha a janela e chama `registrar_chamada`.
+  - Shell com `conversation_id` diferente do coordenador, dentro de uma janela aberta: a prova vai para a fatia do coordenador, com `agente_id` igual a esse `conversation_id`, também incluído nos `ids_observados` da chamada. Fora de janela, ou com duas janelas abertas, a prova fica inconclusiva e nada é registrado como sucesso.
+  - Não usar o transcript interno nem os contadores do `subagentStop`.
+- Aceite: testes com payloads dos brutos para janela única, janelas sobrepostas, shell fora de janela e papel fora dos sete.
+
+**O-CC / O-CU · observação em sessão nova** (humano no Cursor; no Claude Code, um agente pode conduzir em modo headless numa cópia temporária, como em P0.4)
+- Roteiro: com os agentes instalados, abrir sessão nova; chamar cada papel uma vez numa fatia de fixture; conferir descoberta dos sete, recorte respeitado, skill pertinente carregada, guarda negando no subagente, prova do `test` atribuída à fatia do coordenador e `fechar` recusando DONE quando falta uma chamada prevista (chave preenchida só na cópia temporária).
+- Saída: brutos em `.execucoes/sondagens/`, resumo versionado no README do adaptador e `observado` preenchido (versão, data, referência) em `agentes/roteamento.yaml`, no catálogo e no HTML.
+
+**G2 · gate por runtime** (humano): aceita a observação. Runtime que não passa fica fora da chave.
+
+**E0 · ativação da onda 1** (agente, com aprovação humana do diff): preencher `agentes_obrigatorios.<runtime>` com `manutencao` e `correcao` só nos runtimes aprovados em G2. Aceite: esvaziar a chave restaura o comportamento atual (teste).
+
+**E1 · onda 1** (humano escolhe as tarefas; agente coordena em sessão real): rodar no produto os cenários de manutenção e correção da seção 8. As tarefas e a autorização de ambiente são decisão humana (`DECIDE` até lá). Saída: registros em `.execucoes/` e tabela da onda com chamadas previstas × observadas, falso DONE e violações de escopo. **G3a** (humano).
+
+**E2 · onda 2** (em paralelo por trilha, no formato de E1): novo e validação (dab só em sandbox), docs e destilar, review, entendimento. Cada trilha entra na chave só depois de passar. **G3b** (humano, por trilha).
+
+**M1 · métricas** (agente): consolidar a tabela da seção 8 a partir dos registros de E1 e E2. **M2 · publicação** (agente): README, HTML e READMEs dos adaptadores separando o observado do pendente; declarar equivalência só onde observada. **G4** (humano): aceite final da seção 8.
