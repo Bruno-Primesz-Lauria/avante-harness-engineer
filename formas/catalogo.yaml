@@ -6,9 +6,9 @@ nota: >
   o consumidor operacional os rejeita. As formas contrato, guarda, brief,
   teste, ataque, triagem, inspecao e chamada estao adotadas; C2 validou os
   payloads 3.2. Registros 3.1 continuam legiveis. A adocao do schema nao
-  significa que os eventos dos runtimes foram observados: P0.4/P0.5 continuam
-  pendentes e bloqueiam a ativacao. Baseline, manifesto e estado estao
-  descritos em evidencia/uso.md.
+  significa que os eventos dos runtimes foram observados: P0.4 (Claude Code)
+  foi observada; P0.5 (Cursor) segue pendente, e a ativacao depende de G2.
+  Baseline, manifesto e estado estao descritos em evidencia/uso.md.
 compatibilidade:
   registro_3_1:
     legivel: true
@@ -18,7 +18,7 @@ compatibilidade:
   registro_3_2:
     novas_formas_adotadas: [ataque, triagem, inspecao, chamada]
     habilitadas: true
-    nota: "C2 validou a escrita e leitura das formas; observacao e ativacao de cada runtime continuam dependentes de P0.4/P0.5 e G2."
+    nota: "C2 validou a escrita e leitura das formas; a ativacao de cada runtime depende de G2. Na forma teste, agente_id e exit_code_origem sao opcionais e aditivos (decisao P0.3 de 2026-10-05)."
 produtores_permitidos:
   - coordenador
   - hook
@@ -49,6 +49,7 @@ enums:
   base_prova: [direct, derived, reported]
   decisao_guarda: [permitir, negar, nao_aplica]
   validade: [valida, obsoleta, nao_verificada]
+  origem_exit_code: [campo_resultado, evento_sucesso, texto_falha]
 envelope:
   - campo: schema_versao
     tipo: string
@@ -252,15 +253,17 @@ formas:
     uso: "Resultado do executor, vinculado ao estado; não basta o agente afirmar pass."
     produtor: executor_teste
     consumidor: coordenador
-    validacao: "Exit code inteiro ou null em execução incompleta; pass/fail casa com o comando e o esperado. Log real e manifesto referenciado existem."
+    validacao: "Exit code inteiro ou null em execução incompleta; pass/fail casa com o comando e o esperado. Log real e manifesto referenciado existem. O produtor é sempre o executor observado pelo hook, também quando o comando roda num subagente; agente_id é o ID desse subagente nos eventos do runtime e, com a trilha ativada, precisa casar com uma chamada observada do papel test. exit_code_origem diz de onde veio o código: campo_resultado (campo numérico do runtime), evento_sucesso (evento de sucesso sem código, vale 0) ou texto_falha (código lido do texto do evento de falha, diferente de 0)."
     dados:
       criterio_id: {tipo: string, obrigatorio: true}
       chamada_id: {tipo: string, obrigatorio: true}
+      agente_id: {tipo: string}
       cwd: {tipo: string, obrigatorio: true}
       comando: {tipo: string, obrigatorio: true}
       inicio: {tipo: timestamp, obrigatorio: true}
       fim: {tipo: timestamp, obrigatorio: true}
       exit_code: {tipo: int, anulavel: true, obrigatorio: true}
+      exit_code_origem: {tipo: enum, enum: origem_exit_code}
       log_ref: {tipo: caminho, obrigatorio: true}
       log_sha256: {tipo: string, obrigatorio: true}
       estado_testado: {tipo: string, obrigatorio: true}

@@ -75,7 +75,7 @@ def tratar(evento, politica, raiz):
             exigir(isinstance(saida, str), "Saida invalida")
         except (ValueError, KeyError, TypeError, AttributeError):
             codigo, saida = None, "Resultado sem exitCode inteiro; nenhuma prova de sucesso."
-    resultado = provas.depois(chamada, comando, codigo, saida)
+    resultado = provas.depois(chamada, comando, codigo, saida, "campo_resultado")
     if resultado is None:
         return {}
     if resultado["resultado"] == "pass" and "databricks" in comando.casefold():

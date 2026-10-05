@@ -454,7 +454,7 @@ class Provas:
             self.atualizar(pasta, estado)
             return {"decisao": dados["decisao"], "evidencia_ref": ref}
 
-    def antes(self, chamada, comando, cwd, versao_runtime):
+    def antes(self, chamada, comando, cwd, versao_runtime, agente_id=None):
         pasta = self.pasta()
         if pasta is None:
             return False
@@ -481,7 +481,8 @@ class Provas:
             gravar(dentro(pasta, manifesto), dados)
             estado["pendente"] = dict(chamada=chamada, comando_sha256=hash_bytes(comando.encode()),
                                       criterio=criterio["id"], cwd=cwd, inicio=agora(), manifesto=manifesto,
-                                      manifesto_sha256=hash_arquivo(dentro(pasta, manifesto)))
+                                      manifesto_sha256=hash_arquivo(dentro(pasta, manifesto)),
+                                      agente_id=agente_id)
             self.evento(pasta, estado, "guarda", dict(operacao="registrar_verificacao",
                         checagens=[dict(id="estado_anterior", resultado="limpo")],
                         decisao="permitir", recuperacao=""), manifesto, tentativa)
@@ -493,7 +494,7 @@ class Provas:
         return (m["arquivos"] == retrato(self.raiz, m["caminhos"]) and
                 m["controle"] == retrato(self.raiz, list(m["controle"])))
 
-    def depois(self, chamada, comando, exit_code, saida):
+    def depois(self, chamada, comando, exit_code, saida, exit_code_origem=None):
         pasta = self.pasta()
         if pasta is None:
             return None
@@ -519,6 +520,10 @@ class Provas:
                          log_ref=log_ref, log_sha256=hash_arquivo(log),
                          estado_testado=p["manifesto_sha256"], resultado=resultado,
                          validade="valida" if atual and exit_code is not None else "nao_verificada")
+            if p.get("agente_id"):
+                dados["agente_id"] = p["agente_id"]
+            if exit_code is not None and exit_code_origem:
+                dados["exit_code_origem"] = exit_code_origem
             ref = self.evento(pasta, estado, "teste", dados, p["manifesto"], tentativa)
             estado["provas"][p["criterio"]] = {"ref": ref, "sha256": hash_arquivo(dentro(pasta, ref))}
             estado["pendente"] = None
@@ -558,6 +563,10 @@ class Provas:
 
     def criterios(self, pasta, estado, contrato, ativa):
         saida, faltam = [], []
+        plano = estado.get("chamadas_previstas") or self.plano_chamadas(contrato)
+        # Com test no plano ativado, a prova de teste precisa ter rodado num subagente test observado.
+        agentes_test = self.agentes_test(pasta, estado) if ativa and any(
+            c["papel"] == "test" for c in plano) else None
         for c in contrato["aceite"]:
             registro = estado.get("inspecoes" if c["tipo"] in TIPOS_INSPECAO else "provas", {}).get(c["id"])
             e = self.registrado(pasta, estado, registro) if registro else None
@@ -565,8 +574,10 @@ class Provas:
             # Com a trilha ativada, o critério ambiente também exige a autorização registrada e atual.
             autorizado = not (ativa and c["tipo"] == "ambiente") or self.manifesto_valido(
                 pasta, estado.get("manifestos_autorizacao", {}).get(c["id"]))
-            item = dict(id=c["id"], atendido=provado and autorizado,
-                        validade="valida" if provado and autorizado else "nao_verificada")
+            vinculado = (agentes_test is None or c["tipo"] not in TIPOS_TESTE or
+                         (e is not None and e["dados"].get("agente_id") in agentes_test))
+            atendido = provado and autorizado and vinculado
+            item = dict(id=c["id"], atendido=atendido, validade="valida" if atendido else "nao_verificada")
             if e is not None:
                 item["evidencia_ref"] = registro["ref"]
             saida.append(item)
@@ -574,14 +585,13 @@ class Provas:
                 faltam.append(c["id"])
             if c["obrigatorio"] and not autorizado:
                 faltam.append("autorizacao_ambiente:" + c["id"])
+            if c["obrigatorio"] and provado and not vinculado:
+                faltam.append("teste_fora_do_test:" + c["id"])
         return saida, faltam
 
-    def chamadas_faltantes(self, pasta, estado):
+    def chamadas_validas(self, pasta, estado):
+        """Chamadas observadas íntegras, com o evento do adaptador que as sustenta."""
         runtime = estado.get("runtime") or self.runtime
-        contrato = ler(pasta / "contrato.yaml")["dados"]
-        if not self.ativada(estado.get("trilha", contrato["trilha"]), runtime):
-            return []
-        plano = estado.get("chamadas_previstas") or self.plano_chamadas(contrato)
         validas = []
         for registro in estado.get("chamadas_observadas", []):
             e = self.registrado(pasta, estado, registro)
@@ -592,8 +602,22 @@ class Provas:
                     d["papel"] == registro["papel"] and d["chamada_id"] == registro["chamada_id"] and
                     d["status"] == registro["status"] and
                     (d["papel"] != "dab" or self.manifesto_valido(pasta, e["manifesto_ref"]))):
-                validas.append(registro)
-        feitas = concluidas(plano, validas)
+                validas.append((registro, e))
+        return validas
+
+    def agentes_test(self, pasta, estado):
+        """IDs de subagente observados nas chamadas concluídas do papel test."""
+        return {i["valor"] for registro, e in self.chamadas_validas(pasta, estado)
+                if registro["papel"] == "test" and registro["status"] == "concluida"
+                for i in e["dados"]["ids_observados"] if i["nome"] == "agente_id"}
+
+    def chamadas_faltantes(self, pasta, estado):
+        runtime = estado.get("runtime") or self.runtime
+        contrato = ler(pasta / "contrato.yaml")["dados"]
+        if not self.ativada(estado.get("trilha", contrato["trilha"]), runtime):
+            return []
+        plano = estado.get("chamadas_previstas") or self.plano_chamadas(contrato)
+        feitas = concluidas(plano, [registro for registro, _ in self.chamadas_validas(pasta, estado)])
         return [c["etapa"] for c in plano if c["id"] not in feitas]
 
     def revisao_faltante(self, pasta, estado, trilha):

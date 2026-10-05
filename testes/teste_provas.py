@@ -49,8 +49,8 @@ class ProvasTestes(unittest.TestCase):
     def iniciar(self):
         self.p.iniciar(self.contrato)
 
-    def executar(self, codigo=0, saida="ok", chamada="t1"):
-        self.assertTrue(self.p.antes(chamada, "python teste.py", str(self.raiz), "teste"))
+    def executar(self, codigo=0, saida="ok", chamada="t1", agente_id=None):
+        self.assertTrue(self.p.antes(chamada, "python teste.py", str(self.raiz), "teste", agente_id))
         return self.p.depois(chamada, "python teste.py", codigo, saida)
 
     def ativar(self, *trilhas):
@@ -61,7 +61,7 @@ class ProvasTestes(unittest.TestCase):
     def chamar(self, chamada_id, papel):
         instante = datetime.now(timezone.utc).isoformat()
         return self.p.registrar_chamada(chamada_id, papel, "cursor",
-                                        [{"nome": "subagent_id", "valor": chamada_id}], instante, instante,
+                                        [{"nome": "agente_id", "valor": chamada_id}], instante, instante,
                                         "concluida")
 
     def revisar(self, veredito="nao_quebrei", achados=()):
@@ -80,7 +80,7 @@ class ProvasTestes(unittest.TestCase):
         self.chamar("call-prep", "test")
         self.chamar("call-implement", "implement")
         self.chamar("call-test", "test")
-        self.executar()
+        self.executar(agente_id="call-test")
         self.chamar("call-refute", "refute")
 
     def evento(self, nome, **extras):
@@ -282,6 +282,9 @@ class ProvasTestes(unittest.TestCase):
         executado = subprocess.run(argv, cwd=self.raiz, capture_output=True, text=True)
         self.hook("postToolUse", tool_input=entrada, tool_output=json.dumps({"exitCode": executado.returncode,
                                                        "stdout": executado.stdout, "stderr": executado.stderr}))
+        pasta = self.p.pasta()
+        prova = ler(pasta / self.p.estado(pasta)["provas"]["c1"]["ref"])
+        self.assertEqual(prova["dados"]["exit_code_origem"], "campo_resultado")
         self.p.fechar("DONE", "Processo conferido")
         self.assertEqual(self.hook("stop", status="completed"), {})
 
@@ -450,12 +453,12 @@ class ProvasTestes(unittest.TestCase):
         def chamada(chamada_id, papel):
             instante = datetime.now(timezone.utc).isoformat()
             return self.p.registrar_chamada(chamada_id, papel, "cursor",
-                [{"nome": "subagent_id", "valor": chamada_id}], instante, instante, "concluida")
+                [{"nome": "agente_id", "valor": chamada_id}], instante, instante, "concluida")
 
         self.assertEqual(chamada("call-prep", "test")["etapa"], "preparar_teste_se_necessario")
         self.assertEqual(chamada("call-implement", "implement")["etapa"], "escrita_por_superficie")
         self.assertEqual(chamada("call-test", "test")["etapa"], "teste")
-        self.executar()
+        self.executar(agente_id="call-test")
         self.assertEqual(chamada("call-refute", "refute")["etapa"], "refute")
         with self.assertRaisesRegex(ValueError, "revisao:ausente"):
             self.p.fechar("DONE", "Chamada do refute sem revisao registrada")
@@ -480,6 +483,43 @@ class ProvasTestes(unittest.TestCase):
         self.iniciar()
         self.executar()
         self.assertEqual(self.p.fechar("DONE", "Rollback para chave vazia")["status"], "DONE")
+
+    def test_teste_ativado_exige_prova_de_subagente_test_observado(self):
+        self.ativar("manutencao")
+        self.contrato["trilha"] = "manutencao"
+        self.iniciar()
+        self.chamar("call-prep", "test")
+        self.chamar("call-implement", "implement")
+        self.chamar("call-test", "test")
+        self.executar()  # rodou no principal, sem subagente
+        self.chamar("call-refute", "refute")
+        self.revisar()
+        with self.assertRaisesRegex(ValueError, "teste_fora_do_test:c1"):
+            self.p.fechar("DONE", "Teste do principal nao substitui o papel test")
+        # ID de subagente de outro papel tambem nao vale.
+        self.executar(chamada="t2", agente_id="call-implement")
+        with self.assertRaisesRegex(ValueError, "teste_fora_do_test:c1"):
+            self.p.fechar("DONE", "Teste fora do papel test")
+        self.executar(chamada="t3", agente_id="call-test")
+        pasta = self.p.pasta()
+        prova = ler(pasta / self.p.estado(pasta)["provas"]["c1"]["ref"])
+        self.assertEqual((prova["produtor"], prova["dados"]["agente_id"]), ("executor_teste", "call-test"))
+        self.assertEqual(self.p.fechar("DONE", "Teste do subagente test observado")["status"], "DONE")
+
+    def test_chave_vazia_aceita_teste_sem_subagente(self):
+        self.contrato["trilha"] = "manutencao"
+        self.iniciar()
+        self.executar()
+        self.assertEqual(self.p.fechar("DONE", "Fluxo atual sem agentes")["status"], "DONE")
+
+    def test_origem_do_exit_code_e_registrada_e_conferida(self):
+        self.iniciar()
+        self.assertTrue(self.p.antes("t1", "python teste.py", str(self.raiz), "teste"))
+        ref = self.p.depois("t1", "python teste.py", 0, "ok", "evento_sucesso")["evidencia_ref"]
+        self.assertEqual(ler(self.p.pasta() / ref)["dados"]["exit_code_origem"], "evento_sucesso")
+        self.assertTrue(self.p.antes("t2", "python teste.py", str(self.raiz), "teste"))
+        with self.assertRaisesRegex(ValueError, "Evento de sucesso exige exit 0"):
+            self.p.depois("t2", "python teste.py", 1, "erro", "evento_sucesso")
 
     def test_criterio_inspecao_sem_comando_fecha_e_edicao_requer_reinspecao(self):
         (self.raiz / "docs/nota.md").write_text("fato inicial", encoding="utf-8")
@@ -600,7 +640,7 @@ class ProvasTestes(unittest.TestCase):
         self.assertEqual(self.chamar("call-implement-2", "implement")["etapa"], "escrita_por_superficie")
         self.assertEqual(self.p.chamadas_faltantes(pasta, self.p.estado(pasta)), ["teste", "refute"])
         self.assertEqual(self.chamar("call-test-2", "test")["etapa"], "teste")
-        resolucao = self.executar(chamada="t2")["evidencia_ref"]
+        resolucao = self.executar(chamada="t2", agente_id="call-test-2")["evidencia_ref"]
         self.p.triar(dict(revisao_ref=revisao, achado_id="A1", decisao="procedente",
                           responsavel="implement", evidencia_resolucao_ref=resolucao))
         with self.assertRaisesRegex(ValueError, "chamada:refute"):

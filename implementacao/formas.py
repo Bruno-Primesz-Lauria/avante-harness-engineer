@@ -136,6 +136,13 @@ def validar_dados(tipo, dados, schema_versao="3.1"):
             exigir(item["resultado"] != "nao_aplica" or item.get("motivo"), "Falta motivo de nao_aplica")
     if tipo == "teste":
         exigir(dados["resultado"] != "pass" or dados["exit_code"] == 0, "Pass exige exit 0")
+        if "agente_id" in dados:
+            identificador(dados["agente_id"])
+        origem = dados.get("exit_code_origem")
+        if origem is not None:
+            exigir(dados["exit_code"] is not None, "Origem sem exit code")
+            exigir(origem != "evento_sucesso" or dados["exit_code"] == 0, "Evento de sucesso exige exit 0")
+            exigir(origem != "texto_falha" or dados["exit_code"] != 0, "Texto de falha nao comprova exit 0")
     if tipo == "ataque":
         if dados["veredito"] == "com_achados":
             exigir(bool(dados["achados"]), "com_achados exige ao menos um achado")

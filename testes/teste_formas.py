@@ -174,6 +174,26 @@ class FormasTestes(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.verificar(self.evento("chamada", invalido))
 
+    def test_teste_vincula_subagente_e_confere_origem_do_exit_code(self):
+        base = {"criterio_id": "c1", "chamada_id": "t1", "cwd": ".", "comando": "python teste.py",
+                "inicio": "2026-10-05T12:00:00+00:00", "fim": "2026-10-05T12:00:01+00:00",
+                "exit_code": 0, "log_ref": "formas/catalogo.yaml", "log_sha256": "0" * 64,
+                "estado_testado": "0" * 64, "resultado": "pass", "validade": "valida"}
+        for extras in ({}, {"agente_id": "a1b2", "exit_code_origem": "evento_sucesso"},
+                       {"exit_code_origem": "campo_resultado"}):
+            validar_dados("teste", {**base, **extras}, "3.2")
+        falha = {**base, "exit_code": 1, "resultado": "fail", "exit_code_origem": "texto_falha"}
+        validar_dados("teste", falha, "3.2")
+        for extras, motivo in (({"agente_id": "a/b"}, "Identificador"),
+                               ({"exit_code_origem": "texto_falha"}, "Texto de falha"),
+                               ({"exit_code": None, "resultado": "inconclusivo",
+                                 "exit_code_origem": "campo_resultado"}, "Origem sem exit code"),
+                               ({"exit_code_origem": "relato"}, "valor invalido")):
+            with self.subTest(extras=extras), self.assertRaisesRegex(ValueError, motivo):
+                validar_dados("teste", {**base, **extras}, "3.2")
+        with self.assertRaisesRegex(ValueError, "Evento de sucesso"):
+            validar_dados("teste", {**falha, "exit_code_origem": "evento_sucesso"}, "3.2")
+
     def test_produtor_obedece_a_allowlist_e_a_propriedade_da_forma(self):
         evento = self.evento("chamada", {
             "chamada_id": "call-1", "papel": "test", "runtime": "cursor",

@@ -242,7 +242,9 @@ Gate G3a: onda 1 sem falso DONE, sem violação de escopo e com chamadas previst
 
 Gate G4: aceite final (seção 8).
 
-### Schema 3.2 (P0.3 aprovado)
+### Schema 3.2 (P0.3)
+
+Aprovado em 2026-10-03. Reaberto depois da sondagem P0.4 para decidir o executor do teste, e decidido em 2026-10-05 (dois últimos itens da lista). A P0.5 confirma o mapeamento do lado do Cursor: qual ID do evento identifica o subagente e de onde vem o exit code.
 
 - Plano de chamadas calculado por `iniciar` a partir de `agentes/roteamento.yaml` e do contrato, gravado no estado, nunca no contrato escrito pelo principal.
 - `verificacao.comando` obrigatório para `teste`, `ambiente`, `validacao_dados` e `paridade`. Para `inspecao_documental` e `analise_codigo`, `caminhos` e lista de checagens, com produtor coordenador ou refute.
@@ -253,6 +255,8 @@ Gate G4: aceite final (seção 8).
 - Produtores: `coordenador`, `hook`, `executor_teste` e os sete papéis.
 - Compatibilidade: registros 3.1 seguem legíveis e não recebem revisão independente presumida.
 - Triagem, inspeção e chamada são formas próprias; as quatro formas 3.2 ficam adotadas após C2 validar os payloads. As demais formas candidatas não são adotadas.
+- Executor do teste: a forma `teste` continua produzida por `executor_teste`, observada pelo hook, inclusive quando o comando roda num subagente. Ela ganha `agente_id`, o ID do subagente lido nos eventos do runtime. Com a trilha ativada e `test` no plano, o critério `teste`, `validacao_dados` ou `paridade` só fecha se esse ID casar com um `agente_id` de uma `chamada` concluída do papel `test`; senão a pendência é `teste_fora_do_test`. Um teste rodado pelo principal não substitui o papel.
+- Exit code: a forma `teste` ganha `exit_code_origem`, com três valores. `campo_resultado` é o campo numérico do runtime (o `exitCode` do Cursor). `evento_sucesso` é o evento de sucesso sem código, que vale 0 (o `PostToolUse` do Claude Code). `texto_falha` é o código lido no texto do evento de falha, diferente de 0 (o `Exit code N` do `PostToolUseFailure`). Formato inesperado mantém `exit_code: null`, ou seja, resultado inconclusivo. Os dois campos são opcionais e aditivos, e registros anteriores continuam válidos.
 
 ## 6. Grafo de execução
 
@@ -396,8 +400,8 @@ flowchart LR
 
 | Gate | Pacotes | Critério de saída | Status |
 |---|---|---|---|
-| — | P0.1–P0.6 | Decisões registradas e sondagens com evidência | P0.1–P0.2 aprovados; P0.3 aguarda decisão sobre o executor do teste e P0.5; P0.4 concluído (2026-10-04, resumo no README do adaptador Claude Code); P0.5 com kit pronto, aguarda sessão real no Cursor; P0.6 concluído |
-| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | A1–A4 e C1–C3 concluídos (commit `7ead2ae`); A5 preparado; B1 aguarda P0.5; G1 pendente |
+| — | P0.1–P0.6 | Decisões registradas e sondagens com evidência | P0.1–P0.2 aprovados; P0.3 decidido (2026-10-05: executor do teste e origem do exit code), mapeamento do Cursor a confirmar em P0.5; P0.4 concluído (2026-10-04, resumo no README do adaptador Claude Code); P0.5 com kit pronto, aguarda sessão real no Cursor; P0.6 concluído |
+| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | A1–A4 e C1–C3 concluídos (commit `7ead2ae`); C1–C3 fecharam antes da reabertura do P0.3 e foram complementados com a decisão de 2026-10-05; A5 preparado; B1 aguarda P0.5; G1 pendente |
 | G2 Claude Code | B2-CC, D-CC, O-CC | Observação aceita em sessão nova | pendente |
 | G2 Cursor | B2-CU, D-CU, O-CU | Observação aceita em sessão nova | pendente |
 | G3a | E0, E1 | Onda 1 sem falso DONE e com chamadas previstas = observadas | pendente |
