@@ -20,7 +20,7 @@ runtimes:
   claude_code:
     skill_ref: "databricks:databricks-<nome>"
     instalacao_agentes: .claude/agents/
-    observacao_habilidades_em_subagente: pendente_p0_4
+    observacao_habilidades_em_subagente: observada_p0_4
   cursor:
     skill_ref: ".agents/skills/databricks-<nome>/SKILL.md"
     instalacao_agentes: .cursor/agents/
