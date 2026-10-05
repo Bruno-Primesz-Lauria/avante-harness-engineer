@@ -227,7 +227,7 @@ Gate G2, por runtime: observação aceita. O runtime que não passa G2 não é a
 
 | ID | Pacote | Depende de | Saída verificável |
 |---|---|---|---|
-| E0 | Aplicar A5 e habilitar manutenção e correção na chave, para os runtimes aprovados em G2. Antes, `adaptadores/prova.py` precisa informar o runtime ao núcleo: com a chave preenchida, `iniciar` e `fechar` sem runtime são recusados | G2 de ao menos um runtime, A5 | Política e chave coerentes; esvaziar a chave restaura o comportamento atual |
+| E0 | Habilitar manutenção e correção na chave, para os runtimes aprovados em G2 (o A5 já foi aplicado em 2026-10-05). Antes, `adaptadores/prova.py` precisa informar o runtime ao núcleo: com a chave preenchida, `iniciar` e `fechar` sem runtime são recusados | G2 de ao menos um runtime, A5 | Política e chave coerentes; esvaziar a chave restaura o comportamento atual |
 | E1 | Onda 1: cenários de manutenção e correção | E0 | Registros e métricas da onda |
 | E2 | Onda 2, em paralelo: novo e validação (dab só em sandbox), docs e destilar, review, entendimento | G3a | Registros e métricas por trilha |
 
@@ -401,7 +401,7 @@ flowchart LR
 | Gate | Pacotes | Critério de saída | Status |
 |---|---|---|---|
 | — | P0.1–P0.6 | Decisões registradas e sondagens com evidência | P0.1–P0.2 aprovados; P0.3 decidido (2026-10-05: executor do teste e origem do exit code), mapeamento do Cursor a confirmar em P0.5; P0.4 concluído (2026-10-04; refeito em 2026-10-05 no CLI 2.1.289 com brutos preservados em `.execucoes/sondagens/`; resumo no README do adaptador Claude Code); P0.5 com kit pronto, aguarda sessão real no Cursor; P0.6 concluído |
-| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | A1–A4 e C1–C3 concluídos (commit `7ead2ae`); C1–C3 fecharam antes da reabertura do P0.3 e foram complementados com a decisão de 2026-10-05; A5 preparado na branch `a5/migracao-texto-agentes` (commit `b150b5c`), para rebase e merge em E0; B1 aguarda P0.5; G1 pendente |
+| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | A1–A4 e C1–C3 concluídos (commit `7ead2ae`); C1–C3 fecharam antes da reabertura do P0.3 e foram complementados com a decisão de 2026-10-05; A5 aplicado antecipadamente em 2026-10-05 (merge `3c16e4f`), por decisão humana: o texto é condicionado à chave, que segue vazia, então o comportamento atual não muda; B1 aguarda P0.5; G1 pendente |
 | G2 Claude Code | B2-CC, D-CC, O-CC | Observação aceita em sessão nova | pendente |
 | G2 Cursor | B2-CU, D-CU, O-CU | Observação aceita em sessão nova | pendente |
 | G3a | E0, E1 | Onda 1 sem falso DONE e com chamadas previstas = observadas | pendente |
