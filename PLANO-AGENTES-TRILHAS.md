@@ -4,7 +4,7 @@
 
 Hoje um único agente executa o trabalho estruturado na esteira `saneamento_migracao`: ele implementa, verifica e revisa o próprio resultado, e a disciplina depende do modelo. Só o Cursor coleta prova da fatia; no Claude Code nenhuma fatia estruturada chega a um DONE comprovado.
 
-Este plano torna executável, no Claude Code e no Cursor, o fluxo de agentes aprovado no desenho ([trilhas e fluxogramas](user-harness-esteira-v3.html#fluxo-trilha) e [responsabilidades](user-harness-esteira-v3.html#agentes-aprovados)). Ao final:
+Este plano torna executável, no Claude Code e no Cursor, o fluxo de agentes aprovado no desenho ([trilhas e fluxogramas](user-harness-esteira-v4.html#trilhas) e [responsabilidades](user-harness-esteira-v4.html#trilhas)). Ao final:
 
 1. **Papéis certos em cada trilha.** O agente principal coordena, e cada trilha estruturada chama os papéis previstos (`map`, `config`, `implement`, `test`, `refute`, `docs` e `dab`) na ordem aprovada e conforme o contrato da fatia. O principal não substitui um papel obrigatório em silêncio.
 2. **Escrita, verificação e revisão separadas.** Quem altera não aprova o próprio trabalho. O teste parte do esperado contratado; a revisão independente recebe intenção e aceite, não o racional do autor; edição posterior invalida as duas.
@@ -93,7 +93,7 @@ Manter uma definição neutra por agente em `agentes/<nome>.md`, incluindo respo
 
 ### 4.1 Fonte única do roteamento
 
-`agentes/roteamento.yaml` é a única fonte da matriz: papéis por trilha, ordem, gatilhos, skills e capacidades. As entradas dos sete agentes em `acervo/catalogo.yaml` e as definições nativas são geradas a partir dele. O HTML continua editado à mão; um teste confere `DADOS` e `PECAS` contra o roteamento (responsável por nó, gatilho e trilhas). O teste checa estrutura e não espelha prompt.
+`agentes/roteamento.yaml` é a única fonte da matriz: papéis por trilha, ordem, gatilhos, skills e capacidades. As definições nativas são geradas a partir dele. O HTML continua editado à mão; um teste confere os fluxos de `DADOS` contra o roteamento (responsável por nó e trilhas). O teste checa estrutura e não espelha prompt.
 
 Cada agente registra três metadados distintos: `politica: aprovada`, `instalado` por runtime e `observado` por runtime (versão, data e referência do registro).
 
@@ -197,7 +197,7 @@ Resultado bruto em `.execucoes/sondagens/`; resumo versionado no README do adapt
 | A1 | A | `agentes/roteamento.yaml` com matriz, ordem, gatilhos (4.2), skills e capacidades (4.3) e metadados (4.1) | P0.1, P0.2 | Cada nó tem responsável e cada condição tem destino |
 | A2 | A | Sete definições neutras `agentes/<nome>.md` | A1 | Campos da seção 4 completos; capacidades obrigatórias embutidas |
 | A3 | A | Alinhar o HTML (D1–D5) e os metadados do catálogo (aprovado × instalado × observado) | P0.1 | Desenho e catálogo concordam, sem comportamento novo |
-| A4 | A | Teste de consistência entre roteamento, HTML e catálogo | A1, A3 | Falha com divergência real e passa no estado alinhado |
+| A4 | A | Teste de consistência entre roteamento e fluxos do HTML | A1, A3 | Falha com divergência real e passa no estado alinhado |
 | A5 | A | Migrar o texto operacional (`AGENTS.md`, núcleo, trilhas, acervo, adaptadores), condicionado à chave `agentes_obrigatorios` | A1 | Aplicado antecipadamente em 2026-10-05 (merge `3c16e4f`), por decisão humana; com a chave vazia, o comportamento não muda |
 | C1 | C | Schema 3.2 em `formas/catalogo.yaml` | P0.3 | Catálogo versionado; registros 3.1 continuam legíveis |
 | C2 | C | `formas.py`: ataque, inspeção, triagem e chamada; produtor por papel | C1 | Testes de aceite e recusa por forma |
@@ -463,7 +463,8 @@ Estado em 2026-10-05: Fase 0 concluída; na Fase 1, A1–A5 e C1–C3 concluído
 - Editar só os arquivos listados no brief. Dois pacotes em paralelo nunca editam o mesmo bloco; em `adaptadores/gerenciar.py` e `adaptadores/executar.py`, cada pacote toca só o ramo do seu runtime.
 - Commitar com `git add` explícito dos próprios arquivos, nunca `git add -A`. Mensagem em português, iniciada pelo ID do pacote (por exemplo, `B1: ...`).
 - Antes do commit, rodar `py -3 -m unittest discover -s testes -p teste_*.py -v` e `node testes/teste_opencode.mjs`. Suíte vermelha não é commitada.
-- Ao concluir, atualizar a linha do painel (7.3) e os metadados afetados (`agentes/roteamento.yaml`, `acervo/catalogo.yaml`, HTML), sem declarar observado o que só foi testado localmente.
+- Ao concluir, atualizar a linha do painel (7.3) e os metadados afetados (`agentes/roteamento.yaml`; o HTML só nos fluxos), sem declarar observado o que só foi testado localmente.
+- Nenhum pacote cria forma, catálogo ou documento novo fora do seu brief. O núcleo (`implementacao/`) só cresce o necessário para o aceite, e a revisão do pacote confere as linhas adicionadas e removidas.
 - Fechar com um status de `evidencia/fecho.md`: `DONE` com hash do commit; `BLOCKED`, `FAILED` ou `DECIDE` com motivo e ponto de retomada. Contradição com o desenho volta ao humano (P0.1), sem improvisar.
 - Não executar `databricks bundle deploy`/`run`, não editar `prj-avante-analytics-adb/` e não preencher `agentes_obrigatorios` fora do pacote E0.
 
@@ -498,7 +499,7 @@ D-CC e D-CU podem começar sobre os brutos das sondagens (`.execucoes/sondagens/
 
 **B2-CC / B2-CU · instalar os agentes** (agente; depois de G1; um por runtime)
 - Rodar `py -3 adaptadores/gerar_agentes.py --instalar claude_code` (ou `cursor`) e commitar os sete arquivos gerados.
-- Atualizar `instalado: true` do runtime em `agentes/roteamento.yaml`, no catálogo do acervo e no `PECAS` do HTML (o A4 confere os três), o chip "Ausente" de `#estacao-cursor` ou `#estacao-claude` e a frase de `adaptadores/README.md` sobre as versões nativas.
+- Atualizar `instalado: true` do runtime em `agentes/roteamento.yaml` (fonte única), o chip "Ausente" de `#estacao-cursor` ou `#estacao-claude` e a frase de `adaptadores/README.md` sobre as versões nativas.
 - Aceite: A4 verde e `--verificar` sem divergência. Instalar não ativa nada: a chave segue vazia.
 
 **D-CC · adaptador Claude Code** (agente; o maior pacote)
@@ -526,7 +527,7 @@ D-CC e D-CU podem começar sobre os brutos das sondagens (`.execucoes/sondagens/
 
 **O-CC / O-CU · observação em sessão nova** (humano no Cursor; no Claude Code, um agente pode conduzir em modo headless numa cópia temporária, como em P0.4)
 - Roteiro: com os agentes instalados, abrir sessão nova; chamar cada papel uma vez numa fatia de fixture; conferir descoberta dos sete, recorte respeitado, skill pertinente carregada, guarda negando no subagente, prova do `test` atribuída à fatia do coordenador e `fechar` recusando DONE quando falta uma chamada prevista (chave preenchida só na cópia temporária).
-- Saída: brutos em `.execucoes/sondagens/`, resumo versionado no README do adaptador e `observado` preenchido (versão, data, referência) em `agentes/roteamento.yaml`, no catálogo e no HTML.
+- Saída: brutos em `.execucoes/sondagens/`, resumo versionado no README do adaptador e `observado` preenchido (versão, data, referência) em `agentes/roteamento.yaml`.
 
 **G2 · gate por runtime** (humano): aceita a observação. Runtime que não passa fica fora da chave.
 

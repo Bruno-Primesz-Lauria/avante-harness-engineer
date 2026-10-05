@@ -37,7 +37,7 @@ A primeira entrega cobre a memória do harness. A memória específica do produt
 | Contexto advisory | `nucleo/contexto-avante.md` é advisory: "nunca é fonte de regra nem de decisão". | As notas adotam o mesmo estatuto e a mesma redação. |
 | Persistência operacional | `.execucoes/` guarda provas, estado, sessões e diagnósticos e está no `.gitignore`. Hoje só contém diretórios de teste. | Preservar os registros locais e compartilhar notas destiladas em outra pasta. |
 | Destilação | `trilhas/destilar.md` limita a superfície a skills e referências do adaptador. Desde o A5, prevê `docs` com `distill` no passo 2, inspeção do coordenador e `refute`, quando a trilha estiver em `agentes_obrigatorios`. | Incluir notas como destino e ajustar o aceite, sem mexer na sequência de papéis. Notas `.md` já cabem na superfície documental do `docs`. |
-| Acervo | `distill` (skill) e `docs-distill` (hook que "sinaliza candidato; não exige pergunta nem destilação") são candidatos em `acervo/catalogo.yaml`. | Reusar essas peças para destilar e sinalizar notas. Não criar peça paralela. |
+| Acervo | `distill` (skill) e `docs-distill` (hook que "sinaliza candidato; não exige pergunta nem destilação") são candidatos em `acervo/README.md`. | Reusar essas peças para destilar e sinalizar notas. Não criar peça paralela. |
 | Schema de eventos | Schema 3.2 adotado (C1–C3): `contrato`, `guarda`, `brief`, `teste`, `ataque`, `triagem`, `inspecao` e `chamada`. `destilar` continua candidata. | Notas têm metadados próprios e não são apresentadas como eventos adotados. |
 | Fecho técnico | O núcleo já aceita critério `inspecao_documental` sem comando (`Provas.inspecionar`, forma `inspecao`), mas `adaptadores/prova.py` ainda não expõe a inspeção: só `iniciar`, `estado` e `fechar`. | A Fase 1 mantém o comando `validar`, que fecha como critério `teste` em qualquer runtime com coleta. A inspeção documental cobre o que o comando não exercita quando houver caminho de CLI para ela. |
 | Prova por runtime | Só o Cursor coleta prova. No Claude Code `fechar` recusa `DONE`, porque não há sessão nem coleta (BL2 do plano de agentes). | Fatia estruturada fecha `DONE` só no Cursor; no Claude Code fecha com impedimento declarado (DM-2). |
@@ -47,7 +47,7 @@ A primeira entrega cobre a memória do harness. A memória específica do produt
 | Memória nativa dos runtimes | Runtimes podem manter memória própria fora do repositório (por exemplo, a auto memory do Claude Code em `~/.claude/projects/`). | Ela é pessoal e não substitui nem alimenta esta memória. Conhecimento para o time entra em `memoria/` por PR. |
 | Fronteira de repositórios | O produto tem Git próprio e está ignorado pelo Git do harness. | Conhecimento do produto acompanha o repositório do produto. |
 
-Referências locais: [AGENTS.md](AGENTS.md), [README](README.md), [política](nucleo/modus-operandi.md), [contexto Avante](nucleo/contexto-avante.md), [destilação](trilhas/destilar.md), [acervo](acervo/catalogo.yaml), [formas](formas/README.md), [fecho](evidencia/fecho.md), [uso da prova](evidencia/uso.md), [adaptadores](adaptadores/README.md) e [plano de agentes](PLANO-AGENTES-TRILHAS.md).
+Referências locais: [AGENTS.md](AGENTS.md), [README](README.md), [política](nucleo/modus-operandi.md), [contexto Avante](nucleo/contexto-avante.md), [destilação](trilhas/destilar.md), [acervo](acervo/README.md), [formas](formas/README.md), [fecho](evidencia/fecho.md), [uso da prova](evidencia/uso.md), [adaptadores](adaptadores/README.md) e [plano de agentes](PLANO-AGENTES-TRILHAS.md).
 
 ## 3. Desenho da memória
 
@@ -177,7 +177,7 @@ Dependência: Fase 0.
 | `trilhas/destilar.md` | Incluir nota como destino, com a fronteira entre nota e instrução; explicitar que a forma `destilar` segue candidata. |
 | `trilhas/README.md` | Ajustar a descrição da trilha `destilar` ao novo destino. |
 | `README.md` | Estrutura, estado implementado, fluxo Git, uso no Obsidian e comando `validar`. |
-| `user-harness-esteira-v3.html` | Atualizar a seção `#memoria` (página 4) com o que foi implementado; manter as etapas futuras como propostas. |
+| `user-harness-esteira-v4.html` | Acrescentar um diagrama curto da memória com o que foi implementado; etapas futuras ficam no plano. |
 | `.gitignore` | Ignorar `memoria/.obsidian/`. |
 | `memoria/README.md` | Política, revisores, ciclo de contribuição, configuração do Obsidian e limites. |
 | `memoria/indice.md` | Índice por assunto com as notas iniciais. |
@@ -235,7 +235,7 @@ Dependência: piloto concluído e benefício demonstrado. O schema 3.2 (C1–C3)
 1. Conferir a documentação oficial atual e os eventos disponíveis nas versões usadas pelo time.
 2. Reutilizar a política e o CLI comuns; cada adaptador traduz somente os eventos do seu runtime.
 3. Priorizar consulta orientada à tarefa. No início da sessão, carregar no máximo a orientação ou o índice quando ainda não houver assunto suficiente para selecionar notas.
-4. Implementar o `docs-distill` do acervo: no fechamento, sinalizar candidatos com fontes, sem gravar nota nem abrir PR. Atualizar seu `estado` em `acervo/catalogo.yaml` só depois de observado.
+4. Implementar o `docs-distill` do acervo: no fechamento, sinalizar candidatos com fontes, sem gravar nota nem abrir PR. Atualizar sua situação em `acervo/README.md` só depois de observado.
 5. Registrar consultas e candidaturas em `.execucoes/`, com identificação das notas e da revisão usada, sem gravar no vault a cada chamada de ferramenta. Atualizar `evidencia/layout.md`.
 6. Ativar gradualmente por runtime e observar sessões reais antes de declarar a integração disponível.
 

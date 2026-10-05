@@ -1,5 +1,5 @@
-"""Confere o roteamento YAML com o desenho incorporado e o catálogo."""
-from copy import deepcopy
+"""Confere o roteamento YAML com os fluxos do desenho incorporado (DADOS)."""
+import copy
 import json
 from pathlib import Path
 import re
@@ -62,7 +62,7 @@ def _normalizar(texto):
 
 
 def _objetos_fluxo(itens):
-    """Percorre passos e membros paralelos sem copiar nenhum catálogo."""
+    """Percorre passos e membros paralelos sem copiar nada."""
     for item in itens:
         if not isinstance(item, dict):
             continue
@@ -86,35 +86,14 @@ def _papeis_no_rotulo(rotulo):
     return papeis
 
 
-def _assert_trilhas_agente_alinhadas(caso, trilhas, papel, peca_catalogo, peca_html):
-    trilhas_catalogo = set(
-        trilhas if peca_catalogo["trilhas"] == "*" else peca_catalogo["trilhas"]
-    )
-    trilhas_html = set(trilhas if peca_html["jobs"] == "*" else peca_html["jobs"])
-    caso.assertEqual(trilhas, trilhas_catalogo, f"trilhas no catálogo para {papel}")
-    caso.assertEqual(trilhas, trilhas_html, f"trilhas no PECAS para {papel}")
-
-
-def _assert_fontes_alinhadas(caso, rota, catalogo, dados, pecas_html):
+def _assert_fontes_alinhadas(caso, rota, dados):
     trilhas = rota["trilhas"]
     html_trilhas = dados["playbooks"]
     ids_trilhas = {trilha["id"] for trilha in dados["jobs"]}
     caso.assertEqual(set(trilhas), set(html_trilhas))
     caso.assertEqual(set(trilhas), ids_trilhas)
 
-    pecas_catalogo = {
-        peca["id"]: peca
-        for peca in catalogo["pecas"]
-        if peca.get("tipo") == "subagent"
-    }
-    pecas_diagrama = {
-        peca["name"]: peca
-        for peca in pecas_html
-        if peca.get("kind") == "subagent"
-    }
     caso.assertEqual(PAPEIS, set(rota["agentes"]))
-    caso.assertEqual(PAPEIS, set(pecas_catalogo))
-    caso.assertEqual(PAPEIS, set(pecas_diagrama))
 
     trilhas_por_papel = {papel: set() for papel in PAPEIS | {"coordenador"}}
     for trilha, definicao in trilhas.items():
@@ -171,57 +150,8 @@ def _assert_fontes_alinhadas(caso, rota, catalogo, dados, pecas_html):
             trilhas_por_papel[papel], trilhas_gatilho,
             f"trilhas do papel {papel} não acompanham seu gatilho",
         )
-        peca_catalogo = pecas_catalogo[papel]
-        peca_html = pecas_diagrama[papel]
-        _assert_trilhas_agente_alinhadas(
-            caso, trilhas_gatilho, papel, peca_catalogo, peca_html
-        )
-
-        definicao = rota["agentes"][papel]
-        metadados = definicao["metadados"]
-        caso.assertEqual(metadados["claude_code"]["politica"], peca_catalogo["politica"])
-        caso.assertEqual(metadados["claude_code"]["politica"], peca_html["politica"])
-        for runtime in ("claude_code", "cursor"):
-            esperado_instalado = "instalado" if metadados[runtime]["instalado"] else "nao_instalado"
-            caso.assertEqual(esperado_instalado, peca_catalogo["instalado"][runtime], f"instalado: {papel}/{runtime}")
-            caso.assertEqual(esperado_instalado, peca_html["instalado"][runtime], f"instalado HTML: {papel}/{runtime}")
-            caso.assertEqual(metadados[runtime]["observado"], peca_catalogo["observado"][runtime])
-            caso.assertEqual(metadados[runtime]["observado"], peca_html["observado"][runtime])
-
-        gatilho_texto = _normalizar(chave_gatilho + " " + str(gatilho))
-        catalogo_texto = _normalizar(peca_catalogo.get("gatilho", ""))
-        html_texto = _normalizar(peca_html.get("trigger", ""))
-        pistas_rota = {
-            "map": ("investigacao",),
-            "config": ("yaml", "ingestao", "recurso"),
-            "implement": ("notebook", "python", "sql"),
-            "test": ("teste", "validacao_dados", "paridade"),
-            "refute": ("trilha estruturada",),
-            "docs": ("document",),
-            "dab": ("ambiente", "autorizacao"),
-        }[papel]
-        pistas_descricao = {
-            "map": ("investiga",),
-            "config": ("yaml", "ingestao", "recurso"),
-            "implement": ("notebook", "python", "sql"),
-            "test": ("aceite",),
-            "refute": ("revisao",),
-            "docs": ("document",),
-            "dab": ("ambiente", "autorizacao"),
-        }[papel]
-        for pista in pistas_rota:
-            caso.assertIn(pista, gatilho_texto, f"gatilho YAML sem {pista} para {papel}")
-        for pista in pistas_descricao:
-            caso.assertIn(pista, catalogo_texto, f"gatilho do catálogo sem {pista} para {papel}")
-            caso.assertIn(pista, html_texto, f"gatilho PECAS sem {pista} para {papel}")
-
         if papel == "map":
             caso.assertTrue(gatilho.get("opcional"))
-            caso.assertEqual("opcional", peca_catalogo["ativacao"])
-            caso.assertIn("opcional", _normalizar(peca_html["invoke"]))
-        else:
-            caso.assertNotEqual("opcional", peca_catalogo["ativacao"])
-            caso.assertIn("obrigatorio", _normalizar(peca_html["invoke"]))
         if papel == "test":
             caso.assertEqual(
                 {"teste", "validacao_dados", "paridade"}, set(gatilho["criterios"])
@@ -234,30 +164,20 @@ class ConsistenciaRoteamentoTestes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.rota = yaml.safe_load((RAIZ / "agentes/roteamento.yaml").read_text(encoding="utf-8"))
-        cls.catalogo = yaml.safe_load((RAIZ / "acervo/catalogo.yaml").read_text(encoding="utf-8"))
-        # O HTML tem trechos legados com bytes inválidos; o JSON embutido continua legível em UTF-8.
-        cls.html = (RAIZ / "user-harness-esteira-v3.html").read_bytes().decode("utf-8", errors="replace")
+        cls.html = (RAIZ / "user-harness-esteira-v4.html").read_text(encoding="utf-8")
         cls.dados = _html_constante(cls.html, "DADOS")
-        cls.pecas_html = _html_constante(cls.html, "PECAS")
 
-    def assert_fontes_alinhadas(self, catalogo=None):
-        _assert_fontes_alinhadas(
-            self, self.rota, catalogo or self.catalogo, self.dados, self.pecas_html
-        )
+    def test_rotas_papeis_gatilhos_e_fluxos_coincidem(self):
+        _assert_fontes_alinhadas(self, self.rota, self.dados)
 
-    def test_rotas_papeis_gatilhos_metadados_e_diagrama_coincidem(self):
-        self.assert_fontes_alinhadas()
-
-    def test_divergencia_real_de_trilha_no_catalogo_e_detectada(self):
-        catalogo_alterado = deepcopy(self.catalogo)
-        dab = next(peca for peca in catalogo_alterado["pecas"] if peca.get("id") == "dab")
-        dab["trilhas"].remove("validacao")
-        peca_html = next(peca for peca in self.pecas_html if peca.get("name") == "dab")
-        with self.assertRaisesRegex(AssertionError, "trilhas no catálogo para dab"):
-            _assert_trilhas_agente_alinhadas(
-                self, set(self.rota["gatilhos"]["dab"]["trilhas"]), "dab",
-                dab, peca_html,
-            )
+    def test_divergencia_real_entre_roteamento_e_fluxo_e_detectada(self):
+        dados = copy.deepcopy(self.dados)
+        dados["playbooks"]["validacao"]["nodes"] = [
+            no for no in dados["playbooks"]["validacao"]["nodes"]
+            if "dab" not in _papeis_no_rotulo(no.get("agent", ""))
+        ]
+        with self.assertRaises(AssertionError):
+            _assert_fontes_alinhadas(self, self.rota, dados)
 
     def test_dec_1_separa_configuracao_e_codigo_na_correcao(self):
         self.assertEqual("aprovada", self.rota["decisoes"]["dec_1"]["estado"])
@@ -289,7 +209,7 @@ class ConsistenciaRoteamentoTestes(unittest.TestCase):
         self.assertIn(("caso_cobre", "preparar", "nao"), {
             (origem, destino, _normalizar(quando)) for origem, destino, quando in arestas
         })
-        self.assertIn(("caso_cobre", "tipo_arquivo", "sim"), arestas)
+        self.assertIn(("caso_cobre", "escrita", "sim"), arestas)
 
     def test_dec_3_exige_criterio_ambiente_e_autorizacao_nas_quatro_trilhas(self):
         self.assertEqual("aprovada", self.rota["decisoes"]["dec_3"]["estado"])
@@ -308,7 +228,7 @@ class ConsistenciaRoteamentoTestes(unittest.TestCase):
             html = self.dados["playbooks"][trilha]
             edges = html["edges"]
             self.assertTrue(any(
-                a["to"] == "ambiente" and "autoriz" in _normalizar(a.get("when", ""))
+                a["to"] == "dab" and "autoriz" in _normalizar(a.get("when", ""))
                 for a in edges
             ), f"HTML sem caminho autorizado para dab em {trilha}")
             self.assertTrue(any(
@@ -336,11 +256,6 @@ class ConsistenciaRoteamentoTestes(unittest.TestCase):
             "observada_p0_5",
             self.rota["runtimes"]["cursor"]["observacao_habilidades_em_subagente"],
         )
-        texto = _normalizar(self.html)
-        self.assertIn("cobertura no shell de subagentes observada na sondagem p0.5", texto)
-        self.assertNotIn("sera observada na sondagem p0.5", texto)
-        pecas = {p["id"]: p for p in self.catalogo["pecas"] if p.get("tipo") == "subagent"}
-        self.assertEqual("pendente", pecas["implement"]["observado"]["cursor"]["estado"])
 
 
 if __name__ == "__main__":

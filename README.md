@@ -1,6 +1,6 @@
 # User harness — Esteira
 
-Regras, guardas e registro de provas para agentes de IA que trabalham na esteira `saneamento_migracao`. O desenho completo está em [`user-harness-esteira-v3.html`](user-harness-esteira-v3.html). Estes arquivos descrevem o que existe hoje.
+Regras, guardas e registro de provas para agentes de IA que trabalham na esteira `saneamento_migracao`. O apoio visual (princípio, estrutura e fluxos) está em [`user-harness-esteira-v4.html`](user-harness-esteira-v4.html). Estes arquivos descrevem o que existe hoje.
 
 ## Como a IA recebe o harness
 
@@ -23,7 +23,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 | [`guardas/`](guardas/README.md) | O que o código nega e as regras de conduta sem código. |
 | [`evidencia/`](evidencia/uso.md) | Uso da prova, validade, status de fecho e layout dos registros. |
 | [`formas/`](formas/README.md) | Schema dos registros (4 formas adotadas, 11 candidatas). |
-| [`acervo/`](acervo/README.md) | 26 peças do desenho e o estado de cada uma. |
+| [`acervo/`](acervo/README.md) | Inventário das candidatas do desenho e a situação de cada uma. |
 | `.agents/skills/` | 10 skills Databricks (aitools v0.2.10); roteamento em [`trilhas/`](trilhas/README.md#skills-databricks). |
 | [`adaptadores/`](adaptadores/README.md) | Tradução dos eventos de cada runtime para a mesma guarda. |
 | [`avaliacao/`](avaliacao/README.md) | Oito cenários e métricas para medir a política. |
@@ -54,10 +54,10 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 
 ## Preparar um clone
 
-Abra sempre `user-harness-esteira/` como raiz da IDE, também para trabalhar no produto. O produto é um repositório Git separado, dentro dela e ignorado pelo Git do harness:
+Abra sempre `avante-harness-engineer/` como raiz da IDE, também para trabalhar no produto. O produto é um repositório Git separado, dentro dela e ignorado pelo Git do harness:
 
 ```text
-user-harness-esteira/          # raiz aberta na IDE
+avante-harness-engineer/       # raiz aberta na IDE
   AGENTS.md, CLAUDE.md
   .cursor/ .claude/ .codex/ .opencode/
   prj-avante-analytics-adb/     # clone do produto, Git próprio
