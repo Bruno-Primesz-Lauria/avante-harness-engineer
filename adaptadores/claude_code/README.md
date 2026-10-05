@@ -11,12 +11,12 @@ Visão geral e tabela: [adaptadores](../README.md).
 - Até D-CC passar pelo gate G2, o `fechar` não comprova `DONE` no Claude Code. Feche a fatia como `BLOCKED`, com motivo e condição de retomada, ou execute-a no Cursor. Um relato de agente não substitui a prova observada.
 - Confira: `/hooks`.
 
-## Sondagem P0.4 (2026-10-04)
+## Sondagem P0.4 (2026-10-04, refeita em 2026-10-05)
 
-Observado no CLI 2.1.283, headless, Windows, hooks em PowerShell, em duas sessões. Bruto em `.execucoes/sondagens/brutos/claude_code/`; relatório em `.execucoes/sondagens/claude_code.json`.
+Primeira observação no CLI 2.1.283, em duas sessões. Os brutos dela não foram preservados. Refeita em 2026-10-05 no CLI 2.1.289, headless, Windows, hooks em PowerShell, numa worktree temporária com a guarda real; todos os itens abaixo se repetiram. Bruto em `.execucoes/sondagens/brutos/claude_code/2026-10-05_cli-2.1.289/` e relatório em `.execucoes/sondagens/claude_code.json`, ambos fora do Git; este resumo é o registro versionado.
 
 - Frontmatter: `name`, `description`, `tools`, `model: inherit` e `skills` são efetivos. A skill listada é pré-carregada no subagente, inclusive com escopo de plugin (`databricks:databricks-core`).
-- O subagente recebe `CLAUDE.md`/`AGENTS.md` e as skills do plugin. Skills de `.agents/skills/` não aparecem no Claude Code.
+- O subagente recebe `CLAUDE.md`/`AGENTS.md` e as skills do plugin (31 `databricks:databricks-*` na 2.1.289). Skills de `.agents/skills/` não aparecem no Claude Code.
 - `PreToolUse`, `PostToolUse` e `PostToolUseFailure` disparam dentro do subagente, com o `session_id` da sessão principal e mais `agent_id` e `agent_type`. Nenhuma variável de ambiente distingue o subagente.
 - `SubagentStart` não traz `tool_use_id`. A chamada liga ao subagente pelo `PostToolUse(Agent)`, em que `tool_response.agentId` é o `agent_id`.
 - `CLAUDE_CODE_SESSION_ID`, no ambiente do hook e no shell, é igual ao `session_id` e serve para `--sessao`.
