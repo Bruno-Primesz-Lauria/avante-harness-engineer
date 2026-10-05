@@ -396,8 +396,8 @@ flowchart LR
 
 | Gate | Pacotes | Critério de saída | Status |
 |---|---|---|---|
-| — | P0.1–P0.6 | Decisões registradas e sondagens com evidência | P0.1–P0.3 aprovados; P0.4/P0.5 aguardam observação em sessões reais; P0.6 concluído |
-| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | A1–A4 e C1–C3 concluídos; A5 preparado; B1 aguarda P0.4/P0.5; G1 pendente |
+| — | P0.1–P0.6 | Decisões registradas e sondagens com evidência | P0.1–P0.2 aprovados; P0.3 aguarda decisão sobre o executor do teste e P0.5; P0.4 concluído (2026-10-04, resumo no README do adaptador Claude Code); P0.5 com kit pronto, aguarda sessão real no Cursor; P0.6 concluído |
+| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | A1–A4 e C1–C3 concluídos (commit `7ead2ae`); A5 preparado; B1 aguarda P0.5; G1 pendente |
 | G2 Claude Code | B2-CC, D-CC, O-CC | Observação aceita em sessão nova | pendente |
 | G2 Cursor | B2-CU, D-CU, O-CU | Observação aceita em sessão nova | pendente |
 | G3a | E0, E1 | Onda 1 sem falso DONE e com chamadas previstas = observadas | pendente |
