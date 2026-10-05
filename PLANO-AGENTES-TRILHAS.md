@@ -406,9 +406,9 @@ flowchart LR
 | Gate | Pacotes | Critério de saída | Status |
 |---|---|---|---|
 | — | P0.1–P0.6 | Decisões registradas e sondagens com evidência | P0.1–P0.2 aprovados; P0.3 decidido (2026-10-05: executor do teste, origem do exit code e ajustes da P0.5); P0.4 concluído (2026-10-04; refeito em 2026-10-05 no CLI 2.1.289 com brutos preservados em `.execucoes/sondagens/`; resumo no README do adaptador Claude Code); P0.5 concluído (2026-10-05, Cursor 3.17.8; resumo no README do adaptador Cursor), três contradições com o desenho, decididas no mesmo dia (Schema 3.2, "Ajustes depois da P0.5"); exit code e diretório já corrigidos no adaptador do Cursor. Reteste no mesmo dia: `sessionStart` dispara em chat novo e o `cwd` informado chega absoluto; P0.6 concluído |
-| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | A1–A4 e C1–C3 concluídos (commit `7ead2ae`); C1–C3 fecharam antes da reabertura do P0.3 e foram complementados com a decisão de 2026-10-05; A5 aplicado antecipadamente em 2026-10-05 (merge `3c16e4f`), por decisão humana: o texto é condicionado à chave, que segue vazia, então o comportamento atual não muda; HTML, README, catálogos e `evidencia/uso.md` sincronizados com a P0.5 em 2026-10-05; B1 liberado (próximo pacote, seção 10); G1 pendente |
-| G2 Claude Code | B2-CC, D-CC, O-CC | Observação aceita em sessão nova | pendente |
-| G2 Cursor | B2-CU, D-CU, O-CU | Observação aceita em sessão nova | pendente |
+| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | Critério executado em 2026-10-05: suíte verde (175 testes), A4 verde (7 testes) e `gerar_agentes.py --verificar` estável em duas execuções (14 agentes ausentes, esperado antes de B2); B1 e E0a implementados; decisão humana G1 pendente |
+| G2 Claude Code | B2-CC, D-CC, O-CC | Observação aceita em sessão nova | D-CC implementado sobre fixture, conclui depois de G1/B2; atualização de `teste_adaptadores.py` aguarda decisão humana; não observado |
+| G2 Cursor | B2-CU, D-CU, O-CU | Observação aceita em sessão nova | D-CU implementado sobre fixture, conclui depois de G1/B2; não observado |
 | G3a | E0, E1 | Onda 1 sem falso DONE e com chamadas previstas = observadas | pendente |
 | G3b | E2, por trilha | Mesmo critério, por trilha | pendente |
 | G4 | M1, M2 | Aceite final | pendente |
