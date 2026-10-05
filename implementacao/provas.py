@@ -565,7 +565,7 @@ class Provas:
         saida, faltam = [], []
         plano = estado.get("chamadas_previstas") or self.plano_chamadas(contrato)
         # Com test no plano ativado, a prova de teste precisa ter rodado num subagente test observado.
-        agentes_test = self.agentes_test(pasta, estado) if ativa and any(
+        agentes_test = self.agentes_do_papel(pasta, estado, "test") if ativa and any(
             c["papel"] == "test" for c in plano) else None
         for c in contrato["aceite"]:
             registro = estado.get("inspecoes" if c["tipo"] in TIPOS_INSPECAO else "provas", {}).get(c["id"])
@@ -605,10 +605,10 @@ class Provas:
                 validas.append((registro, e))
         return validas
 
-    def agentes_test(self, pasta, estado):
-        """IDs de subagente observados nas chamadas concluídas do papel test."""
+    def agentes_do_papel(self, pasta, estado, papel):
+        """IDs de subagente observados nas chamadas concluídas do papel."""
         return {i["valor"] for registro, e in self.chamadas_validas(pasta, estado)
-                if registro["papel"] == "test" and registro["status"] == "concluida"
+                if registro["papel"] == papel and registro["status"] == "concluida"
                 for i in e["dados"]["ids_observados"] if i["nome"] == "agente_id"}
 
     def chamadas_faltantes(self, pasta, estado):
@@ -630,6 +630,8 @@ class Provas:
             return ["revisao:invalida"]
         if not self.manifesto_valido(pasta, ataque["manifesto_ref"]):
             return ["revisao:obsoleta"]
+        if ataque["dados"].get("agente_id") not in self.agentes_do_papel(pasta, estado, "refute"):
+            return ["revisao:fora_do_refute"]
         if trilha == "review":
             return []  # O veredito é do artefato; a tarefa de revisar fecha mesmo com achados.
         if ataque["dados"]["veredito"] == "inconclusivo":

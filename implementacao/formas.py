@@ -144,6 +144,8 @@ def validar_dados(tipo, dados, schema_versao="3.1"):
             exigir(origem != "evento_sucesso" or dados["exit_code"] == 0, "Evento de sucesso exige exit 0")
             exigir(origem != "texto_falha" or dados["exit_code"] != 0, "Texto de falha nao comprova exit 0")
     if tipo == "ataque":
+        if "agente_id" in dados:
+            identificador(dados["agente_id"])
         if dados["veredito"] == "com_achados":
             exigir(bool(dados["achados"]), "com_achados exige ao menos um achado")
         if dados["veredito"] == "nao_quebrei":

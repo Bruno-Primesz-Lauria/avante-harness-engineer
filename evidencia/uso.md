@@ -31,6 +31,20 @@ py -3 adaptadores/prova.py --runtime cursor --sessao ID fechar --resultado "Crit
 - Rodar de novo um comando do contrato abre nova tentativa e reabre a fatia; o fecho anterior fica preservado.
 - Com uma verificação pendente (sem resultado registrado), outra chamada é recusada até conferir o resultado.
 
+### Inspeção, revisão e triagem
+
+Três subcomandos leem um YAML (`.execucoes/`) e chamam o núcleo da fatia ativa:
+
+```powershell
+py -3 adaptadores/prova.py --sessao ID inspecionar .execucoes/inspecao.yaml
+py -3 adaptadores/prova.py --sessao ID revisar .execucoes/revisao.yaml
+py -3 adaptadores/prova.py --sessao ID triar .execucoes/triagem.yaml
+```
+
+- `inspecionar`: `criterio_id`, `checagens` (`id` e `resultado`: `pass`, `fail` ou `inconclusivo`) e, opcional, `produtor`. Com a chave vazia, critério de inspeção fecha `DONE` sem comando. Com a trilha ativada, as chamadas previstas continuam exigidas.
+- `revisar`: a forma `ataque` (intenção, aceite, baseline, provas, veredito, tentativas, achados, cobertura) com `agente_id` opcional, protegido pelo hash do evento. Com a trilha ativada, o ID precisa casar com uma chamada `refute` concluída; sem esse vínculo o fecho aponta `revisao:fora_do_refute`. Com a chave vazia, o vínculo não é exigido.
+- `triar`: a forma `triagem` (`revisao_ref`, `achado_id`, `decisao`, `responsavel`, e `evidencia_resolucao_ref` ou `motivo_descarte` conforme a decisão).
+
 Pergunta simples não usa contrato. Só a fatia iniciada entra neste fluxo.
 
 ## Contrato de entrada

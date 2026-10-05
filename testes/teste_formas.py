@@ -55,6 +55,13 @@ class FormasTestes(unittest.TestCase):
             "responsaveis": {},
         }
 
+    def test_ataque_aceita_agente_id_opcional_e_recusa_identificador_invalido(self):
+        dados = self.ataque()
+        self.verificar(self.evento("ataque", dict(dados, agente_id="refute-1")))
+        for agente_id in ("", "../refute", None):
+            with self.subTest(agente_id=agente_id), self.assertRaises(ValueError):
+                self.verificar(self.evento("ataque", dict(dados, agente_id=agente_id)))
+
     def ataque(self, veredito="com_achados"):
         tentativa = {"id": "try1", "procedimento": "Reproduzir o critério", "resultado": "pass"}
         achado = {

@@ -69,15 +69,18 @@ class ProvasTestes(unittest.TestCase):
                                         [{"nome": "agente_id", "valor": chamada_id}], instante, instante,
                                         "concluida")
 
-    def revisar(self, veredito="nao_quebrei", achados=()):
+    def payload_revisao(self, veredito="nao_quebrei", achados=()):
         tentativas = [dict(id="t1", procedimento="Reproduzir o aceite", resultado="pass")]
-        return self.p.revisar(dict(
+        return dict(
             entrada=dict(intencao_ref="contrato.yaml", aceite_ref="contrato.yaml",
                          baseline_ref="baseline.json", provas_refs=[]),
             veredito=veredito, tentativas=tentativas if veredito == "nao_quebrei" else [],
             achados=[dict(id=a, categoria="lacuna", severidade="media", local="src/a.py:1",
                           evidencia_ref="contrato.yaml") for a in achados],
-            cobertura=[dict(criterio_id=c["id"], coberto=True) for c in self.contrato["aceite"]]))
+            cobertura=[dict(criterio_id=c["id"], coberto=True) for c in self.contrato["aceite"]])
+
+    def revisar(self, veredito="nao_quebrei", achados=(), agente_id="call-refute"):
+        return self.p.revisar(dict(self.payload_revisao(veredito, achados), agente_id=agente_id))
 
     def passagem_completa_de_manutencao(self):
         self.contrato["trilha"] = "manutencao"
@@ -649,7 +652,7 @@ class ProvasTestes(unittest.TestCase):
             instante = datetime.now(timezone.utc).isoformat()
             ultima = self.p.registrar_chamada(
                 f"call-{numero}", chamada["papel"], "cursor",
-                [{"nome": "subagent_id", "valor": f"sub-{numero}"}], instante, instante, "concluida")
+                [{"nome": "agente_id", "valor": f"sub-{numero}"}], instante, instante, "concluida")
         evento_dab = ler(pasta / ultima["evidencia_ref"])
         self.assertEqual(evento_dab["dados"]["papel"], "dab")
         self.assertEqual(evento_dab["manifesto_ref"], self.p.estado(pasta)["manifestos_autorizacao"]["c1"])
@@ -658,7 +661,7 @@ class ProvasTestes(unittest.TestCase):
             self.p.fechar("DONE", "Nao pode sem resultado observado da operacao")
         self.assertTrue(self.p.antes("op-1", "databricks bundle validate", str(self.raiz), "teste"))
         self.assertEqual(self.p.depois("op-1", "databricks bundle validate", 0, "ok")["resultado"], "pass")
-        self.revisar()
+        self.revisar(agente_id="sub-3")
         self.assertEqual(self.p.fechar("DONE", "Operacao autorizada observada")["status"], "DONE")
 
         autorizacao.write_text("Autorizacao editada", encoding="utf-8")
@@ -818,6 +821,110 @@ class ProvasTestes(unittest.TestCase):
             ["--sessao", sessao_claude, "fechar", "--status", "BLOCKED",
              "--resultado", "Runtime detectado pelo ambiente"])
         self.assertEqual(codigo, 0, erro)
+
+    def arquivo_yaml(self, nome, dados):
+        caminho = self.raiz / nome
+        caminho.write_text(json.dumps(dados), encoding="utf-8")  # JSON é subconjunto de YAML.
+        return str(caminho)
+
+    def test_cli_inspecao_fecha_done_com_chave_vazia(self):
+        (self.raiz / "docs/nota.md").write_text("fato", encoding="utf-8")
+        self.contrato.update(trilha="docs", superficie=["docs/nota.md"])
+        self.contrato["aceite"] = [dict(id="doc", tipo="inspecao_documental", obrigatorio=True,
+            esperado="Afirmação sustentada", verificacao={"caminhos": ["docs/nota.md"],
+            "checagens": [{"id": "fonte", "esperado": "A fonte sustenta a afirmação"}],
+            "produtor": "refute"})]
+        base = ["--sessao", "sessao-cli-inspecao"]
+        codigo, _, erro = self.chamar_adaptador_prova(
+            [*base, "iniciar", self.arquivo_yaml("contrato-cli.yaml", self.contrato)])
+        self.assertEqual(codigo, 0, erro)
+        codigo, _, erro = self.chamar_adaptador_prova(
+            [*base, "fechar", "--resultado", "Sem inspecao"])
+        self.assertEqual(codigo, 2)
+        self.assertIn("doc", erro)
+        codigo, saida, erro = self.chamar_adaptador_prova(
+            [*base, "inspecionar", self.arquivo_yaml("inspecao.yaml", dict(
+                criterio_id="doc", checagens=[{"id": "fonte", "resultado": "pass"}]))])
+        self.assertEqual(codigo, 0, erro)
+        self.assertEqual(json.loads(saida)["resultado"], "pass")
+        codigo, saida, erro = self.chamar_adaptador_prova([*base, "fechar", "--resultado", "Inspecionado"])
+        self.assertEqual(codigo, 0, erro)
+        self.assertEqual(json.loads(saida)["status"], "DONE")
+        codigo, _, erro = self.chamar_adaptador_prova(
+            [*base, "inspecionar", self.arquivo_yaml("outra.yaml", dict(criterio_id="nenhum", checagens=[]))])
+        self.assertEqual(codigo, 2)
+
+    def test_cli_revisao_ativada_exige_agente_de_chamada_refute_concluida(self):
+        self.ativar("manutencao")
+        self.passagem_completa_de_manutencao()
+        base = ["--runtime", "cursor", "--sessao", "sessao-a"]
+
+        def revisar_cli(**extras):
+            codigo, saida, erro = self.chamar_adaptador_prova(
+                [*base, "revisar", self.arquivo_yaml("revisao.yaml", dict(self.payload_revisao(), **extras))])
+            self.assertEqual(codigo, 0, erro)
+            return json.loads(saida)
+
+        def pendencias():
+            return json.loads(self.chamar_adaptador_prova([*base, "estado"])[1])["pendencias"]
+
+        revisar_cli()  # Sem agente_id: ninguem prova que veio de um refute observado.
+        self.assertEqual(pendencias(), ["revisao:fora_do_refute"])
+        revisar_cli(agente_id="call-test")  # ID de outro papel.
+        self.assertEqual(pendencias(), ["revisao:fora_do_refute"])
+        codigo, _, erro = self.chamar_adaptador_prova([*base, "fechar", "--resultado", "Nao pode"])
+        self.assertEqual(codigo, 2)
+        self.assertIn("revisao:fora_do_refute", erro)
+        revisar_cli(agente_id="call-refute")
+        self.assertEqual(pendencias(), [])
+        pasta = self.p.pasta()
+        revisao = self.p.estado(pasta)["revisoes"][-1]
+        ataque = ler(pasta / revisao["ref"])
+        self.assertEqual(ataque["dados"]["agente_id"], "call-refute")
+        ataque["dados"]["agente_id"] = "call-test"
+        (pasta / revisao["ref"]).write_text(json.dumps(ataque), encoding="utf-8")
+        self.assertEqual(pendencias(), ["revisao:invalida"])
+        # Uma revisão nova sem o ID observado permanece pendente.
+        codigo, _, erro = self.chamar_adaptador_prova(
+            [*base, "revisar", self.arquivo_yaml("sem-id.yaml", self.payload_revisao())])
+        self.assertEqual(codigo, 0, erro)
+        self.assertEqual(pendencias(), ["revisao:fora_do_refute"])
+        revisar_cli(agente_id="call-refute")
+        codigo, saida, erro = self.chamar_adaptador_prova([*base, "fechar", "--resultado", "Revisao observada"])
+        self.assertEqual(codigo, 0, erro)
+        self.assertEqual(json.loads(saida)["status"], "DONE")
+
+    def test_cli_ataque_sem_chamada_refute_observada_continua_pendente(self):
+        self.ativar("manutencao")
+        self.contrato["trilha"] = "manutencao"
+        self.iniciar()
+        self.chamar("call-prep", "test")
+        self.chamar("call-implement", "implement")
+        self.chamar("call-test", "test")
+        self.executar(agente_id="call-test")
+        base = ["--runtime", "cursor", "--sessao", "sessao-a"]
+        codigo, _, erro = self.chamar_adaptador_prova(
+            [*base, "revisar", self.arquivo_yaml("sem-refute.yaml",
+                dict(self.payload_revisao(), agente_id="call-refute"))])
+        self.assertEqual(codigo, 0, erro)
+        self.assertIn("revisao:fora_do_refute", self.p.conferir()["pendencias"])
+        codigo, _, erro = self.chamar_adaptador_prova([*base, "fechar", "--resultado", "Sem chamada"])
+        self.assertEqual(codigo, 2)
+        self.assertIn("revisao:fora_do_refute", erro)
+
+    def test_cli_triagem_registra_decisao_sobre_achado_da_revisao(self):
+        self.ativar("manutencao")
+        self.passagem_completa_de_manutencao()
+        base = ["--runtime", "cursor", "--sessao", "sessao-a"]
+        revisao = self.revisar("com_achados", ["A1"])["evidencia_ref"]
+        self.assertIn("achado:A1:sem_triagem", json.loads(self.chamar_adaptador_prova([*base, "estado"])[1])["pendencias"])
+        codigo, saida, erro = self.chamar_adaptador_prova(
+            [*base, "triar", self.arquivo_yaml("triagem.yaml", dict(
+                revisao_ref=revisao, achado_id="A1", decisao="descartado", responsavel="coordenador",
+                motivo_descarte="Fora do contrato"))])
+        self.assertEqual(codigo, 0, erro)
+        self.assertEqual(json.loads(saida)["decisao"], "descartado")
+        self.assertEqual(json.loads(self.chamar_adaptador_prova([*base, "estado"])[1])["pendencias"], [])
 
     def test_hook_sem_diretorio_com_criterio_de_inspecao_libera_shell(self):
         (self.raiz / "docs/nota.md").write_text("fato", encoding="utf-8")

@@ -21,6 +21,8 @@ def principal(argv=None):
     parser.add_argument("--runtime", choices=("claude_code", "cursor"), default=runtime_detectado)
     comandos = parser.add_subparsers(dest="acao", required=True)
     comandos.add_parser("iniciar").add_argument("contrato", type=Path)
+    for acao in ("inspecionar", "revisar", "triar"):
+        comandos.add_parser(acao).add_argument("arquivo", type=Path)
     comandos.add_parser("estado")
     fechar = comandos.add_parser("fechar")
     fechar.add_argument("--status", choices=("DONE", "REVIEW", "DECIDE", "BLOCKED", "FAILED"), default="DONE")
@@ -29,8 +31,17 @@ def principal(argv=None):
     try:
         politica = carregar_politica(RAIZ / "configuracao/politica.json")
         provas = Provas(RAIZ, politica["registros_raiz"], args.sessao, runtime=args.runtime)
+        if args.acao in ("iniciar", "inspecionar", "revisar", "triar"):
+            dados = yaml.load((getattr(args, "contrato", None) or args.arquivo).read_text(encoding="utf-8-sig"),
+                              Loader=YamlSemDuplicatas)
         if args.acao == "iniciar":
-            resultado = provas.iniciar(yaml.load(args.contrato.read_text(encoding="utf-8-sig"), Loader=YamlSemDuplicatas))
+            resultado = provas.iniciar(dados)
+        elif args.acao == "inspecionar":
+            resultado = provas.inspecionar(dados["criterio_id"], dados["checagens"], dados.get("produtor"))
+        elif args.acao == "revisar":
+            resultado = provas.revisar(dados)
+        elif args.acao == "triar":
+            resultado = provas.triar(dados)
         elif args.acao == "fechar":
             resultado = provas.fechar(args.status, args.resultado)
         else:

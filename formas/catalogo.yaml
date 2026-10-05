@@ -278,6 +278,7 @@ formas:
     consumidor: coordenador
     validacao: "O manifesto_ref do envelope identifica o estado revisado. com_achados exige achados com evidência; simplificacao é uma categoria válida. nao_quebrei exige tentativas e cobertura. Inconclusivo não aprova critério obrigatório."
     dados:
+      agente_id: {tipo: string}
       entrada:
         tipo: objeto
         obrigatorio: true
