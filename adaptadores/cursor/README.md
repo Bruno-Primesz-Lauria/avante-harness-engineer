@@ -29,9 +29,11 @@ Cursor 3.17.8 (user setup), app interativo, Windows, numa worktree temporária c
 - A guarda negou no subagente (`cwd-bundle/comando_nao_suportado`), sem executar.
 - Não sondados: `tools`, `skills`, `readonly` e `is_background` no frontmatter, subagente paralelo ou aninhado, interrupção, timeout e leitura de `.claude/agents/` pelo Cursor.
 
-## D-CU (implementado sobre fixture; aguarda G1/B2)
+## D-CU (aceite local concluído em 2026-10-05)
 
 - `preToolUse(Task)` guarda `tool_use_id` e `subagent_type` no estado da fatia. `subagentStart` abre a janela correspondente; `subagentStop` fecha e registra a chamada quando o papel está previsto.
 - O shell do subagente só se associa à fatia do coordenador dentro de uma janela única. A prova usa o `conversation_id` do shell como `agente_id`, também incluído nos IDs observados da chamada. Fora da janela, com janelas sobrepostas ou papel desconhecido, nenhum sucesso é registrado.
 - O ID bruto da chamada fica nos IDs observados; `chamada_id` recebe um identificador estável derivado porque o Schema 3.2 não aceita a quebra de linha que o Cursor inclui no ID bruto. O papel opcional `map` não é gravado como chamada obrigatória pelo núcleo.
 - A tradução foi testada com payloads derivados dos brutos P0.5. Não usa transcript nem contadores do `subagentStop`; ainda não foi observada em sessão real.
+
+Com G1 aprovado e os sete agentes instalados por B2-CU (`b4669f0`), os cinco testes de `testes.teste_adaptador_cursor_subagente` continuam verdes: janela única, precedência sobre fatia do filho, janelas sobrepostas, shell fora de janela e papel desconhecido. A4 e o gerador passam; a chave real continua vazia. O-CU e o aceite humano de G2 ainda são necessários para ativação.
