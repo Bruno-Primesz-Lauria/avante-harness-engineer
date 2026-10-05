@@ -409,7 +409,8 @@ flowchart LR
 | — | P0.1–P0.6 | Decisões registradas e sondagens com evidência | P0.1–P0.2 aprovados; P0.3 decidido (2026-10-05: executor do teste, origem do exit code e ajustes da P0.5); P0.4 concluído (2026-10-04; refeito em 2026-10-05 no CLI 2.1.289 com brutos preservados em `.execucoes/sondagens/`; resumo no README do adaptador Claude Code); P0.5 concluído (2026-10-05, Cursor 3.17.8; resumo no README do adaptador Cursor), três contradições com o desenho, decididas no mesmo dia (Schema 3.2, "Ajustes depois da P0.5"); exit code e diretório já corrigidos no adaptador do Cursor. Reteste no mesmo dia: `sessionStart` dispara em chat novo e o `cwd` informado chega absoluto; P0.6 concluído |
 | G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | Aprovado pelo humano em 2026-10-05, commits `588273f`, `7fc8fd1` e `3c6de1b`. No commit limpo: suíte verde (161 testes), A4 verde (7 testes) e `--verificar` repetível (14 agentes ausentes, esperado antes de B2). Revisão: LF nos agentes gerados; metadados só no roteamento; Bash para map/refute; remoção de `acervo/catalogo.yaml`; HTML v4 como referência de A4; teto de crescimento na 10.1 e pacote C4 |
 | G2 Claude Code | B2-CC, D-CC, O-CC | Observação aceita em sessão nova | D-CC implementado sobre fixture, conclui depois de G1/B2; atualização de `teste_adaptadores.py` aguarda decisão humana; não observado |
-| G2 Cursor | B2-CU, D-CU, O-CU | Observação aceita em sessão nova | D-CU implementado sobre fixture, conclui depois de G1/B2; não observado |
+| G2 Cursor | B2-CU, D-CU, O-CU | Observação aceita em sessão nova | B2-CU DONE local (2026-10-05): sete agentes instalados, A4 verde e duas verificações sem divergência; chave real vazia. D-CU implementado sobre fixture, aguarda fecho da conferência com agentes instalados; O-CU aguarda roteiro e sessão nova do humano; não observado |
+| — | C4 | Inspeção pelo CLI fecha com chave vazia; revisão exige refute observado com chave ativada | DECIDE (2026-10-05, P0.1): CLI e testes implementados; `ataque` não admite `agente_id` no catálogo atual. Retomada: autorizar campo opcional no catálogo existente e sua validação em `formas.py`, para atribuição protegida pelo hash do evento como no `test`; chave real vazia |
 | G3a | E0, E1 | Onda 1 sem falso DONE e com chamadas previstas = observadas | pendente |
 | G3b | E2, por trilha | Mesmo critério, por trilha | pendente |
 | G4 | M1, M2 | Aceite final | pendente |
@@ -455,7 +456,7 @@ Referências técnicas para a implementação: [subagentes Claude Code](https://
 
 ## 10. Próximas fases: briefs para execução por subagentes
 
-Estado em 2026-10-05: Fase 0 concluída; na Fase 1, A1–A5 e C1–C3 concluídos. B1 e E0a implementados; G1 aguarda decisão humana. C4 precisa fechar antes de E0. Cada brief abaixo é autocontido: o subagente lê este plano (seções 4 e 5 e o próprio brief), o `AGENTS.md` e os arquivos listados, sem precisar do histórico da conversa.
+Estado em 2026-10-05: Fase 0 concluída; na Fase 1, A1–A5 e C1–C3 concluídos. B1 e E0a implementados; G1 aprovado em 2026-10-05. C4 precisa fechar antes de E0. Por decisão humana no mesmo dia, Cursor vem primeiro; E0 habilitará somente `manutencao` no Cursor depois de G2 aceito. Correção e Claude Code vêm depois. Cada brief abaixo é autocontido: o subagente lê este plano (seções 4 e 5 e o próprio brief), o `AGENTS.md` e os arquivos listados, sem precisar do histórico da conversa.
 
 ### 10.1 Regras para todo subagente
 
@@ -537,7 +538,7 @@ D-CC e D-CU podem começar sobre os brutos das sondagens (`.execucoes/sondagens/
 - Arquivos: `adaptadores/prova.py`, `implementacao/provas.py` (só o vínculo do `ataque`), `evidencia/uso.md` e testes.
 - Aceite: critério de inspeção fecha DONE com a chave vazia; com a chave preenchida numa fixture, `ataque` sem chamada `refute` observada fica pendente.
 
-**E0 · ativação da onda 1** (agente, com aprovação humana do diff): preencher `agentes_obrigatorios.<runtime>` com `manutencao` e `correcao` só nos runtimes aprovados em G2. Aceite: esvaziar a chave restaura o comportamento atual (teste).
+**E0 · ativação da onda 1** (agente, depois do aceite humano de G2): pela decisão de 2026-10-05, preencher primeiro apenas `agentes_obrigatorios.cursor` com `manutencao`. Correção e Claude Code ficam para depois, cada runtime aprovado em G2. Aceite: esvaziar a chave restaura o comportamento atual (teste).
 
 **E1 · onda 1** (humano escolhe as tarefas; agente coordena em sessão real): rodar no produto os cenários de manutenção e correção da seção 8. As tarefas e a autorização de ambiente são decisão humana (`DECIDE` até lá). Saída: registros em `.execucoes/` e tabela da onda com chamadas previstas × observadas, falso DONE e violações de escopo. **G3a** (humano).
 

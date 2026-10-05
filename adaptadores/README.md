@@ -32,7 +32,7 @@ Um hook de um produto não vale como o de outro. Guarda obrigatória indisponív
 |---|---|---|
 | Instruções | `CLAUDE.md`. Confira o que carrega. | `AGENTS.md`. Confira o que carrega. |
 | Pergunta | Cartão, se existir. Senão, texto. | Ferramenta de pergunta ou texto. |
-| Agentes do fluxo | Papéis em `.claude/agents/`, a gerar de [`agentes/`](../agentes/) (B1/B2). Obrigatórios nas trilhas de `agentes_obrigatorios.claude_code`. | Cursor: papéis em `.cursor/agents/`, a gerar (B1/B2), obrigatórios nas trilhas de `agentes_obrigatorios.cursor`. Codex e OpenCode ficam fora da chave: agente único, com delegação opcional. |
+| Agentes do fluxo | Papéis em `.claude/agents/`, a gerar de [`agentes/`](../agentes/) (B1/B2). Obrigatórios nas trilhas de `agentes_obrigatorios.claude_code`. | Cursor: sete papéis instalados em `.cursor/agents/` (B2-CU); O-CU/G2 pendentes. Obrigatórios nas trilhas de `agentes_obrigatorios.cursor`, hoje vazia. Codex e OpenCode ficam fora da chave: agente único, com delegação opcional. |
 | Persistência | Árvore de [`evidencia/layout.md`](../evidencia/layout.md), sob a raiz configurada. | Idem. |
 
-Subagentes: definição neutra em [`agentes/`](../agentes/); a versão nativa para Claude Code e Cursor ainda não foi gerada. Não inclua trilha em `agentes_obrigatorios` de um runtime antes de seus agentes estarem instalados e observados (G2). Instalação e observação por runtime ficam nos metadados de [`agentes/roteamento.yaml`](../agentes/roteamento.yaml). Skills do projeto: não implementadas.
+Subagentes: definição neutra em [`agentes/`](../agentes/); a versão nativa do Cursor está instalada em `.cursor/agents/`; a do Claude Code ainda não foi gerada. Não inclua trilha em `agentes_obrigatorios` de um runtime antes de seus agentes estarem instalados e observados (G2). Instalação e observação por runtime ficam nos metadados de [`agentes/roteamento.yaml`](../agentes/roteamento.yaml). Skills do projeto: não implementadas.

@@ -486,7 +486,7 @@ td.m, th.m { text-align: center; }
 <g class="ab plan"><rect x="1052" y="56" width="128" height="84" rx="10"/>
 <text class="t mono" x="1116.0" y="86.0">.claude/agents</text>
 <text class="s" x="1116.0" y="102.0">.cursor/agents</text>
-<text class="s" x="1116.0" y="118.0">B2 · a instalar</text>
+<text class="s" x="1116.0" y="118.0">Cursor instalado · CC pendente</text>
 </g>
 <path class="ar " d="M274 98 H310" marker-end="url(#m-c)"/>
 <path class="ar " d="M854 98 H890" marker-end="url(#m-c)"/>
@@ -680,7 +680,7 @@ td.m, th.m { text-align: center; }
 <div class="pills" id="tabs-trilha" role="group" aria-label="Trilha"></div>
 <p class="note-uso" id="uso"></p><p class="note-papeis" id="papeis"></p>
 <div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny,back"></div><figure class="flow-map"><div id="g-trilha"></div><figcaption>Selecione um nó para ver entradas e saídas. Fecho sem DONE: DECIDE, BLOCKED ou FAILED.</figcaption></figure></div>
-<div class="callout">As definições dos papéis estão em <code>agentes/</code>. As versões nativas (<code>.claude/agents/</code>, <code>.cursor/agents/</code>) são planejadas e ainda não foram geradas. Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
+<div class="callout">As definições dos papéis estão em <code>agentes/</code>. <span id="estacao-cursor" class="chip ok">Cursor: instalado</span> em <code>.cursor/agents/</code>; sessão nova ainda não observada (O-CU/G2). Claude Code: versões nativas em <code>.claude/agents/</code> pendentes. Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
 </section>
 
 <section id="guardas">
@@ -732,13 +732,13 @@ td.m, th.m { text-align: center; }
 <tr><td>Prova e fecho (<code>prova.py</code>); coleta só no Cursor</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
 <tr><td>Roteamento e definições neutras dos agentes</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
 <tr><td>Coleta de prova no Claude Code (sobre fixture)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">parcial</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
-<tr><td>Agentes nativos por runtime e observação (G2)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
+<tr><td>Agentes nativos por runtime e observação (G2)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor instalado</span></td><td class="m"><span class="chip warn">G2 pendente</span></td></tr>
 <tr><td>Guardas de run, identidade, dados compartilhados, fronteira do produto</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
 <tr><td>Skills do projeto; <code>docs-distill</code></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
 </tbody></table></div>
 <h3>Roteiro até o aceite final</h3>
 <div class="tiles fixed">
-<div class="tile cur"><div class="v sm">G1</div><div class="k">suíte, consistência e geração estáveis; decisão humana pendente</div></div>
+<div class="tile cur"><div class="v sm">G1</div><div class="k">aprovado em 2026-10-05; suíte, consistência e geração estáveis</div></div>
 <div class="tile"><div class="v sm">G2</div><div class="k">agentes observados em sessão nova, por runtime</div></div>
 <div class="tile"><div class="v sm">E0 / E1</div><div class="k">ativação gradual da primeira onda de trilhas</div></div>
 <div class="tile"><div class="v sm">E2</div><div class="k">ativação da segunda onda, trilha a trilha</div></div>
