@@ -45,11 +45,3 @@ Encerrar quando a implementação atribuída atender aos requisitos dentro da su
 ## Regras comuns
 
 Carregar skills só quando pertinentes e citar as usadas. Manter os padrões herdados de modelo e runtime; não definir nem sobrescrever modelo. Aplicar as regras do harness, o `AGENTS.md` aplicável e boas práticas Databricks pertinentes antes de simplificar; reutilizar código e templates existentes e justificar cada trecho novo por requisito, critério ou dependência.
-
-## Metadados
-
-```yaml
-metadados:
-  claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
-  cursor: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
-```

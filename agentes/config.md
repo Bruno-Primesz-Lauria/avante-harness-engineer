@@ -45,11 +45,3 @@ Encerrar quando a superfície atribuída cumprir os requisitos aplicáveis e as 
 ## Regras comuns
 
 Carregar skills só quando pertinentes e citar as usadas. Manter os padrões herdados de modelo e runtime; não definir nem sobrescrever modelo. Aplicar as regras do harness e o `AGENTS.md` aplicável antes de simplificar; reutilizar templates e padrões existentes, manter mudanças justificadas pelo aceite e retornar apenas o necessário para decidir.
-
-## Metadados
-
-```yaml
-metadados:
-  claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
-  cursor: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
-```

@@ -26,11 +26,11 @@ SECOES_OBRIGATORIAS = (
     "Término",
 )
 FERRAMENTAS_CLAUDE = {
-    "map": ("Read", "Grep", "Glob"),
+    "map": ("Read", "Grep", "Glob", "Bash"),
     "config": ("Read", "Grep", "Glob", "Edit", "Write", "Bash"),
     "implement": ("Read", "Grep", "Glob", "Edit", "Write", "Bash"),
     "test": ("Read", "Grep", "Glob", "Edit", "Write", "Bash"),
-    "refute": ("Read", "Grep", "Glob"),
+    "refute": ("Read", "Grep", "Glob", "Bash"),
     "docs": ("Read", "Grep", "Glob", "Edit", "Write"),
     "dab": ("Read", "Grep", "Glob", "Bash"),
 }

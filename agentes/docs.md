@@ -42,11 +42,3 @@ Encerrar quando o documento atribuído cumprir o contrato e suas afirmações ti
 ## Regras comuns
 
 Carregar skills só quando pertinentes e citar as usadas. Manter os padrões herdados de modelo e runtime; não definir nem sobrescrever modelo. Aplicar as regras do harness e o `AGENTS.md` aplicável antes de simplificar; preferir a menor instrução útil, remover repetição e preservar contexto necessário para entendimento e decisão.
-
-## Metadados
-
-```yaml
-metadados:
-  claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
-  cursor: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
-```

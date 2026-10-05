@@ -227,7 +227,7 @@ Gate G2, por runtime: observação aceita. O runtime que não passa G2 não é a
 
 | ID | Pacote | Depende de | Saída verificável |
 |---|---|---|---|
-| E0 | Habilitar manutenção e correção na chave, para os runtimes aprovados em G2 (o A5 já foi aplicado em 2026-10-05). Antes, `adaptadores/prova.py` precisa informar o runtime ao núcleo: com a chave preenchida, `iniciar` e `fechar` sem runtime são recusados | G2 de ao menos um runtime, A5 | Política e chave coerentes; esvaziar a chave restaura o comportamento atual |
+| E0 | Habilitar manutenção e correção na chave, para os runtimes aprovados em G2 (o A5 já foi aplicado em 2026-10-05). Antes, `adaptadores/prova.py` precisa informar o runtime ao núcleo: com a chave preenchida, `iniciar` e `fechar` sem runtime são recusados | G2 de ao menos um runtime, A5, C4 | Política e chave coerentes; esvaziar a chave restaura o comportamento atual |
 | E1 | Onda 1: cenários de manutenção e correção | E0 | Registros e métricas da onda |
 | E2 | Onda 2, em paralelo: novo e validação (dab só em sandbox), docs e destilar, review, entendimento | G3a | Registros e métricas por trilha |
 
@@ -357,6 +357,7 @@ flowchart TB
   G2CC -->|ao menos um G2| E0
   G2CU -->|ao menos um G2| E0
   A5 --> E0
+  G1 --> C4["C4 entrada de inspeção e revisão"] --> E0
   E0 --> E1 --> G3a
   G3a --> E2N & E2D & E2R & E2E
   E2N & E2D & E2R & E2E --> G3b
@@ -406,7 +407,7 @@ flowchart LR
 | Gate | Pacotes | Critério de saída | Status |
 |---|---|---|---|
 | — | P0.1–P0.6 | Decisões registradas e sondagens com evidência | P0.1–P0.2 aprovados; P0.3 decidido (2026-10-05: executor do teste, origem do exit code e ajustes da P0.5); P0.4 concluído (2026-10-04; refeito em 2026-10-05 no CLI 2.1.289 com brutos preservados em `.execucoes/sondagens/`; resumo no README do adaptador Claude Code); P0.5 concluído (2026-10-05, Cursor 3.17.8; resumo no README do adaptador Cursor), três contradições com o desenho, decididas no mesmo dia (Schema 3.2, "Ajustes depois da P0.5"); exit code e diretório já corrigidos no adaptador do Cursor. Reteste no mesmo dia: `sessionStart` dispara em chat novo e o `cwd` informado chega absoluto; P0.6 concluído |
-| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | Critério executado em 2026-10-05: suíte verde (175 testes), A4 verde (7 testes) e `gerar_agentes.py --verificar` estável em duas execuções (14 agentes ausentes, esperado antes de B2); B1 e E0a implementados; decisão humana G1 pendente |
+| G1 | A1–A5, C1–C3, B1 | Suíte e A4 verdes; geração estável | Critério executado em 2026-10-05 sobre cópia limpa do commit: suíte verde (161 testes), A4 verde (7 testes) e `--verificar` repetível (14 agentes ausentes, esperado antes de B2; a estabilidade da geração instalada é provada em `teste_gerar_agentes.py`). Revisão de G1: `.gitattributes` fixa LF nos agentes gerados (o checkout com `autocrlf` acusava divergência e travava `--instalar`), metadados removidos de `agentes/*.md` (fonte única no roteamento) e Bash somente leitura para `map` e `refute`; decisão humana G1 pendente |
 | G2 Claude Code | B2-CC, D-CC, O-CC | Observação aceita em sessão nova | D-CC implementado sobre fixture, conclui depois de G1/B2; atualização de `teste_adaptadores.py` aguarda decisão humana; não observado |
 | G2 Cursor | B2-CU, D-CU, O-CU | Observação aceita em sessão nova | D-CU implementado sobre fixture, conclui depois de G1/B2; não observado |
 | G3a | E0, E1 | Onda 1 sem falso DONE e com chamadas previstas = observadas | pendente |
@@ -454,7 +455,7 @@ Referências técnicas para a implementação: [subagentes Claude Code](https://
 
 ## 10. Próximas fases: briefs para execução por subagentes
 
-Estado em 2026-10-05: Fase 0 concluída; na Fase 1, A1–A5 e C1–C3 concluídos. Falta B1 para fechar G1. Cada brief abaixo é autocontido: o subagente lê este plano (seções 4 e 5 e o próprio brief), o `AGENTS.md` e os arquivos listados, sem precisar do histórico da conversa.
+Estado em 2026-10-05: Fase 0 concluída; na Fase 1, A1–A5 e C1–C3 concluídos. B1 e E0a implementados; G1 aguarda decisão humana. C4 precisa fechar antes de E0. Cada brief abaixo é autocontido: o subagente lê este plano (seções 4 e 5 e o próprio brief), o `AGENTS.md` e os arquivos listados, sem precisar do histórico da conversa.
 
 ### 10.1 Regras para todo subagente
 
@@ -471,7 +472,7 @@ Estado em 2026-10-05: Fase 0 concluída; na Fase 1, A1–A5 e C1–C3 concluído
 | Onda | Pacotes em paralelo | Libera |
 |---|---|---|
 | 1 | B1 ∥ E0a | G1 (humano confere) |
-| 2 | Claude Code: B2-CC → D-CC → O-CC ∥ Cursor: B2-CU → D-CU → O-CU | G2 por runtime (humano) |
+| 2 | Claude Code: B2-CC → D-CC → O-CC ∥ Cursor: B2-CU → D-CU → O-CU ∥ C4 | G2 por runtime (humano); C4 libera E0 |
 | 3 | E0 → E1 | G3a (humano) |
 | 4 | E2, por trilha | G3b (humano) |
 | 5 | M1 → M2 | G4 (humano) |
@@ -528,6 +529,12 @@ D-CC e D-CU podem começar sobre os brutos das sondagens (`.execucoes/sondagens/
 - Saída: brutos em `.execucoes/sondagens/`, resumo versionado no README do adaptador e `observado` preenchido (versão, data, referência) em `agentes/roteamento.yaml`, no catálogo e no HTML.
 
 **G2 · gate por runtime** (humano): aceita a observação. Runtime que não passa fica fora da chave.
+
+**C4 · entrada de inspeção, revisão e triagem** (agente; depois de G1, antes de E0)
+- Problema: `Provas.inspecionar`, `revisar` e `triar` existem no núcleo, mas nenhum CLI ou adaptador os chama. Critério de inspeção nunca fecha DONE (BL1 segue aberto na prática) e, com a trilha ativada, `revisao:ausente` não se resolve. O `ataque` também não está ligado a uma chamada `refute` observada, então o principal poderia registrá-lo.
+- Objetivo: três subcomandos em `adaptadores/prova.py` que leem um YAML e chamam o núcleo; com a trilha ativada, o `ataque` só vale se vier de uma chamada `refute` observada, pela mesma regra de `agente_id` do `test`.
+- Arquivos: `adaptadores/prova.py`, `implementacao/provas.py` (só o vínculo do `ataque`), `evidencia/uso.md` e testes.
+- Aceite: critério de inspeção fecha DONE com a chave vazia; com a chave preenchida numa fixture, `ataque` sem chamada `refute` observada fica pendente.
 
 **E0 · ativação da onda 1** (agente, com aprovação humana do diff): preencher `agentes_obrigatorios.<runtime>` com `manutencao` e `correcao` só nos runtimes aprovados em G2. Aceite: esvaziar a chave restaura o comportamento atual (teste).
 

@@ -42,11 +42,3 @@ Encerrar após executar os critérios atribuídos e registrar resultados e limit
 ## Regras comuns
 
 Carregar skills só quando pertinentes e citar as usadas. Manter os padrões herdados de modelo e runtime; não definir nem sobrescrever modelo. Respeitar as guardas, o harness e o `AGENTS.md` aplicável; manter preparação e relatório no menor escopo que permita decidir. Aplicar as regras do harness, o `AGENTS.md` aplicável e boas práticas Databricks pertinentes antes de simplificar: ampliar uma suíte existente antes de criar outra, escrever o menor caso que decida o critério e não deixar código comentado, print de depuração ou fixture sem uso. Simplificar nunca enfraquece o esperado.
-
-## Metadados
-
-```yaml
-metadados:
-  claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
-  cursor: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
-```
