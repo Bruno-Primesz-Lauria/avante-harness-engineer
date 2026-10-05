@@ -37,3 +37,9 @@ Cursor 3.17.8 (user setup), app interativo, Windows, numa worktree temporária c
 - A tradução foi testada com payloads derivados dos brutos P0.5. Não usa transcript nem contadores do `subagentStop`; ainda não foi observada em sessão real.
 
 Com G1 aprovado e os sete agentes instalados por B2-CU (`b4669f0`), os cinco testes de `testes.teste_adaptador_cursor_subagente` continuam verdes: janela única, precedência sobre fatia do filho, janelas sobrepostas, shell fora de janela e papel desconhecido. A4 e o gerador passam; a chave real continua vazia. O-CU e o aceite humano de G2 ainda são necessários para ativação.
+
+## O-CU (roteiro preparado; sessão real pendente)
+
+Roteiro local em `.execucoes/sondagens/ocu-roteiro.md`; preparação por `py -3 .execucoes/sondagens/preparar_ocu.py`. Cópia preparada em 2026-10-05 a partir de C4 (`2368b33`), sem Git nem produto, com registros próprios, captura dos payloads dos hooks e a chave preenchida só nessa cópia. O caminho consta no roteiro local. As alterações de D-CC ficam preservadas na árvore original.
+
+Em sessão nova do Cursor, observar os sete papéis em série, recorte e leitura de skills, guarda negando no subagente, prova do test vinculada ao filho, revisão vinculada ao refute e recusa de DONE sem a chamada prevista. O roteiro também exercita inspeção e invalidação por edição. Script, wrappers e contratos conferidos localmente; execução no Cursor e G2 ainda pendentes. Entregar os brutos e a exportação do chat conforme o roteiro; nenhuma observação nova foi registrada nos metadados.
