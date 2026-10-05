@@ -272,6 +272,41 @@ class ProvasTestes(unittest.TestCase):
         self.assertIn("inconclusivo", r["additional_context"])
         self.assertIn("nao_verificada", json.dumps(self.p.pendencias(self.p.pasta(), self.p.estado(self.p.pasta()))))
 
+    def test_hook_falha_com_exit_code_no_texto_registra_fail(self):
+        # Payload do Cursor 3.17.8 (sondagem P0.5): exit diferente de zero so como texto.
+        self.iniciar()
+        self.hook("preToolUse")
+        self.hook("postToolUseFailure", failure_type="error", error_message="Command failed with exit code 3")
+        pasta = self.p.pasta()
+        prova = ler(pasta / self.p.estado(pasta)["provas"]["c1"]["ref"])
+        self.assertEqual((prova["dados"]["exit_code"], prova["dados"]["exit_code_origem"]), (3, "texto_falha"))
+        self.assertEqual(prova["dados"]["resultado"], "fail")
+
+    def test_hook_negacao_ou_texto_inesperado_fica_inconclusivo(self):
+        self.iniciar()
+        for extras in (dict(failure_type="permission_denied", error_message="Command failed with exit code 1"),
+                       dict(failure_type="error", error_message="Command failed with exit code 0"),
+                       dict(failure_type="error", error_message="Falhou com exit code 3")):
+            with self.subTest(**extras):
+                chamada = extras["error_message"]
+                self.hook("preToolUse", tool_use_id=chamada)
+                r = self.hook("postToolUseFailure", tool_use_id=chamada, **extras)
+                self.assertIn("inconclusivo", r["additional_context"])
+
+    def test_cwd_da_ferramenta_e_saida_output_do_cursor_atual(self):
+        self.iniciar()
+        entrada = {"command": "python teste.py", "cwd": str(self.raiz), "timeout": 30000}
+        self.assertEqual(self.hook("preToolUse", tool_input=entrada), {"permission": "allow"})
+        r = self.hook("postToolUse", tool_input=entrada, tool_output='{"output":"ok\\r\\n","exitCode":0}')
+        self.assertIn("pass", r["additional_context"])
+        prova = ler(self.p.pasta() / r["additional_context"].split("registrada em ")[1].rstrip("."))
+        self.assertEqual((self.p.pasta() / prova["dados"]["log_ref"]).read_text(encoding="utf-8").strip(), "ok")
+
+    def test_cwd_vazio_do_cursor_atual_nao_comprova_execucao(self):
+        self.iniciar()
+        with self.assertRaisesRegex(ValueError, "campo cwd"):
+            self.hook("preToolUse", tool_input={"command": "python teste.py", "cwd": "", "timeout": 30000})
+
     def test_processo_real_observado_pelos_protocolos(self):
         argv = [sys.executable, "-c", "print('prova real')"]
         comando = subprocess.list2cmdline(argv)

@@ -1,12 +1,15 @@
 """Traduz eventos documentados do Cursor; nao interpreta sucesso em prosa."""
 import json
 from pathlib import Path
+import re
 
 from formas import exigir
 from guarda_cwd import Operacao, avaliar_operacao
 from guarda_efeito import observar_resultado_plan
 from protocolo import mensagem
 from provas import Provas, ler
+
+FALHA = re.compile(r"Command failed with exit code (-?\d+)")
 
 
 def tratar(evento, politica, raiz):
@@ -47,7 +50,8 @@ def tratar(evento, politica, raiz):
     chamada = evento.get("tool_use_id")
     if nome == "preToolUse":
         # O diretorio da sessao nao substitui o diretorio explicito da chamada.
-        cwd = entrada.get("working_directory")
+        # Cursor 3.17.8 envia tool_input.cwd ('' quando o agente nao informa); versoes anteriores, working_directory.
+        cwd = entrada.get("working_directory") or entrada.get("cwd") or None
         if cwd is None:
             pasta = provas.pasta()
             provas.estado(pasta)
@@ -55,7 +59,8 @@ def tratar(evento, politica, raiz):
             if not any(c["verificacao"].get("comando") == comando for c in criterios):
                 # A guarda beforeShellExecution continua cobrindo o efeito de bundle.
                 return {"permission": "allow"}
-        exigir(isinstance(cwd, str) and Path(cwd).is_absolute(), "Cwd nao observado")
+        exigir(isinstance(cwd, str) and Path(cwd).is_absolute(),
+               "Cwd nao observado. Informe o diretorio absoluto no campo cwd da ferramenta Shell")
         cwd = str(Path(cwd).resolve())
         decisao = avaliar_operacao(Operacao("antes_execucao", "shell", comando, cwd, "ferramenta"), politica)
         if decisao.decisao == "negar":
@@ -63,19 +68,25 @@ def tratar(evento, politica, raiz):
                     "agent_message": mensagem(decisao)}
         provas.antes(chamada, comando, cwd, evento.get("cursor_version", "nao_informada"))
         return {"permission": "allow"}
-    codigo = None
+    codigo, origem = None, "campo_resultado"
     if nome == "postToolUseFailure":
-        saida = "Execucao inconclusiva: " + str(evento.get("failure_type", "erro"))
+        erro = evento.get("error_message")
+        # Exit diferente de zero chega so como texto (sondagem P0.5); timeout ou negacao seguem inconclusivos.
+        lido = FALHA.fullmatch(erro.strip()) if evento.get("failure_type") == "error" and isinstance(erro, str) else None
+        if lido and int(lido.group(1)) != 0:
+            codigo, origem, saida = int(lido.group(1)), "texto_falha", erro
+        else:
+            saida = "Execucao inconclusiva: " + str(evento.get("failure_type", "erro"))
     else:
         try:
             dados = json.loads(evento["tool_output"])
             codigo = dados.get("exitCode")
             exigir(type(codigo) is int, "Exit code ausente")
-            saida = dados.get("stdout", "") + dados.get("stderr", "")
+            saida = dados["output"] if "output" in dados else dados.get("stdout", "") + dados.get("stderr", "")
             exigir(isinstance(saida, str), "Saida invalida")
         except (ValueError, KeyError, TypeError, AttributeError):
             codigo, saida = None, "Resultado sem exitCode inteiro; nenhuma prova de sucesso."
-    resultado = provas.depois(chamada, comando, codigo, saida, "campo_resultado")
+    resultado = provas.depois(chamada, comando, codigo, saida, origem)
     if resultado is None:
         return {}
     if resultado["resultado"] == "pass" and "databricks" in comando.casefold():
