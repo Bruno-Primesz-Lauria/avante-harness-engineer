@@ -14,19 +14,21 @@ from guarda_cwd import YamlSemDuplicatas
 import yaml
 
 
-def principal():
+def principal(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sessao", default=os.environ.get("ESTEIRA_SESSAO"))
+    runtime_detectado = "claude_code" if os.environ.get("CLAUDE_CODE_SESSION_ID") else None
+    parser.add_argument("--runtime", choices=("claude_code", "cursor"), default=runtime_detectado)
     comandos = parser.add_subparsers(dest="acao", required=True)
     comandos.add_parser("iniciar").add_argument("contrato", type=Path)
     comandos.add_parser("estado")
     fechar = comandos.add_parser("fechar")
     fechar.add_argument("--status", choices=("DONE", "REVIEW", "DECIDE", "BLOCKED", "FAILED"), default="DONE")
     fechar.add_argument("--resultado", required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
         politica = carregar_politica(RAIZ / "configuracao/politica.json")
-        provas = Provas(RAIZ, politica["registros_raiz"], args.sessao)
+        provas = Provas(RAIZ, politica["registros_raiz"], args.sessao, runtime=args.runtime)
         if args.acao == "iniciar":
             resultado = provas.iniciar(yaml.load(args.contrato.read_text(encoding="utf-8-sig"), Loader=YamlSemDuplicatas))
         elif args.acao == "fechar":

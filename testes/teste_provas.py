@@ -1,18 +1,23 @@
 """Provas persistidas e protocolos Cursor, com processos e arquivos locais."""
 import copy
+import io
 import json
+import os
 import shutil
 from pathlib import Path
 import subprocess
 import sys
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timezone
+from unittest.mock import patch
 from uuid import uuid4
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(RAIZ / "implementacao"), str(RAIZ / "adaptadores")]
 from formas import dentro, validar, validar_dados
 from provas import Provas, ler, gravar, trava
+import prova as adaptador_prova
 from cursor.prova import tratar
 
 
@@ -92,6 +97,15 @@ class ProvasTestes(unittest.TestCase):
 
     def hook(self, nome, **extras):
         return tratar(self.evento(nome, **extras), self.politica, self.raiz)
+
+    def chamar_adaptador_prova(self, argumentos, claude_code_session_id=""):
+        saida = io.StringIO()
+        erro = io.StringIO()
+        with patch.object(adaptador_prova, "RAIZ", self.raiz), \
+             patch.dict(os.environ, {"CLAUDE_CODE_SESSION_ID": claude_code_session_id}):
+            with redirect_stdout(saida), redirect_stderr(erro):
+                codigo = adaptador_prova.principal(argumentos)
+        return codigo, saida.getvalue(), erro.getvalue()
 
     def test_sem_tarefa_nao_interfere_no_fecho_simples(self):
         self.assertEqual(self.hook("stop", status="completed"), {})
@@ -744,6 +758,66 @@ class ProvasTestes(unittest.TestCase):
         self.iniciar()
         self.executar()
         self.assertEqual(self.p.fechar("DONE", "Trilha fora da chave")["status"], "DONE")
+
+    def test_adaptador_passa_runtime_explicito_detecta_claude_e_recusa_ausencia(self):
+        contrato_path = self.raiz / "contrato.yaml"
+        contrato_path.write_text(json.dumps(self.contrato), encoding="utf-8")
+        argumentos = ["--sessao", "sessao-cli", "iniciar", str(contrato_path)]
+
+        codigo, _, erro = self.chamar_adaptador_prova(argumentos)
+        self.assertEqual(codigo, 0, erro)
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--sessao", "sessao-cli", "fechar", "--status", "BLOCKED",
+             "--resultado", "Fluxo atual com a chave vazia"])
+        self.assertEqual(codigo, 0, erro)
+
+        sessao_sem_runtime = "sessao-fecho-sem-runtime"
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--sessao", sessao_sem_runtime, "iniciar", str(contrato_path)])
+        self.assertEqual(codigo, 0, erro)
+
+        self.politica["agentes_obrigatorios"]["cursor"] = ["correcao"]
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        fechar_sem_runtime = ["--sessao", sessao_sem_runtime, "fechar", "--status", "BLOCKED",
+                              "--resultado", "Conferência da exigência de runtime"]
+        codigo, _, erro = self.chamar_adaptador_prova(fechar_sem_runtime)
+        self.assertEqual(codigo, 2)
+        self.assertIn("Runtime explicito", erro)
+
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--runtime", "cursor", *fechar_sem_runtime])
+        self.assertEqual(codigo, 0, erro)
+
+        sessao_cursor = "sessao-cursor-cli"
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--sessao", sessao_cursor, "iniciar", str(contrato_path)])
+        self.assertEqual(codigo, 2)
+        self.assertIn("Runtime explicito", erro)
+
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--runtime", "cursor", "--sessao", sessao_cursor, "iniciar", str(contrato_path)])
+        self.assertEqual(codigo, 0, erro)
+        provas_cursor = Provas(self.raiz, self.politica["registros_raiz"], sessao_cursor)
+        estado_cursor = provas_cursor.estado(provas_cursor.pasta())
+        self.assertEqual(estado_cursor["runtime"], "cursor")
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--runtime", "cursor", "--sessao", sessao_cursor, "fechar", "--status", "BLOCKED",
+             "--resultado", "Runtime encaminhado ao núcleo"])
+        self.assertEqual(codigo, 0, erro)
+
+        self.politica["agentes_obrigatorios"]["claude_code"] = ["correcao"]
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        sessao_claude = "sessao-claude-cli"
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--sessao", sessao_claude, "iniciar", str(contrato_path)],
+            claude_code_session_id="id-da-sessao")
+        self.assertEqual(codigo, 0, erro)
+        provas_claude = Provas(self.raiz, self.politica["registros_raiz"], sessao_claude)
+        self.assertEqual(provas_claude.estado(provas_claude.pasta())["runtime"], "claude_code")
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--sessao", sessao_claude, "fechar", "--status", "BLOCKED",
+             "--resultado", "Runtime detectado pelo ambiente"])
+        self.assertEqual(codigo, 0, erro)
 
     def test_hook_sem_diretorio_com_criterio_de_inspecao_libera_shell(self):
         (self.raiz / "docs/nota.md").write_text("fato", encoding="utf-8")

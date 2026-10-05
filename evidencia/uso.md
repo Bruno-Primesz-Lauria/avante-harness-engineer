@@ -9,10 +9,19 @@ Manual da prova estruturada: iniciar a fatia, rodar as verificações, fechar. P
 3. Rode pelo chat os comandos exatos do contrato, com o diretório absoluto no campo `cwd` da ferramenta Shell (Cursor 3.17.8; versões anteriores usavam `working_directory`). Sem diretório, a verificação declarada é negada. O `preToolUse` captura o estado; o `postToolUse` registra `exitCode` e saída; o `postToolUseFailure` registra o exit diferente de zero lido do texto `Command failed with exit code N`; negação, timeout ou texto inesperado ficam inconclusivos. Terminal manual não gera esses eventos. Só a ferramenta Shell é observada, e só o comando que casa com um critério do contrato (mesmo texto e mesmo cwd) vira prova.
 4. Consulte o estado e feche. Edição relevante depois da prova exige nova verificação.
 
+O runtime informa ao núcleo qual lista de `agentes_obrigatorios` consultar. Passe `--runtime cursor` no Cursor. No Claude Code, `CLAUDE_CODE_SESSION_ID` detecta `claude_code`; `--runtime` explícito prevalece sobre a detecção. Com a chave vazia, a ausência de runtime preserva o fluxo atual. Informar `claude_code` aqui não habilita coleta de provas do Claude Code; essa integração depende do adaptador próprio.
+
 ```powershell
 py -3 adaptadores/prova.py --sessao ID iniciar .execucoes/contrato.yaml
 py -3 adaptadores/prova.py --sessao ID estado
 py -3 adaptadores/prova.py --sessao ID fechar --resultado "Critérios verificados"
+```
+
+Quando a trilha estiver habilitada para o runtime, declare-o em cada comando:
+
+```powershell
+py -3 adaptadores/prova.py --runtime cursor --sessao ID iniciar .execucoes/contrato.yaml
+py -3 adaptadores/prova.py --runtime cursor --sessao ID fechar --resultado "Critérios verificados"
 ```
 
 - Com `ESTEIRA_SESSAO` no shell, `--sessao` é dispensável. Não copie o ID de outra conversa.
