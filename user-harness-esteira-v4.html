@@ -58,7 +58,7 @@
   --text-link:      var(--db-light-blue);
   --text-accent:    var(--db-pink);
 
-  --surface-page:   var(--db-grey-04);
+  --surface-page:   var(--db-white);
   --surface-card:   var(--db-white);
   --surface-sunken: var(--db-grey-08);
   --surface-inverse:var(--db-dark-blue);
@@ -410,18 +410,235 @@ td.m, th.m { text-align: center; }
 
 <section id="arquitetura">
 <h2>Arquitetura</h2>
-<p class="section-note">Cada runtime traduz seu evento para a mesma guarda. A política mora no núcleo; os registros ficam fora do produto.</p>
-<div class="arch-grid">
-<div class="panel">
-<div class="layer"><p class="lab">Runtime (onde o agente roda)</p><div class="row"><span class="chip info">Cursor (principal)</span><span class="chip info">Claude Code</span><span class="chip info">Codex</span><span class="chip info">OpenCode</span></div></div>
-<div class="down">▼ hook antes da chamada de shell</div>
-<div class="layer"><p class="lab">Adaptadores · <code>adaptadores/</code></p><div class="row"><span class="chip neutral">traduz o evento do runtime</span><span class="chip neutral">mesma guarda para todos</span><span class="chip warn">prova coletada só no Cursor</span></div></div>
-<div class="down">▼ consulta</div>
-<div class="layer"><p class="lab">Núcleo · <code>implementacao/</code> + <code>configuracao/politica.json</code></p><div class="row"><span class="chip bad">guardas: cwd, efeito, plan→deploy</span><span class="chip ok">provas e fecho</span><span class="chip neutral">política de autorizações</span></div></div>
-<div class="down">▼ grava</div>
-<div class="layer"><p class="lab">Registros · <code>.execucoes/</code></p><div class="row"><span class="chip neutral">provas</span><span class="chip neutral">sessões</span><span class="chip neutral">diagnósticos</span><span class="chip neutral">fora do Git</span></div></div>
-</div>
-<div class="callout warn"><b>Produto, separado</b><br><code>prj-avante-analytics-adb/</code><br>Git próprio e <code>AGENTS.md</code> próprio, que prevalece ali. É onde o agente altera código; o bundle <code>saneamento_migracao</code> fica aqui. O harness nunca grava registros nele.</div>
+<p class="section-note">Três planos. O agente lê as instruções e age pelo runtime; cada chamada de shell passa por hook, adaptador e núcleo antes de chegar ao Databricks. A guarda nega antes do efeito, e a prova fica em <code>.execucoes/</code>, fora do produto.</p>
+<style>
+.arq-wrap{overflow-x:auto;padding:8px 4px}
+.arq{display:block;width:100%;min-width:980px;height:auto;font-family:var(--font-brand)}
+.arq .band rect{fill:var(--db-grey-04);stroke:var(--border-subtle)}
+.arq .bl{font-size:11px;font-weight:800;letter-spacing:.14em;fill:var(--db-pink)}
+.arq .grp rect{fill:var(--surface-card);stroke:var(--border-default);stroke-width:1.2}
+.arq .grp.core rect{stroke:var(--db-pink);stroke-width:1.8}
+.arq .gl{font-size:10.5px;font-weight:800;letter-spacing:.12em;fill:var(--text-muted)}
+.arq .ab rect{fill:var(--surface-card);stroke:var(--border-default);stroke-width:1.4}
+.arq .ab .t{font-size:13px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
+.arq .ab .t.mono{font-family:var(--font-mono);font-size:12px}
+.arq .ab .s{font-size:11px;fill:var(--text-secondary);text-anchor:middle}
+.arq .ab.start rect{fill:var(--db-dark-blue);stroke:var(--db-dark-blue)}
+.arq .ab.start .t,.arq .ab.start .s{fill:#fff}
+.arq .ab.key rect{fill:var(--db-pink-06);stroke:var(--db-pink)}
+.arq .ab.deny rect{fill:var(--db-red-06);stroke:var(--db-red)}
+.arq .ab.ok rect{fill:var(--db-green-12);stroke:var(--db-green)}
+.arq .ab.plan rect{stroke:var(--db-grey-50);stroke-dasharray:5 4}
+.arq .ab.plan .t,.arq .ab.plan .s{fill:var(--text-muted)}
+.arq .ab.prod rect{fill:var(--db-yellow-06);stroke:var(--db-yellow);stroke-dasharray:5 4}
+.arq .rt rect{fill:var(--db-lblue-12);stroke:var(--db-light-blue)}
+.arq .rt text{font-size:11px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
+.arq .cfg rect{fill:var(--surface-sunken);stroke:var(--border-subtle)}
+.arq .cfg text{font-family:var(--font-mono);font-size:10px;fill:var(--text-secondary);text-anchor:middle}
+.arq .note{font-size:10.5px;fill:var(--text-muted);text-anchor:middle}
+.arq .note.l{text-anchor:start}
+.arq .ar{fill:none;stroke:var(--db-dark-blue);stroke-width:1.8;stroke-linejoin:round}
+.arq .ar.deny{stroke:var(--db-red);stroke-dasharray:6 4}
+.arq .ar.ok,.arq .ar.ev{stroke:#1f9d6b}
+.arq .ar.ev{stroke-dasharray:2 4;stroke-linecap:round}
+.arq .ar.plan{stroke:var(--db-grey-50);stroke-dasharray:5 4}
+.arq .ar.edit{stroke:var(--db-grey-70)}
+.arq .al rect{fill:#fff;stroke:var(--db-dark-blue);stroke-width:1}
+.arq .al text{font-size:10.5px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
+.arq .al.deny rect{fill:var(--db-red-06);stroke:var(--db-red)}
+.arq .al.deny text{fill:var(--db-red)}
+.arq .al.ok rect,.arq .al.ev rect{fill:var(--db-green-12);stroke:var(--db-green)}
+.arq .al.ok text,.arq .al.ev text{fill:#14704c}
+.arq .al.edit rect{fill:var(--db-yellow-06);stroke:var(--db-yellow)}
+.arq .lg{font-size:11.5px;font-weight:600;fill:var(--text-secondary)}
+</style>
+<div class="flow-board arq-wrap">
+<svg class="arq" viewBox="0 0 1220 870" role="img" aria-labelledby="arq-t arq-d">
+<title id="arq-t">Arquitetura do harness</title>
+<desc id="arq-d">Três planos: instrução lida pelo agente; controle executado a cada chamada de ferramenta (runtime, hooks, adaptadores, núcleo de guardas e provas, efeito externo); evidência gravada em .execucoes.</desc>
+<defs>
+<marker id="m-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#221F52"/></marker>
+<marker id="m-deny" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#FF1229"/></marker>
+<marker id="m-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f9d6b"/></marker>
+<marker id="m-ev" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f9d6b"/></marker>
+<marker id="m-plan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8a8898"/></marker>
+<marker id="m-edit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5b5972"/></marker>
+</defs>
+<g class="band"><rect x="20" y="16" width="1180" height="150" rx="16"/><text class="bl" x="38" y="38">1 · PLANO DE INSTRUÇÃO — o que o agente lê</text></g>
+<g class="ab "><rect x="44" y="56" width="230" height="84" rx="10"/>
+<text class="t" x="159.0" y="94.0">AGENTS.md · CLAUDE.md</text>
+<text class="s" x="159.0" y="110.0">regras curtas de todo pedido</text>
+</g>
+<g class="ab "><rect x="314" y="56" width="230" height="84" rx="10"/>
+<text class="t" x="429.0" y="86.0">trilhas/ · nucleo/</text>
+<text class="s" x="429.0" y="102.0">passos, aceite e política</text>
+<text class="s" x="429.0" y="118.0">lidos sob demanda</text>
+</g>
+<g class="ab key"><rect x="584" y="56" width="270" height="84" rx="10"/>
+<text class="t" x="719.0" y="86.0">agentes/roteamento.yaml</text>
+<text class="s" x="719.0" y="102.0">fonte única: papéis, ordem</text>
+<text class="s" x="719.0" y="118.0">e gatilhos · + agentes/*.md</text>
+</g>
+<g class="ab "><rect x="894" y="56" width="130" height="84" rx="10"/>
+<text class="t mono" x="959.0" y="94.0">gerar_agentes.py</text>
+<text class="s" x="959.0" y="110.0">neutro → nativo</text>
+</g>
+<g class="ab plan"><rect x="1052" y="56" width="128" height="84" rx="10"/>
+<text class="t mono" x="1116.0" y="86.0">.claude/agents</text>
+<text class="s" x="1116.0" y="102.0">.cursor/agents</text>
+<text class="s" x="1116.0" y="118.0">B2 · a instalar</text>
+</g>
+<path class="ar " d="M274 98 H310" marker-end="url(#m-c)"/>
+<path class="ar " d="M854 98 H890" marker-end="url(#m-c)"/>
+<path class="ar plan" d="M1024 98 H1048" marker-end="url(#m-plan)"/>
+<g class="band"><rect x="20" y="186" width="1180" height="440" rx="16"/><text class="bl" x="38" y="208">2 · PLANO DE CONTROLE — executado a cada chamada de ferramenta</text></g>
+<g transform="translate(0,20)">
+<g class="grp "><rect x="40" y="226" width="230" height="360" rx="12"/><text class="gl" x="54" y="246">RUNTIME</text></g>
+<g class="ab start"><rect x="58" y="256" width="194" height="62" rx="10"/>
+<text class="t" x="155.0" y="283.0">Coordenador</text>
+<text class="s" x="155.0" y="299.0">agente principal</text>
+</g>
+<g class="ab plan"><rect x="58" y="334" width="194" height="92" rx="10"/>
+<text class="t" x="155.0" y="360.0">Subagentes · 7 papéis</text>
+<text class="s" x="155.0" y="376.0">map · config · implement</text>
+<text class="s" x="155.0" y="392.0">test · refute · docs · dab</text>
+<text class="s" x="155.0" y="408.0">ativação por trilha (E0)</text>
+</g>
+<g class="rt">
+<rect x="58" y="446" width="94" height="30" rx="15"/><text x="105" y="465.5">Cursor</text>
+<rect x="158" y="446" width="94" height="30" rx="15"/><text x="205" y="465.5">Claude Code</text>
+<rect x="58" y="486" width="94" height="30" rx="15"/><text x="105" y="505.5">Codex</text>
+<rect x="158" y="486" width="94" height="30" rx="15"/><text x="205" y="505.5">OpenCode</text>
+</g>
+<text class="note" x="155" y="544">mesmo AGENTS.md nos quatro;</text>
+<text class="note" x="155" y="560">prova coletada só no Cursor</text>
+<g class="grp "><rect x="300" y="226" width="210" height="360" rx="12"/><text class="gl" x="314" y="246">HOOKS DO RUNTIME</text></g>
+<g class="ab "><rect x="316" y="256" width="178" height="70" rx="10"/>
+<text class="t" x="405.0" y="279.0">Cursor</text>
+<text class="s" x="405.0" y="295.0">shell · pre/postToolUse</text>
+<text class="s" x="405.0" y="311.0">stop · subagentStart/Stop</text>
+</g>
+<g class="ab "><rect x="316" y="338" width="178" height="58" rx="10"/>
+<text class="t" x="405.0" y="363.0">Claude Code</text>
+<text class="s" x="405.0" y="379.0">PreToolUse · Bash, PowerShell</text>
+</g>
+<g class="ab "><rect x="316" y="408" width="178" height="58" rx="10"/>
+<text class="t" x="405.0" y="433.0">Codex</text>
+<text class="s" x="405.0" y="449.0">PreToolUse</text>
+</g>
+<g class="ab "><rect x="316" y="478" width="178" height="58" rx="10"/>
+<text class="t" x="405.0" y="503.0">OpenCode</text>
+<text class="s" x="405.0" y="519.0">tool.execute.before</text>
+</g>
+<g class="grp "><rect x="540" y="226" width="230" height="360" rx="12"/><text class="gl" x="554" y="246">ADAPTADORES · adaptadores/</text></g>
+<g class="ab "><rect x="556" y="256" width="198" height="70" rx="10"/>
+<text class="t" x="655.0" y="279.0">entrada.py → executar.py</text>
+<text class="s" x="655.0" y="295.0">normaliza o evento e responde</text>
+<text class="s" x="655.0" y="311.0">no protocolo do runtime</text>
+</g>
+<g class="ab "><rect x="556" y="338" width="198" height="58" rx="10"/>
+<text class="t mono" x="655.0" y="363.0">cursor/prova.py</text>
+<text class="s" x="655.0" y="379.0">coleta prova e subagentes</text>
+</g>
+<g class="ab plan"><rect x="556" y="408" width="198" height="58" rx="10"/>
+<text class="t mono" x="655.0" y="433.0">claude_code/prova.py</text>
+<text class="s" x="655.0" y="449.0">D-CC · em curso</text>
+</g>
+<g class="ab "><rect x="556" y="478" width="198" height="58" rx="10"/>
+<text class="t mono" x="655.0" y="503.0">prova.py (CLI)</text>
+<text class="s" x="655.0" y="519.0">iniciar · estado · fechar</text>
+</g>
+<g class="grp core"><rect x="800" y="226" width="220" height="360" rx="12"/><text class="gl" x="814" y="246">NÚCLEO · implementacao/</text></g>
+<g class="ab deny"><rect x="816" y="256" width="188" height="92" rx="10"/>
+<text class="t" x="910.0" y="282.0">Guardas</text>
+<text class="s" x="910.0" y="298.0">guarda_cwd: diretório, bundle</text>
+<text class="s" x="910.0" y="314.0">e comando literal</text>
+<text class="s" x="910.0" y="330.0">guarda_efeito: target, plan→deploy</text>
+</g>
+<g class="ab ok"><rect x="816" y="364" width="188" height="92" rx="10"/>
+<text class="t" x="910.0" y="390.0">Provas</text>
+<text class="s" x="910.0" y="406.0">provas.py: fatia, manifesto,</text>
+<text class="s" x="910.0" y="422.0">invalidação e fecho</text>
+<text class="s" x="910.0" y="438.0">formas.py: schema 3.2</text>
+</g>
+<g class="cfg">
+<rect x="816" y="476" width="188" height="22" rx="6"/><text x="910" y="491">configuracao/politica.json</text>
+<rect x="816" y="504" width="188" height="22" rx="6"/><text x="910" y="519">agentes/roteamento.yaml</text>
+<rect x="816" y="532" width="188" height="22" rx="6"/><text x="910" y="547">contrato.yaml da fatia</text>
+</g>
+<text class="note" x="910" y="572">entradas lidas pelo núcleo</text>
+<g class="grp "><rect x="1050" y="226" width="140" height="360" rx="12"/><text class="gl" x="1064" y="246">EFEITO EXTERNO</text></g>
+<g class="ab "><rect x="1062" y="256" width="116" height="92" rx="10"/>
+<text class="t" x="1120.0" y="282.0">Databricks CLI</text>
+<text class="s" x="1120.0" y="298.0">bundle validate</text>
+<text class="s" x="1120.0" y="314.0">plan · deploy</text>
+<text class="s" x="1120.0" y="330.0">-t sandbox</text>
+</g>
+<g class="ab start"><rect x="1062" y="372" width="116" height="62" rx="10"/>
+<text class="t" x="1120.0" y="399.0">Workspace</text>
+<text class="s" x="1120.0" y="415.0">Databricks</text>
+</g>
+<g class="ab prod"><rect x="1062" y="456" width="116" height="92" rx="10"/>
+<text class="t mono" x="1120.0" y="482.0">prj-avante-</text>
+<text class="s" x="1120.0" y="498.0">analytics-adb/</text>
+<text class="s" x="1120.0" y="514.0">produto · Git e</text>
+<text class="s" x="1120.0" y="530.0">AGENTS.md próprios</text>
+</g>
+<path class="ar " d="M252 288 H312" marker-end="url(#m-c)"/>
+<g class="al "><rect x="247.0" y="266" width="70" height="20" rx="10"/><text x="282" y="280">1 chamada</text></g>
+<path class="ar " d="M494 288 H552" marker-end="url(#m-c)"/>
+<g class="al "><rect x="492.0" y="266" width="62" height="20" rx="10"/><text x="523" y="280">2 evento</text></g>
+<path class="ar " d="M754 288 H812" marker-end="url(#m-c)"/>
+<g class="al "><rect x="747.0" y="266" width="72" height="20" rx="10"/><text x="783" y="280">3 operação</text></g>
+<path class="ar ok" d="M1004 288 H1058" marker-end="url(#m-ok)"/>
+<g class="al ok"><rect x="998.0" y="266" width="66" height="20" rx="10"/><text x="1031" y="280">5 permite</text></g>
+<path class="ar ok" d="M1120 348 V368" marker-end="url(#m-ok)"/>
+<path class="ar deny" d="M990 256 V200 H200 V252" marker-end="url(#m-deny)"/>
+<g class="al deny"><rect x="415.0" y="190" width="290" height="20" rx="10"/><text x="560" y="204">4 nega antes do efeito · motivo e correção</text></g>
+<path class="ar ev" d="M754 367 H780 V400 H812" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M754 507 H790 V430 H812" marker-end="url(#m-ev)"/>
+</g>
+<path class="ar " d="M130 140 V272" marker-end="url(#m-c)"/>
+<text class="note l" x="137" y="176">lê ao iniciar</text>
+<g transform="translate(0,20)">
+<path class="ar edit" d="M120 586 V598 H1120 V552" marker-end="url(#m-edit)"/>
+<g class="al edit"><rect x="475.0" y="588" width="330" height="20" rx="10"/><text x="640" y="602">o agente edita o código do produto (fora do harness)</text></g>
+</g>
+<g transform="translate(0,40)">
+<g class="band"><rect x="20" y="626" width="1180" height="150" rx="16"/><text class="bl" x="38" y="648">3 · PLANO DE EVIDÊNCIA — .execucoes/ (fora do Git)</text></g>
+<g class="ab "><rect x="44" y="666" width="240" height="84" rx="10"/>
+<text class="t mono" x="164.0" y="696.0">sessoes/&lt;hash&gt;/ativa.json</text>
+<text class="s" x="164.0" y="712.0">aponta a fatia ativa</text>
+<text class="s" x="164.0" y="728.0">de cada sessão</text>
+</g>
+<g class="ab "><rect x="324" y="666" width="300" height="84" rx="10"/>
+<text class="t mono" x="474.0" y="696.0">provas/&lt;execução&gt;/principal/</text>
+<text class="s" x="474.0" y="712.0">contrato.yaml · baseline.json</text>
+<text class="s" x="474.0" y="728.0">estado.json com hashes</text>
+</g>
+<g class="ab "><rect x="664" y="666" width="250" height="84" rx="10"/>
+<text class="t mono" x="789.0" y="696.0">tentativas/NNN/</text>
+<text class="s" x="789.0" y="712.0">manifesto · eventos · logs</text>
+<text class="s" x="789.0" y="728.0">edição posterior invalida</text>
+</g>
+<g class="ab ok"><rect x="954" y="666" width="226" height="84" rx="10"/>
+<text class="t mono" x="1067.0" y="696.0">fechos/</text>
+<text class="s" x="1067.0" y="712.0">DONE só com prova atual</text>
+<text class="s" x="1067.0" y="728.0">senão BLOCKED · FAILED · DECIDE</text>
+</g>
+<path class="ar ev" d="M284 708 H320" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M624 708 H660" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M914 708 H950" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M1004 400 H1036 V640 H474 V662" marker-end="url(#m-ev)"/>
+<g class="al ev"><rect x="708.0" y="630" width="104" height="20" rx="10"/><text x="760" y="644">grava com hash</text></g>
+<path class="ar " d="M40 806 H74" marker-end="url(#m-c)"/><text class="lg" x="82" y="810">controle</text>
+<path class="ar deny" d="M166 806 H200" marker-end="url(#m-deny)"/><text class="lg" x="208" y="810">negação</text>
+<path class="ar ok" d="M285 806 H319" marker-end="url(#m-ok)"/><text class="lg" x="327" y="810">permitido</text>
+<path class="ar ev" d="M418 806 H452" marker-end="url(#m-ev)"/><text class="lg" x="460" y="810">evidência</text>
+<path class="ar plan" d="M551 806 H585" marker-end="url(#m-plan)"/><text class="lg" x="593" y="810">planejado / a ativar</text>
+<path class="ar edit" d="M761 806 H795" marker-end="url(#m-edit)"/><text class="lg" x="803" y="810">edição do produto</text>
+</g>
+</svg>
 </div>
 </section>
 
