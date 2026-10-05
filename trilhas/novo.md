@@ -9,6 +9,8 @@ Usar quando: criar ou migrar um objeto, ou parte dele, dentro da fronteira, com 
 3. **Verificar e revisar.** Entre no [laço comum](README.md). Feito quando: cada critério tem prova atual e nenhum achado obrigatório está aberto.
 4. **Ambiente**, só se o contrato pede. Execute só o degrau autorizado; `validate` não publica. Feito quando: há `plan` atual antes de deploy, e coordenação antes de ingestão ou espinha. Se o ambiente falha, feche com `DECIDE`, `BLOCKED` ou `FAILED`.
 
+Com agentes: `map` no passo 1, se a investigação for ampla; `config` e `implement` no 2, por superfície; `test` e `refute` no 3; `dab` no 4, com autorização registrada.
+
 ## Aceite
 
 Superfície: notebook e configuração, recurso, `include` e task, conforme o objeto. A etapa 06 é job. BP segue os quatro pipelines vivos (cutover, saneamento, fornecedor, cliente), mais monitoramento e `bp_historico`. Pipeline novo de BP entra no orquestrador do módulo e nos pipelines do `bp_historico`.

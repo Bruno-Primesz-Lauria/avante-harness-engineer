@@ -12,7 +12,7 @@ Política do harness. O `AGENTS.md` aponta para este arquivo. Esta política nã
 | Caminho | Quando | Entrega |
 |---|---|---|
 | Simples | Pergunta delimitada, ou mudança pequena e reversível, com escopo e resultado claros. | Resposta com fontes, ou alteração com a verificação adequada. Com escrita, registre o escopo em poucas linhas no chat. Sem contrato YAML e sem agente filho. Fecho em prosa no chat. |
-| Estruturado | Várias etapas, ambiguidade material, impacto relevante, retomada ou revisão independente. | Contrato por fatia ([`contratos/README.md`](../contratos/README.md)), trilha de [`trilhas/`](../trilhas/README.md) e registros em `.execucoes/provas/`. Delegue só com autorização e benefício concreto. |
+| Estruturado | Várias etapas, ambiguidade material, impacto relevante, retomada ou revisão independente. | Contrato por fatia ([`contratos/README.md`](../contratos/README.md)), trilha de [`trilhas/`](../trilhas/README.md) e registros em `.execucoes/provas/`. Se a trilha está em `agentes_obrigatorios` do seu runtime, delegue aos papéis previstos ([agentes](../trilhas/README.md#agentes)); fora da chave, delegue só com autorização e benefício concreto. |
 
 As guardas de [`guardas/README.md`](../guardas/README.md) valem nos dois caminhos.
 
