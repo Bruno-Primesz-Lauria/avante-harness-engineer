@@ -51,7 +51,7 @@ Vale só para a trilha que está em `agentes_obrigatorios` do seu runtime. A fon
 
 | Trilha | Sequência |
 |---|---|
-| `novo` | map opcional → coordenador → config + implement → test → refute → dab se aplicável → coordenador |
+| `novo` | map opcional → coordenador → config/implement → test → refute → dab se aplicável → coordenador |
 | `manutencao` | map opcional → coordenador → test prepara se o caso existente não decide → config/implement → test → refute → dab se aplicável → coordenador |
 | `correcao` | diagnóstico (map opcional) → coordenador → test reproduz → config/implement → test revalida → refute → dab se aplicável → coordenador |
 | `docs` | map opcional → coordenador → docs → inspeção documental pelo coordenador → refute → coordenador |
@@ -60,6 +60,7 @@ Vale só para a trilha que está em `agentes_obrigatorios` do seu runtime. A fon
 | `review` | map opcional → coordenador → refute → coordenador |
 | `entendimento` | coordenador, com map opcional; sem refute |
 
+- **Um subagente por vez:** chame o próximo papel só depois que o anterior terminar, inclusive `config` e `implement` na mesma etapa. Com janelas sobrepostas, a autoria das edições fica inconclusiva e a fatia não fecha `DONE` (`superficie_inconclusiva`).
 - **Escrita por superfície:** YAML de negócio, ingestão ou recurso vai para `config`; notebook, Python ou SQL, para `implement`. Arquivo que nenhum dos dois cobre recusa o início da fatia: declare arquivos atribuíveis ou feche com `DECIDE`.
 - **Gatilhos:** `test` entra com critério `teste`, `validacao_dados` ou `paridade`; `dab`, com critério `ambiente` e autorização registrada (sem ela, `DECIDE`); `refute`, em toda trilha estruturada exceto `entendimento`. `map` é sempre opcional.
 - **Plano de chamadas:** `iniciar` calcula as chamadas previstas e as grava no `estado.json` da fatia. Não escreva o plano à mão. Só a chamada observada pelo adaptador do runtime conta como execução do papel.

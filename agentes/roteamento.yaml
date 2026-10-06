@@ -180,7 +180,7 @@ trilhas:
       - {id: map_opcional, responsavel: map, quando: investigacao_ampla, se_nao_aplicavel: coordenacao_inicial, se_indisponivel: coordenacao_inicial, apos_execucao: coordenacao_inicial}
       - {id: coordenacao_inicial, responsavel: coordenador, quando: sempre, apos_execucao: escrita_por_superficie}
       - id: escrita_por_superficie
-        modo: paralelo_se_independente; serializar_se_houver_dependencia
+        modo: serie  # um subagente de escrita por vez; janela sobreposta torna a autoria inconclusiva (C5)
         membros:
           - {responsavel: config, quando: gatilhos.config, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
           - {responsavel: implement, quando: gatilhos.implement, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
@@ -198,7 +198,7 @@ trilhas:
       - {id: coordenacao_inicial, responsavel: coordenador, quando: sempre, apos_execucao: preparar_teste_se_necessario}
       - {id: preparar_teste_se_necessario, responsavel: test, quando: "O caso existente não decide o comportamento contratado.", se_caso_existente_decide: escrita_por_superficie, se_nao_aplicavel: escrita_por_superficie, se_indisponivel: BLOCKED, apos_preparo: escrita_por_superficie}
       - id: escrita_por_superficie
-        modo: paralelo_se_independente; serializar_se_houver_dependencia
+        modo: serie  # um subagente de escrita por vez; janela sobreposta torna a autoria inconclusiva (C5)
         membros:
           - {responsavel: config, quando: gatilhos.config, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
           - {responsavel: implement, quando: gatilhos.implement, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
@@ -217,7 +217,7 @@ trilhas:
       - {id: coordenacao_inicial, responsavel: coordenador, quando: sempre, apos_execucao: teste_reproduz}
       - {id: teste_reproduz, responsavel: test, quando: criterio_de_reproducao_contratado, resultado_esperado: fail, se_criterio_ausente: DECIDE, se_indisponivel: BLOCKED, apos_resultado_esperado: escrita_por_superficie, apos_resultado_inesperado: DECIDE, apos_resultado_inconclusivo: BLOCKED}
       - id: escrita_por_superficie
-        modo: paralelo_se_independente; serializar_se_houver_dependencia
+        modo: serie  # um subagente de escrita por vez; janela sobreposta torna a autoria inconclusiva (C5)
         regra_dec_1: "Selecionar config para YAML de negócio/ingestão/recurso e implement para notebook/Python/SQL."
         membros:
           - {responsavel: config, quando: gatilhos.config, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
