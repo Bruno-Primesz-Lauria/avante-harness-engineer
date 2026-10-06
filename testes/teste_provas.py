@@ -1338,6 +1338,17 @@ class ProvasTestes(unittest.TestCase):
         self.operar(comando, "op-2")
         self.assertEqual(self.pendencias_atuais(), ["sandbox_obsoleto:c1"])
 
+    def test_ambiente_com_script_local_nao_leva_sandbox(self):
+        # O-CU 2026-10-06: o criterio ambiente_local roda um script, nao uma operacao de bundle.
+        comando = "py -3 fixture/manutencao/ambiente_local.py"
+        self.iniciar_ambiente(comando)
+        self.assertEqual(self.operar(comando), "pass")
+        self.assertEqual(self.pendencias_atuais(), [])
+        with self.assertRaisesRegex(ValueError, "operacao de bundle"):
+            self.p.registrar_sandbox("c1", self.ambiente_declarado())
+        self.assertEqual(self.p.fechar("DONE", "Ambiente local fecha pelo teste e pela autorizacao")["status"],
+                         "DONE")
+
     def paridade_declarada(self, **extras):
         return dict(dict(recorte="Competencia 2026-09",
                          insumos=[dict(nome="origem", identificador="a@v1"),

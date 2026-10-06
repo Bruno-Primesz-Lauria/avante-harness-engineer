@@ -38,7 +38,7 @@ Validação sintática não atesta verdade. O armazenamento valida cada evento a
 - `teste`: log e estado ligados por hash; `agente_id` e `exit_code_origem` são opcionais.
 - `inspecao`: edição relevante em qualquer caminho a invalida, como acontece com o teste.
 - `diagnostico`: textos não vazios; `criterio_reproducao` é um critério de teste do contrato; `evidencia_ref` fica dentro da fatia.
-- `sandbox`: `nao_verificado` vale para o que a CLI não observa (`identidade`, `destinos_resolvidos` como `[nao_verificado]`, `coordenacao`); deploy exige os dois primeiros verificados, run também a coordenação, e `pass` em deploy ou run exige `plan_ref` e plan compatível. `plan_ref` é relativo a `registros_raiz`; `autorizacao_ref`, à raiz do harness.
+- `sandbox`: só para critério `ambiente` cujo comando é uma operação de `databricks bundle`. `nao_verificado` vale para o que a CLI não observa (`identidade`, `destinos_resolvidos` como `[nao_verificado]`, `coordenacao`); deploy exige os dois primeiros verificados, run também a coordenação, e `pass` em deploy ou run exige `plan_ref` e plan compatível. `plan_ref` é relativo a `registros_raiz`; `autorizacao_ref`, à raiz do harness.
 - `paridade`: valores das contas em decimal, `diferenca` igual a `valor_origem` menos `valor_destino`; diferença sem divergência listada e divergência `pendente` impedem `pass`; divergência `explicada` leva explicação e evidência. O `resultado` de `sandbox` e `paridade` é calculado pelo núcleo a partir do teste observado.
 - Baseline, manifesto e estado: versão 1, em [`evidencia/uso.md`](../evidencia/uso.md).
 

@@ -121,9 +121,10 @@ def alterados(antes, depois):
 
 
 def operacao_bundle(comando):
-    """Operação, target, perfil e seleção literais de um `databricks bundle <operação>`."""
+    """Operação, target, perfil e seleção literais de um `databricks bundle <operação>`; None se não for."""
     achado = re.search(r"\bbundle\s+(validate|plan|deploy|run)\b", comando)
-    exigir(achado is not None, "Comando do criterio nao e uma operacao de bundle conhecida")
+    if achado is None:
+        return None
     derivado = dict(operacao=achado.group(1),
                     selecao=sorted(v.strip("'\"") for v in re.findall(r"--select[ =](\S+)", comando)))
     for campo, flags in (("target", "-t|--target"), ("perfil", "-p|--profile")):
@@ -636,7 +637,9 @@ class Provas:
             criterio, registro, teste = self.teste_do_criterio(pasta, estado, contrato, criterio_id, "ambiente")
             exigir(criterio.get("autorizacao_ref"), "Criterio ambiente sem autorizacao_ref")
             d = teste["dados"]
-            observado = dict(operacao_bundle(d["comando"]), cwd=d["cwd"], resultado=d["resultado"],
+            operacao = operacao_bundle(d["comando"])
+            exigir(operacao is not None, "Comando do criterio nao e uma operacao de bundle conhecida")
+            observado = dict(operacao, cwd=d["cwd"], resultado=d["resultado"],
                              autorizacao_ref=criterio["autorizacao_ref"], teste_ref=registro["ref"])
             politica = ler(self.politica_path) if self.politica_path.is_file() else {}
             if politica.get("bundle_nome"):
@@ -822,11 +825,13 @@ class Provas:
         return saida, faltam
 
     def exigencias_formas(self, pasta, estado, c, prova, ativa, plano):
-        """Ambiente e paridade: o registro da forma ligado ao teste atual; exigido com a trilha ativada.
+        """Ambiente (operação de bundle) e paridade: o registro da forma ligado ao teste atual; exigido com a trilha ativada.
 
         Registro existente e reprovado, obsoleto ou fora do papel bloqueia também sem a chave.
         """
         sandbox = c["tipo"] == "ambiente"
+        if sandbox and operacao_bundle(c["verificacao"]["comando"]) is None:
+            return []  # Script local ou outro comando: nao ha bundle, target nem plan a registrar.
         forma, papel = ("sandbox", "dab") if sandbox else ("paridade", "test")
         registro = estado.get("sandbox" if sandbox else "paridades", {}).get(c["id"])
         if registro is None:
