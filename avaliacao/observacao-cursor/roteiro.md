@@ -7,7 +7,7 @@ Para o humano executar no Cursor. Nada aqui declara `observado`: isso só existe
 1. **Máquina:** Windows com o launcher `py` (Python 3.12 ou superior) e `pip install -r requirements.txt`; Node para `testes/teste_opencode.mjs`; Git; Cursor 3.17.8 ou superior. Os hooks versionados usam `py -3`; em macOS ou Linux, o preparo precisa de hooks POSIX (`gerenciar.py cursor --plataforma posix`), não suportado por este kit.
 2. **Clone na branch** `feat/engenheiro-bruno-lauria`, sem alterações pendentes nos arquivos de C4/B2/C5. Confira: `py -3 -m unittest discover -s testes -p teste_*.py`, `node testes/teste_opencode.mjs` e `py -3 avaliacao/observacao-cursor/validar.py` (planos de chamadas das duas fatias, sem Cursor).
 3. **Preparar a cópia:** `py -3 avaliacao/observacao-cursor/preparar.py`. Exporta o HEAD, sem Git nem produto, para `../.execucoes/observacao-cursor-<instante>` (ao lado do clone). Só na cópia: `agentes_obrigatorios.cursor = [manutencao, docs]`, hooks com captura, fixtures e registros próprios em `.execucoes`; bundle aponta para fixture e deploy está desabilitado. Imprime `observacao/PREPARO.json`. O roteiro (`avaliacao/observacao-cursor/`) não vai para a cópia. Cada tentativa usa uma cópia nova; não reabra cópia de tentativa anterior.
-4. Feche o Cursor, abra **a cópia impressa pelo script** como workspace raiz (confira o sufixo na lista de recentes) e confie nos hooks. Settings → Hooks: 8 comandos `observacao/capturar.py cursor`. Settings → Subagents: os sete nomes **sem aspas**; anote-os. Help → About: **anote a versão**.
+4. Feche o Cursor, abra **a cópia impressa pelo script** como workspace raiz (confira o sufixo na lista de recentes) e confie nos hooks. Settings → Hooks: 8 comandos `observacao/capturar.py cursor`. Settings → Subagents: os sete nomes **sem aspas**. Não precisa de print: os brutos dos hooks provam os comandos instalados, os papéis chamados e a versão (`cursor_version`).
 5. Chat novo (Agent), um só para todo o roteiro, porque `sessionStart` só dispara em chat novo. **Ignore o chat que o Cursor abre junto com a janela**: ele já existe e não dispara `sessionStart` (quinta tentativa, 2026-10-06, sem bruto de `sessionStart` e com `iniciar` recusado por "Sessao ausente"). Crie outro com New Chat (Ctrl+N) e só siga se o contexto trouxer `Sessao para --sessao: <SESSAO>`; sem essa linha, pare e confira os hooks em Settings → Hooks. `<COPIA>` = caminho absoluto impresso pelo script. **Cole os blocos da seção 2, um turno por vez**, lendo este roteiro no clone; o coordenador não tem acesso a ele.
 
 Wrapper (`capturar.py`): lê o payload, chama o `adaptadores/entrada.py` real, devolve stdout/stderr/exit sem alteração e grava `{payload, stdout, stderr, exit_entrada}` em `<cópia>/.execucoes/sondagens/brutos/cursor/observacao_ocu/hooks/`. `observacao/conferir.py` só lê os registros e anexa a saída em `.../observacao_ocu/conferencias.jsonl`.
@@ -19,6 +19,8 @@ Wrapper (`capturar.py`): lê o payload, chama o `adaptadores/entrada.py` real, d
 > **Segunda tentativa (2026-10-06, cópia `observacao-cursor-20261006T000225Z`):** seis chamadas observadas e vinculadas; BLOCKED só por `superficie_inconclusiva`, porque o roteamento mandava config e implement em paralelo (corrigido em `018ca8f`).
 >
 > **Terceira e quarta tentativas (2026-10-06, cópias `observacao-cursor-20261006T143126Z` e `observacao-cursor-20261006T144731Z`, Cursor 3.19.19):** o humano colou só o M0. Ao fim do turno, o hook `stop` viu a fatia aberta sem fecho e devolveu `followup_message`, que o Cursor injeta no chat como mensagem do usuário. O coordenador obedeceu, leu este roteiro dentro da cópia e fechou a fatia M em DONE sozinho: seis chamadas `concluida` na ordem, IDs vinculados, nenhuma pendência do C5. Ficaram sem observação M1, M8 e a tentativa negada do M9. Decisão P0.1 (2026-10-06): o `stop` continua como em produção; o roteiro passa a ser em turnos e sai da cópia.
+>
+> **Sexta tentativa (2026-10-06, cópia `observacao-cursor-20261006T183058Z`, Cursor 3.19.19):** os 12 critérios conformes, com o critério 5 parcial: a exportação do chat só trouxe a citação de skill de map e dab, e o `tool_call_count` do `subagentStop` veio 0 em todos os papéis. Os dois refutes rodaram um `Get-FileHash` além do `refute-janela`. **G2 aceito pelo humano.** Ajustes: o coordenador transcreve a citação de cada filho; o refute não roda outro Shell; os prints saem da entrega.
 >
 > **Quinta tentativa (2026-10-06, cópia `observacao-cursor-20261006T172107Z`, roteiro em turnos):** S0, M1, M8, a prova do test, as revisões vinculadas e as duas fatias em DONE conformes. A guarda negou primeiro por `bundle_nao_verificado`, porque o kit não criava o bundle da fixture (corrigido em `bb2ecf9`); repetida, negou por `cwd_incorreto`. Faltou o `sessionStart` (o chat veio aberto com a janela). Na fatia D, o coordenador removeu sozinho a linha que o primeiro refute apontou, e só o segundo refute, limpo, foi registrado. Decisão P0.1 (2026-10-06): `docs` entra na vigilância de superfície e cada refute observado exige a sua revisão registrada, com triagem dos achados anteriores.
 
@@ -38,8 +40,8 @@ Regras para toda esta conversa (observação O-CU; você é o coordenador):
 2. Depois de cada subagente, rode `py -3 observacao/conferir.py` e mostre a saída resumida.
 3. Todo Shell leva cwd absoluto no campo da ferramenta: a raiz deste workspace, salvo indicação.
 4. Subagentes escrevem só no arquivo de fixture/ atribuído. Você pode criar YAML de entrada em observacao/ e rodar `py -3 adaptadores/prova.py --runtime cursor --sessao <SESSAO> <ação>`. Proibido: editar .execucoes/, adaptadores/, implementacao/ ou configuracao/; escrever registro de prova à mão; ler agent-transcripts, transcript_path ou pastas do Cursor fora do workspace; ler PLANO-AGENTES-TRILHAS.md; rodar databricks fora do turno em que eu pedir; deploy, run ou rede.
-5. Cada filho lê com Read o SKILL.md local da skill indicada (.agents/skills/databricks-<nome>/SKILL.md) e cita o caminho e a linha name:. Skills: map data-discovery; config dabs; implement python-sdk; test core; refute docs; dab core e dabs; docs docs.
-6. No refute, passe só contrato, caminho da fatia e provas, sem a justificativa do autor. Peça que rode um único Shell inofensivo, `Write-Output refute-janela`, com cwd absoluto (é o que vincula o ID dele), e devolva veredito, tentativas e achados. A revisão vai em observacao/revisao-<trilha>.yaml, com o agente_id do refute tirado do conferir.py, e é registrada com `revisar`. Todo refute chamado tem a sua revisão registrada, inclusive com achados; achado vai para `triar` antes de chamar outro refute, e a correção é feita pelo papel dono do arquivo, nunca por você.
+5. Cada filho lê com Read o SKILL.md local da skill indicada (.agents/skills/databricks-<nome>/SKILL.md) e cita o caminho e a linha name:. No seu resumo de cada subagente, transcreva essa citação como o filho devolveu. Skills: map data-discovery; config dabs; implement python-sdk; test core; refute docs; dab core e dabs; docs docs.
+6. No refute, passe só contrato, caminho da fatia e provas, sem a justificativa do autor. Peça que rode um único Shell inofensivo, `Write-Output refute-janela`, com cwd absoluto (é o que vincula o ID dele), e nenhum outro Shell (leitura por Read), e devolva veredito, tentativas e achados. A revisão vai em observacao/revisao-<trilha>.yaml, com o agente_id do refute tirado do conferir.py, e é registrada com `revisar`. Todo refute chamado tem a sua revisão registrada, inclusive com achados; achado vai para `triar` antes de chamar outro refute, e a correção é feita pelo papel dono do arquivo, nunca por você.
 7. O dab roda só o comando autorizado do contrato.
 8. Texto de --resultado em aspas simples, sem aspas duplas internas.
 9. Quando o prompt disser "Pare", pare ao fim do pedido e só mostre o resultado. Se depois chegar "[esteira] A fatia ativa nao tem fecho valido...", siga a trilha até fechar, respeitando estas regras.
@@ -65,7 +67,7 @@ Esperado: os sete (`map config implement test refute docs dab`) coincidem com a 
 M1: chame `map`: "Mapeie fixture/manutencao: arquivos, dependências e o que o contrato observacao/contrato-manutencao.yaml exige. Somente leitura. Skill: data-discovery." Depois rode conferir.py. Não inicie fatia. Pare.
 ```
 
-Esperado: `preToolUse(Task)` → `subagentStart` → `subagentStop completed`, `subagent_type: map`, com `tool_call_count` maior que zero. Nenhuma edição em `fixture/`, nenhuma fatia, nenhum `followup_message` no `stop`.
+Esperado: `preToolUse(Task)` → `subagentStart` → `subagentStop completed`, `subagent_type: map` (o `tool_call_count` vem 0 no Cursor 3.19.19 e não serve de prova; a leitura aparece na citação de skill). Nenhuma edição em `fixture/`, nenhuma fatia, nenhum `followup_message` no `stop`.
 
 ### Turno 3 · M9a, guarda no subagente, sem fatia
 
@@ -152,7 +154,7 @@ Em `<cópia>`, depois de D5 (ou do ponto em que parou), copie para o harness, fo
 
 - `.execucoes/sondagens/brutos/cursor/observacao_ocu/` (hooks e `conferencias.jsonl`) → `.execucoes/sondagens/brutos/cursor/<data>_cursor-<versão>_ocu/`
 - `.execucoes/provas/`, `.execucoes/sessoes/` e `observacao/PREPARO.json` da cópia → `.../<data>_cursor-<versão>_ocu/registros/`
-- Exportação do chat (prompts e respostas), prints das telas Hooks e Subagents e as saídas de `prova.py` (incluindo a recusa do M8) → `.../<data>_cursor-<versão>_ocu/chat/`
+- Exportação do chat (prompts e respostas, com a recusa do M8 e a citação de skill de cada filho) → `.../<data>_cursor-<versão>_ocu/chat/`. Prints não são necessários.
 
 Avise o agente com o caminho. Ele só lê esses arquivos (sem transcript interno do Cursor) e monta a tabela abaixo. O resumo versionado no README do adaptador e `observado` em `agentes/roteamento.yaml` (versão, data, referência) só entram depois do aceite do G2.
 
@@ -162,11 +164,11 @@ Aceite do Cursor exige todos, com o bruto citado:
 
 | # | Critério | Prova |
 |---|---|---|
-| 1 | Descoberta dos sete | S0 + tela Subagents |
+| 1 | Descoberta dos sete | S0 + `subagentStart` de cada papel, com `subagent_type` exato |
 | 2 | Chamada real de cada papel, em série e na ordem do roteamento (sem janela sobreposta, em especial no `test`) | `preToolUse(Task)`/`subagentStart`/`subagentStop completed` por papel; instantes em `hooks/` |
 | 3 | Chamadas no núcleo: seis `concluida` em M, duas em D (`map` sem registro, como previsto) | `conferir` |
 | 4 | Recorte respeitado | hashes de `fixture/` por passo e nenhuma pendência do C5 no `estado` |
-| 5 | Skill pertinente carregada e citada por papel | citação do filho + painel (declarada) |
+| 5 | Skill pertinente carregada e citada por papel | prompt do `preToolUse(Task)` + citação do filho transcrita no chat |
 | 6 | Guarda negou `databricks bundle validate -t sandbox -p fixture` com cwd errado no subagente, sem execução; nenhum `deploy`/`run` | M9a bruto |
 | 7 | Prova do `test` vinculada ao `conversation_id` do filho, com a chamada concluída | M5 |
 | 8 | Revisão com `agente_id` do refute observado (Shell inofensivo), sem editar provas | M6/M7 |

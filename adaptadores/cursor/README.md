@@ -34,12 +34,24 @@ Cursor 3.17.8 (user setup), app interativo, Windows, numa worktree temporária c
 - `preToolUse(Task)` guarda `tool_use_id` e `subagent_type` no estado da fatia. `subagentStart` abre a janela correspondente; `subagentStop` fecha e registra a chamada quando o papel está previsto.
 - O shell do subagente só se associa à fatia do coordenador dentro de uma janela única. A prova usa o `conversation_id` do shell como `agente_id`, também incluído nos IDs observados da chamada. Fora da janela, com janelas sobrepostas ou papel desconhecido, nenhum sucesso é registrado.
 - O ID bruto da chamada fica nos IDs observados; `chamada_id` recebe um identificador estável derivado porque o Schema 3.2 não aceita a quebra de linha que o Cursor inclui no ID bruto. O papel opcional `map` não é gravado como chamada obrigatória pelo núcleo.
-- A tradução foi testada com payloads derivados dos brutos P0.5. Não usa transcript nem contadores do `subagentStop`; ainda não foi observada em sessão real.
+- A tradução foi testada com payloads derivados dos brutos P0.5. Não usa transcript nem contadores do `subagentStop`. Foi observada em sessão real na O-CU (abaixo).
 
-Com G1 aprovado e os sete agentes instalados por B2-CU (`b4669f0`), os cinco testes de `testes.teste_adaptador_cursor_subagente` continuam verdes: janela única, precedência sobre fatia do filho, janelas sobrepostas, shell fora de janela e papel desconhecido. A4 e o gerador passam; a chave real continua vazia. O-CU e o aceite humano de G2 ainda são necessários para ativação.
+Com G1 aprovado e os sete agentes instalados por B2-CU (`b4669f0`), os cinco testes de `testes.teste_adaptador_cursor_subagente` continuam verdes: janela única, precedência sobre fatia do filho, janelas sobrepostas, shell fora de janela e papel desconhecido. A4 e o gerador passam; a chave real continua vazia até o E0.
 
-## O-CU (roteiro preparado; sessão real pendente)
+## O-CU (G2 aceito em 2026-10-06)
 
 Kit versionado em [`avaliacao/observacao-cursor/`](../../avaliacao/observacao-cursor/roteiro.md): roteiro, preparação (`preparar.py`) e conferência local (`validar.py`). A cópia exporta o HEAD, sem Git nem produto, com registros próprios, captura dos payloads dos hooks e a chave preenchida só nela.
 
-Em sessão nova do Cursor, observar os sete papéis em série, recorte e leitura de skills, guarda negando no subagente, prova do test vinculada ao filho, revisão vinculada ao refute e recusa de DONE sem a chamada prevista. O roteiro também exercita inspeção e invalidação por edição. Script, wrappers e contratos conferidos localmente; execução no Cursor e G2 ainda pendentes. Entregar os brutos e a exportação do chat conforme o roteiro; nenhuma observação nova foi registrada nos metadados.
+Sexta sessão: Cursor 3.19.19, Windows, cópia `observacao-cursor-20261006T183058Z` (HEAD `dbea3cb`), roteiro em turnos. Os brutos (152 eventos), os registros, a exportação do chat e a tabela dos 12 critérios ficam em `.execucoes/sondagens/brutos/cursor/2026-10-06_cursor-3.19.19_ocu/`, fora do Git. Este resumo é o registro versionado. O humano aceitou o G2 com 11 critérios conformes e o critério 5 parcial.
+
+- **Descoberta e ordem:** os sete papéis foram chamados por `Task` com `subagent_type` exato. Os pares `preToolUse(Task)` → `subagentStart` → `subagentStop completed` vieram em série, sem janela sobreposta, na ordem do roteamento.
+- **Recorte:** test, config, implement e docs mudaram só o arquivo atribuído; map, dab e refute não mudaram nenhum. Os dois fechos ficaram sem pendência do C5.
+- **Guarda:** negou no subagente dab (`cwd-bundle/cwd_incorreto`), sem execução e sem nova tentativa. Nenhum `deploy` ou `run`.
+- **Vínculos:** a prova do test, a revisão de cada refute e o `ambiente_local` do dab levam o `conversation_id` do shell do filho como `agente_id`, igual ao dos IDs observados da chamada.
+- **Recusa de DONE:** antes das chamadas, o DONE foi recusado com exit 2 e `chamada:dab` nas pendências.
+- **Inspeção:** a edição posterior do guia invalidou a inspeção, e a nova inspeção voltou a `valida`.
+- **Fechos:** DONE aceito nas duas fatias, manutenção e docs, pelo followup do `stop`. As seis chamadas da manutenção ficaram `concluida`.
+- **Limites:**
+  - Os contadores do `subagentStop` vêm 0, então a leitura de skill só se comprova pelo retorno do filho, que ficou registrado só para map e dab.
+  - Os dois refutes rodaram também um shell de leitura além do `refute-janela` pedido.
+  - Houve um `sessionStart` avulso, sem outros eventos.
