@@ -18,6 +18,8 @@ BASE = RAIZ.parent / ".execucoes"
 PAPEIS = ("map", "config", "implement", "test", "refute", "docs", "dab")
 TRILHAS_CURSOR = ["manutencao", "docs"]
 REMOVER = (".claude", ".codex", ".opencode", "prj-avante-analytics-adb")
+# O coordenador lia o roteiro na copia e seguia a fatia sozinho; o humano le o roteiro no clone.
+KIT = "avaliacao/observacao-cursor/"
 
 FIXTURE = {
     "fixture/manutencao/regras.yaml": "desconto_percentual: 0\n",
@@ -234,7 +236,7 @@ def extrair(destino):
     proc = subprocess.Popen(["git", "-C", str(RAIZ), "archive", "--format=tar", "HEAD"], stdout=subprocess.PIPE)
     with tarfile.open(fileobj=proc.stdout, mode="r|") as tar:
         for membro in tar:
-            if membro.name.split("/", 1)[0] not in REMOVER:
+            if membro.name.split("/", 1)[0] not in REMOVER and not membro.name.startswith(KIT):
                 tar.extract(membro, destino, filter="data")
     if proc.wait() != 0:
         raise RuntimeError("git archive falhou")
@@ -251,7 +253,9 @@ def principal():
     destino.mkdir(parents=True)
     try:
         extrair(destino)
-        removidos = list(REMOVER)
+        removidos = [*REMOVER, KIT]
+        if (destino / KIT).exists():
+            raise RuntimeError("a copia nao pode ter o roteiro")
         if (destino / ".git").exists():
             raise RuntimeError("a copia nao pode ter Git")
         arquivo = destino / "configuracao/politica.json"
@@ -289,7 +293,7 @@ def principal():
         print(f"Copia incompleta preservada em {destino}", file=sys.stderr)
         raise
     print(json.dumps(preparo, indent=2, ensure_ascii=False))
-    print("\nAbra esta pasta como workspace raiz no Cursor e siga avaliacao/observacao-cursor/roteiro.md.")
+    print("\nAbra esta pasta como workspace raiz no Cursor e siga, no clone, " + str(RAIZ / KIT / "roteiro.md") + ".")
     return 0
 
 
