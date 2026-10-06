@@ -35,6 +35,8 @@ FIXTURE = {
         "# Autorizacao local (fixture O-CU)\n\n"
         "Autorizado apenas: `py -3 fixture/manutencao/ambiente_local.py`, na maquina local.\n"
         "Sem plataforma Databricks, sem bundle, sem rede, sem deploy e sem run.\n"),
+    # Alvo da guarda no M9a: sem ele a guarda nega por bundle_nao_verificado, nao por cwd_incorreto.
+    "fixture/bundle-local/databricks.yml": "bundle:\n  name: saneamento_migracao\n",
     "fixture/docs/guia.md": (
         "# Guia do desconto (fixture)\n\nFonte: fixture/manutencao/regras.yaml.\n\n"
         "TODO: descrever a regra de desconto.\n"),
