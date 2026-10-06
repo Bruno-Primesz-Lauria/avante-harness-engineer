@@ -86,10 +86,10 @@ def _marcar_inicio(provas, evento):
 def _registrar_fim(provas, evento):
     chamada_id = evento.get("tool_use_id")
     if not isinstance(chamada_id, str) or not chamada_id:
-        return
+        return {}
     arquivo = _arquivo_chamada(provas, chamada_id)
     if arquivo is None or not arquivo.is_file():
-        return
+        return {}
     inicio = ler(arquivo)
     resposta = evento.get("tool_response")
 
@@ -100,27 +100,35 @@ def _registrar_fim(provas, evento):
 
     if not isinstance(resposta, dict):
         descartar()
-        return
+        return {}
     papel = resposta.get("agentType")
     agente_id = resposta.get("agentId")
     if (papel not in PAPEIS_REGISTRAVEIS or papel != inicio.get("papel") or
             not isinstance(agente_id, str) or not agente_id or
             resposta.get("status") != "completed"):
         descartar()
-        return
+        return {}
     pasta = provas.pasta()
     if pasta is None:
         arquivo.unlink(missing_ok=True)
-        return
+        return {}
     estado = provas.estado(pasta)
     if not any(chamada["papel"] == papel for chamada in estado["chamadas_previstas"]):
         descartar()
-        return
-    provas.registrar_chamada(
+        return {}
+    registro = provas.registrar_chamada(
         chamada_id, papel, "claude_code", [{"nome": "agente_id", "valor": agente_id}],
         inicio["inicio"], _agora(), "concluida",
     )
     arquivo.unlink(missing_ok=True)
+    # O coordenador nao ve o agentId do subagente: sem ele, a revisao, o ambiente e a paridade
+    # nao se vinculam a chamada observada (O-CU: revisao:fora_do_refute).
+    return {"hookSpecificOutput": {
+        "hookEventName": "PostToolUse",
+        "additionalContext": (f"[esteira] Chamada {papel} registrada (etapa {registro['etapa']}). "
+                              f"agente_id={agente_id}. Use esse valor em agente_id ao registrar a revisao, "
+                              "o ambiente ou a paridade desta chamada."),
+    }}
 
 
 def _exit_code_falha(erro):
@@ -195,8 +203,10 @@ def tratar(evento, politica, raiz):
     if nome == "SessionStart":
         return {"hookSpecificOutput": {
             "hookEventName": "SessionStart",
-            "additionalContext": ("Sessao Claude Code para a esteira: " + sessao +
-                                  ". O comando de prova seleciona esta sessao por CLAUDE_CODE_SESSION_ID."),
+            "additionalContext": ("Sessao Claude Code para a esteira: " + sessao + ". Em trabalho de varias "
+                                  "etapas, use py -3 adaptadores/prova.py --sessao " + sessao + " (iniciar, estado, "
+                                  "fechar) conforme evidencia/uso.md; o runtime claude_code vem de "
+                                  "CLAUDE_CODE_SESSION_ID. Pergunta simples nao precisa de registro."),
         }}
 
     if nome == "Stop" and evento.get("stop_hook_active") is True:
@@ -220,8 +230,7 @@ def tratar(evento, politica, raiz):
         _marcar_inicio(provas, evento)
         return {}
     if nome == "PostToolUse" and ferramenta == "Agent":
-        _registrar_fim(provas, evento)
-        return {}
+        return _registrar_fim(provas, evento)
     if ferramenta not in {"Bash", "PowerShell"}:
         return {}
     if nome == "PreToolUse":

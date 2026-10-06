@@ -146,7 +146,8 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertEqual(self.tratar_evento(chamada_pre), {})
         chamada_post = evento_p0_4("PostToolUse_Agent")
         chamada_post["tool_response"]["agentType"] = "test"
-        self.assertEqual(self.tratar_evento(chamada_post), {})
+        contexto = self.tratar_evento(chamada_post)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("agente_id=" + AGENTE, contexto)
 
         antes = evento_p0_4("PreToolUse_Bash_subagent")
         antes["agent_type"] = "test"
@@ -272,6 +273,137 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.iniciar()
         self.assertEqual(self.tratar_evento(evento_p0_4("Stop"))["decision"], "block")
         self.assertEqual(self.tratar_evento(evento_p0_4("Stop_active")), {})
+
+    def subagente(self, papel, agente_id, tool_use_id, comando=None):
+        """Agent pre, shell do subagente (com agent_id) e Agent pos; devolve a resposta do pos."""
+        pre = evento_p0_4("PreToolUse_Agent")
+        pre["tool_use_id"] = tool_use_id
+        pre["tool_input"]["subagent_type"] = papel
+        self.assertEqual(self.tratar_evento(pre), {})
+        if comando is not None:
+            for base in ("PreToolUse_Bash_subagent", "PostToolUse_Bash_subagent"):
+                shell = evento_p0_4(base)
+                shell.update(agent_id=agente_id, agent_type=papel, tool_use_id=tool_use_id + "-shell")
+                shell["tool_input"]["command"] = comando
+                self.tratar_evento(shell)
+        pos = evento_p0_4("PostToolUse_Agent")
+        pos["tool_use_id"] = tool_use_id
+        pos["tool_response"].update(agentType=papel, agentId=agente_id)
+        return self.tratar_evento(pos)
+
+    def revisao(self, agente_id, criterios=("c1",)):
+        return dict(
+            agente_id=agente_id,
+            entrada=dict(intencao_ref="contrato.yaml", aceite_ref="contrato.yaml",
+                         baseline_ref="baseline.json", provas_refs=[]),
+            veredito="nao_quebrei", tentativas=[dict(id="t1", procedimento="Reproduzir", resultado="pass")],
+            achados=[], cobertura=[dict(criterio_id=c, coberto=True) for c in criterios])
+
+    def pendencias(self):
+        return self.p.pendencias(self.p.pasta(), self.p.estado(self.p.pasta()))[1]
+
+    def iniciar_manutencao(self, aceite):
+        self.politica["agentes_obrigatorios"]["claude_code"] = ["manutencao"]
+        self.escrever_politica()
+        self.p = Provas(self.raiz, self.politica["registros_raiz"], SESSAO, runtime="claude_code")
+        self.p.iniciar(dict(objetivo="Alterar codigo", termino_fatia="Criterios conferidos",
+                            trilha="manutencao", superficie=["src/a.py"], artefatos_raiz=".execucoes/provas",
+                            fora=[], fontes=["src/a.py"], prazo=None, aceite=[aceite],
+                            orcamento={"ciclos_correcao_max": 3}, responsaveis={"coordenador": "agente"}))
+
+    def test_registro_da_chamada_devolve_o_agente_id_observado_ao_coordenador(self):
+        self.iniciar(ativada=True)
+        resposta = self.subagente("test", AGENTE, "toolu_teste", self.comando("echo sonda-sucesso"))
+        contexto = resposta["hookSpecificOutput"]
+        self.assertEqual(contexto["hookEventName"], "PostToolUse")
+        self.assertIn("agente_id=" + AGENTE, contexto["additionalContext"])
+        self.assertIn("test", contexto["additionalContext"])
+        # Tipo fora dos sete papeis, papel fora do plano e retorno sem agentId nao devolvem contexto.
+        self.assertEqual(self.subagente("sonda", "agente-x", "toolu_sonda"), {})
+        self.assertEqual(self.subagente("implement", "agente-y", "toolu_fora"), {})
+        pre = evento_p0_4("PreToolUse_Agent")
+        pre.update(tool_use_id="toolu_sem_id")
+        pre["tool_input"]["subagent_type"] = "refute"
+        self.tratar_evento(pre)
+        pos = evento_p0_4("PostToolUse_Agent")
+        pos.update(tool_use_id="toolu_sem_id")
+        pos["tool_response"].update(agentType="refute")
+        del pos["tool_response"]["agentId"]
+        self.assertEqual(self.tratar_evento(pos), {})
+        estado = self.p.estado(self.p.pasta())
+        self.assertEqual([c["papel"] for c in estado["chamadas_observadas"]], ["test"])
+        self.assertNotIn("chamada_aberta", " ".join(self.pendencias()))
+
+    def test_payload_completo_do_agent_p0_4_registra_a_chamada(self):
+        # Formato real do PostToolUse(Agent): alem de status, agentId e agentType, traz conteudo, uso e toolStats.
+        self.iniciar(ativada=True)
+        pre = evento_p0_4("PreToolUse_Agent")
+        pre["tool_input"]["subagent_type"] = "test"
+        self.tratar_evento(pre)
+        pos = evento_p0_4("PostToolUse_Agent")
+        pos["duration_ms"] = 8514
+        pos["tool_response"].update(
+            agentType="test", prompt="Rode o teste", harnessNoteCount=0, harnessTailCount=0,
+            content=[{"type": "text", "text": "Saida literal"}], resolvedModel="claude-sonnet-5",
+            totalDurationMs=8514, totalTokens=33753, totalToolUseCount=1,
+            usage={"output_tokens": 21}, toolStats={"readCount": 0, "bashCount": 1, "editFileCount": 0})
+        self.assertIn("agente_id=" + AGENTE, self.tratar_evento(pos)["hookSpecificOutput"]["additionalContext"])
+        self.assertEqual(self.p.estado(self.p.pasta())["chamadas_observadas"][0]["papel"], "test")
+
+    def test_revisao_vincula_ao_refute_observado_com_o_id_devolvido_ao_coordenador(self):
+        self.iniciar(ativada=True)
+        self.subagente("test", "agente-test", "toolu_teste", self.comando("echo sonda-sucesso"))
+        contexto = self.subagente("refute", "agente-refute", "toolu_refute")["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("agente_id=agente-refute", contexto)
+        self.assertEqual(self.pendencias(), ["revisao:ausente"])
+        self.p.revisar(self.revisao("agente-test"))  # ID de outro papel.
+        self.assertEqual(self.pendencias(), ["revisao:fora_do_refute"])
+        self.p.revisar(self.revisao("agente-refute"))
+        self.assertEqual(self.pendencias(), [])
+        self.assertEqual(self.p.fechar("DONE", "Revisao do refute observado")["status"], "DONE")
+
+    def test_ambiente_local_do_dab_leva_o_agente_id_do_subagente_sem_sandbox(self):
+        # O-CU: ambiente_local roda um script; a prova leva o ID do dab e o fecho nao pede registro sandbox.
+        (self.raiz / "src/autorizacao.md").write_text("Autorizado: script local\n", encoding="utf-8")
+        local = self.comando("py -3 src/ambiente_local.py")
+        self.comando_teste = local
+        self.iniciar_manutencao(dict(
+            id="c1", tipo="ambiente", obrigatorio=True, esperado="Script local com exit 0",
+            autorizacao_ref="src/autorizacao.md", verificacao=dict(comando=local, cwd=".", caminhos=["src"])))
+        papeis = [c["papel"] for c in self.p.estado(self.p.pasta())["chamadas_previstas"]]
+        self.assertEqual(papeis, ["test", "implement", "refute", "dab"])
+        self.subagente("test", "agente-prep", "toolu_prep")
+        self.subagente("implement", "agente-impl", "toolu_impl")
+        self.subagente("refute", "agente-refute", "toolu_refute")
+        self.subagente("dab", "agente-dab", "toolu_dab", local)
+        dados = self.prova_registrada()["dados"]
+        self.assertEqual((dados["agente_id"], dados["resultado"]), ("agente-dab", "pass"))
+        self.p.revisar(self.revisao("agente-refute"))
+        self.assertEqual(self.pendencias(), [])
+        self.assertEqual(self.p.fechar("DONE", "Ambiente local observado")["status"], "DONE")
+
+    def test_agent_sobrepostos_tornam_a_autoria_da_superficie_inconclusiva(self):
+        self.iniciar_manutencao(dict(
+            id="c1", tipo="teste", obrigatorio=True, esperado="Teste verde",
+            verificacao=dict(comando=self.comando("echo ok"), cwd=".", caminhos=["src"])))
+        for papel, uso in (("test", "toolu_a"), ("implement", "toolu_b")):
+            pre = evento_p0_4("PreToolUse_Agent")
+            pre.update(tool_use_id=uso)
+            pre["tool_input"]["subagent_type"] = papel
+            self.tratar_evento(pre)
+        (self.raiz / "src/a.py").write_text("# editado com duas janelas abertas\n", encoding="utf-8")
+        for papel, uso, agente in (("test", "toolu_a", "agente-a"), ("implement", "toolu_b", "agente-b")):
+            pos = evento_p0_4("PostToolUse_Agent")
+            pos.update(tool_use_id=uso)
+            pos["tool_response"].update(agentType=papel, agentId=agente)
+            self.tratar_evento(pos)
+        self.assertIn("superficie_inconclusiva:toolu_a", self.pendencias())
+        self.assertIn("superficie_inconclusiva:toolu_b", self.pendencias())
+
+    def test_session_start_orienta_o_comando_de_prova_com_a_sessao(self):
+        contexto = self.tratar_evento(evento_p0_4("SessionStart"))["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("adaptadores/prova.py --sessao " + SESSAO, contexto)
+        self.assertNotIn("--runtime cursor", contexto)
 
     def test_gerador_claude_inclui_eventos_sem_mudar_codex(self):
         claude = gerar("claude_code", "windows")["hooks"]
