@@ -18,7 +18,8 @@ def principal(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sessao", default=os.environ.get("ESTEIRA_SESSAO"))
     runtime_detectado = "claude_code" if os.environ.get("CLAUDE_CODE_SESSION_ID") else None
-    parser.add_argument("--runtime", choices=("claude_code", "cursor"), default=runtime_detectado)
+    parser.add_argument("--runtime", choices=("claude_code", "cursor", "codex", "opencode"),
+                        default=runtime_detectado)
     comandos = parser.add_subparsers(dest="acao", required=True)
     comandos.add_parser("iniciar").add_argument("contrato", type=Path)
     for acao in ("inspecionar", "revisar", "triar"):

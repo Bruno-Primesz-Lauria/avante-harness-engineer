@@ -145,7 +145,8 @@ class Provas:
         exigir(self.registros.is_relative_to(self.raiz) and self.registros != self.raiz,
                "Registros devem ficar dentro do harness, separados do produto")
         exigir(isinstance(sessao, str) and 0 < len(sessao) <= 300, "Sessao ausente")
-        exigir(runtime is None or runtime in {"claude_code", "cursor"}, "Runtime invalido")
+        exigir(runtime is None or runtime in {"claude_code", "cursor", "codex", "opencode"},
+               "Runtime invalido")
         self.sessao = hash_bytes(sessao.encode())
         self.indice = self.registros / "sessoes" / self.sessao
         self.runtime = runtime

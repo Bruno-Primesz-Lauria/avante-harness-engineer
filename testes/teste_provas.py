@@ -562,6 +562,60 @@ class ProvasTestes(unittest.TestCase):
         self.executar()
         self.assertEqual(self.p.fechar("DONE", "Chave vazia restaura o fluxo atual")["status"], "DONE")
 
+    def test_codex_e_opencode_iniciam_e_fecham_manutencao_sem_chamadas(self):
+        self.politica["agentes_obrigatorios"]["cursor"] = ["manutencao"]
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        contrato = copy.deepcopy(self.contrato)
+        contrato.update(trilha="manutencao", superficie=["src/a.py"])
+        contrato["aceite"] = [dict(
+            id="escopo", tipo="analise_codigo", obrigatorio=True,
+            esperado="O estado pode ser inspecionado sem chamada de agente obrigatoria",
+            verificacao=dict(caminhos=["src/a.py"],
+                             checagens=[dict(id="fluxo_unico", esperado="Nenhuma chamada obrigatoria")],
+                             produtor="coordenador"))]
+        contrato_path = self.raiz / "contrato-runtime.yaml"
+        contrato_path.write_text(json.dumps(contrato), encoding="utf-8")
+
+        for runtime in ("codex", "opencode"):
+            with self.subTest(runtime=runtime):
+                sessao = "sessao-" + runtime
+                base = ["--runtime", runtime, "--sessao", sessao]
+                codigo, _, erro = self.chamar_adaptador_prova([*base, "iniciar", str(contrato_path)])
+                self.assertEqual(codigo, 0, erro)
+                provas = Provas(self.raiz, self.politica["registros_raiz"], sessao, runtime=runtime)
+                estado = provas.estado(provas.pasta())
+                self.assertEqual(estado["runtime"], runtime)
+                self.assertFalse(provas.ativada("manutencao", runtime))
+                self.assertEqual(estado["chamadas_observadas"], [])
+
+                inspecao = self.arquivo_yaml("inspecao-" + runtime + ".yaml", dict(
+                    criterio_id="escopo", checagens=[dict(id="fluxo_unico", resultado="pass")]))
+                codigo, _, erro = self.chamar_adaptador_prova([*base, "inspecionar", inspecao])
+                self.assertEqual(codigo, 0, erro)
+                codigo, _, erro = self.chamar_adaptador_prova(
+                    [*base, "fechar", "--resultado", "Runtime explicito sem chamadas obrigatorias"])
+                self.assertEqual(codigo, 0, erro)
+                conferido = provas.conferir()
+                self.assertEqual(conferido["status"], "DONE")
+                self.assertTrue(conferido["fecho_valido"])
+
+    def test_runtime_ausente_e_chave_codex_na_politica_seguem_recusados(self):
+        self.politica["agentes_obrigatorios"]["cursor"] = ["manutencao"]
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        self.contrato["trilha"] = "manutencao"
+        contrato_path = self.raiz / "contrato-runtime-ausente.yaml"
+        contrato_path.write_text(json.dumps(self.contrato), encoding="utf-8")
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--sessao", "sessao-cli-sem-runtime", "iniciar", str(contrato_path)])
+        self.assertEqual(codigo, 2)
+        self.assertIn("Runtime explicito", erro)
+
+        self.politica["agentes_obrigatorios"]["codex"] = ["manutencao"]
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        provas = Provas(self.raiz, self.politica["registros_raiz"], "sessao-politica-codex", runtime="codex")
+        with self.assertRaisesRegex(ValueError, "agentes_obrigatorios deve ser configurado por runtime"):
+            provas.politica()
+
     def test_teste_ativado_exige_prova_de_subagente_test_observado(self):
         self.ativar("manutencao")
         self.contrato["trilha"] = "manutencao"
