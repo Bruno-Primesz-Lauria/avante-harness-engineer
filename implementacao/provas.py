@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 from uuid import uuid4
 
-from formas import dentro, exigir, relativo, validar, validar_dados
+from formas import dentro, exigir, nao_verificados_sandbox, relativo, validar, validar_dados
 import yaml
 
 IGNORADOS = {".git", ".venv", ".execucoes", ".fixtures", "__pycache__", ".pytest_cache"}
@@ -120,6 +120,26 @@ def alterados(antes, depois):
                   if antes.get(r) != depois.get(r) and "diretorio" not in (antes.get(r), depois.get(r)))
 
 
+def operacao_bundle(comando):
+    """Operação, target, perfil e seleção literais de um `databricks bundle <operação>`."""
+    achado = re.search(r"\bbundle\s+(validate|plan|deploy|run)\b", comando)
+    exigir(achado is not None, "Comando do criterio nao e uma operacao de bundle conhecida")
+    derivado = dict(operacao=achado.group(1),
+                    selecao=sorted(v.strip("'\"") for v in re.findall(r"--select[ =](\S+)", comando)))
+    for campo, flags in (("target", "-t|--target"), ("perfil", "-p|--profile")):
+        valor = re.search(rf"(?:^|\s)(?:{flags})[ =](\S+)", comando)
+        if valor:
+            derivado[campo] = valor.group(1).strip("'\"")
+    return derivado
+
+
+def compor(declarado, observado):
+    """O que o núcleo observa não é declarado à mão; se vier declarado, precisa coincidir."""
+    for campo, valor in observado.items():
+        exigir(declarado.get(campo, valor) == valor, f"Campo {campo} diverge do observado")
+    return {**declarado, **observado}
+
+
 def anotar(lista, itens):
     lista.extend(i for i in dict.fromkeys(itens) if i not in lista)
 
@@ -177,7 +197,8 @@ class Provas:
                produtor=None, schema_versao=None):
         produtores = {"contrato": "coordenador", "brief": "coordenador",
                       "teste": "executor_teste", "guarda": "hook", "inspecao": "coordenador",
-                      "ataque": "refute", "triagem": "coordenador", "chamada": "adaptador"}
+                      "ataque": "refute", "triagem": "coordenador", "chamada": "adaptador",
+                      "diagnostico": "coordenador", "sandbox": "dab", "paridade": "test"}
         evento = dict(schema_versao=schema_versao or estado.get("schema_versao", "3.1"),
                       tipo=tipo, exemplo=False,
                       execucao_id=estado["execucao_id"], fatia_id="principal",
@@ -366,7 +387,11 @@ class Provas:
             vigia = estado.get("vigilancia_superficie")
             if vigia is None or chamada_id in vigia["abertas"]:
                 return False
-            atual = retrato(self.raiz, self.vigiados(ler(pasta / "contrato.yaml")["dados"]))
+            contrato = ler(pasta / "contrato.yaml")["dados"]
+            atual = retrato(self.raiz, self.vigiados(contrato))
+            if (papel in {"config", "implement"} and self.exige_diagnostico(estado.get("trilha", contrato["trilha"]))
+                    and not self.diagnosticos_validos(pasta, estado)):
+                anotar(vigia["pendencias"], [f"escrita_sem_diagnostico:{papel}:{chamada_id}"])
             if vigia["abertas"]:
                 for janela in vigia["abertas"].values():
                     janela["sobreposta"] = True
@@ -544,6 +569,119 @@ class Provas:
             self.atualizar(pasta, estado)
             return {"decisao": dados["decisao"], "evidencia_ref": ref}
 
+    def exige_diagnostico(self, trilha):
+        """A trilha roteia o diagnóstico como capacidade obrigatória do coordenador."""
+        rota = yaml.safe_load(ROTEAMENTO.read_text(encoding="utf-8"))
+        return any(passo.get("capacidade") == "diagnostico" and passo.get("capacidade_obrigatoria")
+                   for passo in rota["trilhas"][trilha]["fluxo"])
+
+    def diagnosticos_validos(self, pasta, estado):
+        eventos = (self.registrado(pasta, estado, r) for r in estado.get("diagnosticos", []))
+        return [e for e in eventos if e is not None and e["tipo"] == "diagnostico"]
+
+    def diagnosticar(self, dados, produtor=None):
+        """Registra o diagnóstico da correção; sem ele a escrita de config ou implement não é aceita (C6)."""
+        pasta = self.pasta()
+        exigir(pasta is not None, "Nenhuma fatia ativa")
+        validar_dados("diagnostico", dados, "3.2")
+        produtor = produtor or "coordenador"
+        exigir(produtor in {"coordenador", "map"}, "Produtor de diagnostico invalido")
+        with trava(pasta):
+            estado = self.estado(pasta)
+            contrato = ler(pasta / "contrato.yaml")["dados"]
+            criterio = next((c for c in contrato["aceite"] if c["id"] == dados["criterio_reproducao"]), None)
+            exigir(criterio is not None and criterio["tipo"] in TIPOS_TESTE,
+                   "Criterio de reproducao ausente do contrato")
+            ref = self.evento(pasta, estado, "diagnostico", dados, "baseline.json",
+                              max(1, estado["tentativa"]), produtor=produtor, schema_versao="3.2")
+            estado.setdefault("diagnosticos", []).append({"ref": ref, "sha256": hash_arquivo(dentro(pasta, ref))})
+            estado["fecho"] = None
+            self.atualizar(pasta, estado)
+            return {"base": dados["base"], "evidencia_ref": ref}
+
+    def teste_do_criterio(self, pasta, estado, contrato, criterio_id, tipo):
+        """Critério do tipo e o registro teste atual do comando dele, ao que sandbox e paridade se ligam."""
+        criterio = next((c for c in contrato["aceite"] if c["id"] == criterio_id), None)
+        exigir(criterio is not None and criterio["tipo"] == tipo, f"Criterio {tipo} ausente do contrato")
+        registro = estado["provas"].get(criterio_id)
+        teste = self.registrado(pasta, estado, registro) if registro else None
+        exigir(teste is not None and teste["tipo"] == "teste",
+               "Rode o comando do criterio e confira o resultado antes de registrar")
+        return criterio, registro, teste
+
+    def plan_compativel(self, dados):
+        """Recibo de plan legível, do mesmo target, perfil e seleção, com os arquivos do plan inalterados."""
+        if dados.get("plan_ref") is None:
+            return None
+        try:
+            recibo = ler(dentro(self.registros, dados["plan_ref"]))
+            return (recibo["target"] == dados["target"] and recibo["selecao"] == sorted(dados["selecao"]) and
+                    recibo["perfil_sha256"] == hash_bytes(dados["perfil"].encode()) and
+                    all(hash_arquivo(i["caminho"]) == i["sha256"] for i in recibo["estado"]))
+        except (OSError, ValueError, KeyError, TypeError):
+            return False
+
+    def registrar_sandbox(self, criterio_id, declarado):
+        """Registra o ambiente de um critério `ambiente`, ligado ao teste do comando por ref e hash (C6).
+
+        O agente declara só o que observou (plan_ref, identidade, destinos, coordenação). Operação,
+        target, perfil e seleção vêm do comando contratado; cwd, resultado e teste_ref, do teste observado.
+        """
+        pasta = self.pasta()
+        exigir(pasta is not None, "Nenhuma fatia ativa")
+        exigir(isinstance(declarado, dict), "Registro de ambiente invalido")
+        with trava(pasta):
+            estado = self.estado(pasta)
+            contrato = ler(pasta / "contrato.yaml")["dados"]
+            criterio, registro, teste = self.teste_do_criterio(pasta, estado, contrato, criterio_id, "ambiente")
+            exigir(criterio.get("autorizacao_ref"), "Criterio ambiente sem autorizacao_ref")
+            d = teste["dados"]
+            observado = dict(operacao_bundle(d["comando"]), cwd=d["cwd"], resultado=d["resultado"],
+                             autorizacao_ref=criterio["autorizacao_ref"], teste_ref=registro["ref"])
+            politica = ler(self.politica_path) if self.politica_path.is_file() else {}
+            if politica.get("bundle_nome"):
+                observado["bundle"] = politica["bundle_nome"]
+            dados = compor(dict(declarado, plan_ref=declarado.get("plan_ref")), observado)
+            dados = compor(dados, dict(plan_estado_compativel=self.plan_compativel(dados)))
+            ref = self.evento(pasta, estado, "sandbox", dados, teste["manifesto_ref"],
+                              max(1, estado["tentativa"]), produtor="dab", schema_versao="3.2")
+            estado.setdefault("sandbox", {})[criterio_id] = dict(
+                ref=ref, sha256=hash_arquivo(dentro(pasta, ref)),
+                teste_ref=registro["ref"], teste_sha256=registro["sha256"])
+            estado["fecho"] = None
+            self.atualizar(pasta, estado)
+            return {"resultado": dados["resultado"], "nao_verificado": nao_verificados_sandbox(dados),
+                    "evidencia_ref": ref}
+
+    def registrar_paridade(self, criterio_id, declarado):
+        """Registra a paridade de um critério `paridade`, ligada ao teste do comando por ref e hash (C6).
+
+        O resultado é do núcleo: divergência pendente reprova mesmo com exit 0.
+        """
+        pasta = self.pasta()
+        exigir(pasta is not None, "Nenhuma fatia ativa")
+        exigir(isinstance(declarado, dict), "Registro de paridade invalido")
+        with trava(pasta):
+            estado = self.estado(pasta)
+            contrato = ler(pasta / "contrato.yaml")["dados"]
+            _, registro, teste = self.teste_do_criterio(pasta, estado, contrato, criterio_id, "paridade")
+            divergencias = declarado.get("divergencias")
+            pendente = isinstance(divergencias, list) and any(
+                isinstance(i, dict) and i.get("estado") == "pendente" for i in divergencias)
+            resultado = teste["dados"]["resultado"]
+            if resultado == "pass" and pendente:
+                resultado = "fail"
+            dados = compor(declarado, dict(criterio_id=criterio_id, resultado=resultado,
+                                           teste_ref=registro["ref"]))
+            ref = self.evento(pasta, estado, "paridade", dados, teste["manifesto_ref"],
+                              max(1, estado["tentativa"]), produtor="test", schema_versao="3.2")
+            estado.setdefault("paridades", {})[criterio_id] = dict(
+                ref=ref, sha256=hash_arquivo(dentro(pasta, ref)),
+                teste_ref=registro["ref"], teste_sha256=registro["sha256"])
+            estado["fecho"] = None
+            self.atualizar(pasta, estado)
+            return {"resultado": resultado, "evidencia_ref": ref}
+
     def antes(self, chamada, comando, cwd, versao_runtime, agente_id=None):
         pasta = self.pasta()
         if pasta is None:
@@ -666,7 +804,9 @@ class Provas:
                 pasta, estado.get("manifestos_autorizacao", {}).get(c["id"]))
             vinculado = (agentes_test is None or c["tipo"] not in TIPOS_TESTE or
                          (e is not None and e["dados"].get("agente_id") in agentes_test))
-            atendido = provado and autorizado and vinculado
+            extras = self.exigencias_formas(pasta, estado, c, estado["provas"].get(c["id"]), ativa,
+                                            plano) if provado and c["tipo"] in {"ambiente", "paridade"} else []
+            atendido = provado and autorizado and vinculado and not extras
             item = dict(id=c["id"], atendido=atendido, validade="valida" if atendido else "nao_verificada")
             if e is not None:
                 item["evidencia_ref"] = registro["ref"]
@@ -677,7 +817,35 @@ class Provas:
                 faltam.append("autorizacao_ambiente:" + c["id"])
             if c["obrigatorio"] and provado and not vinculado:
                 faltam.append("teste_fora_do_test:" + c["id"])
+            if c["obrigatorio"]:
+                faltam.extend(extras)
         return saida, faltam
+
+    def exigencias_formas(self, pasta, estado, c, prova, ativa, plano):
+        """Ambiente e paridade: o registro da forma ligado ao teste atual; exigido com a trilha ativada.
+
+        Registro existente e reprovado, obsoleto ou fora do papel bloqueia também sem a chave.
+        """
+        sandbox = c["tipo"] == "ambiente"
+        forma, papel = ("sandbox", "dab") if sandbox else ("paridade", "test")
+        registro = estado.get("sandbox" if sandbox else "paridades", {}).get(c["id"])
+        if registro is None:
+            return [f"{forma}_ausente:{c['id']}"] if ativa else []
+        e = self.registrado(pasta, estado, registro)
+        if e is None or e["tipo"] != forma:
+            return [f"{forma}_invalido:{c['id']}"]
+        d = e["dados"]
+        if (registro["teste_ref"], registro["teste_sha256"], d["teste_ref"]) != (prova["ref"], prova["sha256"], prova["ref"]):
+            return [f"{forma}_obsoleto:{c['id']}"]
+        faltam = [f"{forma}_reprovado:{c['id']}"] if d["resultado"] != "pass" else []
+        if ativa and any(p["papel"] == papel for p in plano) and d.get("agente_id") not in self.agentes_do_papel(
+                pasta, estado, papel):
+            faltam.append(f"{forma}_fora_do_{papel}:{c['id']}")
+        if sandbox:
+            faltam += [f"sandbox_nao_verificado:{campo}:{c['id']}" for campo in nao_verificados_sandbox(d)]
+            if d["plan_ref"] is not None and not self.plan_compativel(d):
+                faltam.append(f"sandbox_plan_obsoleto:{c['id']}")
+        return faltam
 
     def chamadas_validas(self, pasta, estado):
         """Chamadas observadas íntegras, com o evento do adaptador que as sustenta."""
@@ -764,6 +932,8 @@ class Provas:
             if any(c["papel"] == "refute" for c in plano):
                 faltam.extend(self.revisao_faltante(pasta, estado, trilha))
             faltam.extend(self.pendencias_superficie(pasta, estado))
+            if self.exige_diagnostico(trilha) and not self.diagnosticos_validos(pasta, estado):
+                faltam.append("diagnostico:ausente")
         return criterios, faltam
 
     def fechar(self, status, resultado):

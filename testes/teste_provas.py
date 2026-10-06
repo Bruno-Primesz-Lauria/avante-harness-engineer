@@ -1,5 +1,6 @@
 """Provas persistidas e protocolos Cursor, com processos e arquivos locais."""
 import copy
+from hashlib import sha256
 import io
 import json
 import os
@@ -715,7 +716,7 @@ class ProvasTestes(unittest.TestCase):
         self.contrato.update(trilha="manutencao", superficie=["src/a.py"])
         criterio = self.contrato["aceite"][0]
         criterio.update(tipo="ambiente", autorizacao_ref="docs/autorizacao.txt")
-        criterio["verificacao"].update(comando="databricks bundle validate", caminhos=["src"])
+        criterio["verificacao"].update(comando="databricks bundle validate -t sandbox -p teste", caminhos=["src"])
         self.politica["agentes_obrigatorios"]["cursor"] = ["manutencao"]
         (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
         self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-a", runtime="cursor")
@@ -739,9 +740,13 @@ class ProvasTestes(unittest.TestCase):
         self.assertEqual(self.p.chamadas_faltantes(pasta, self.p.estado(pasta)), [])
         with self.assertRaisesRegex(ValueError, "c1"):
             self.p.fechar("DONE", "Nao pode sem resultado observado da operacao")
-        self.assertTrue(self.p.antes("op-1", "databricks bundle validate", str(self.raiz), "teste"))
-        self.assertEqual(self.p.depois("op-1", "databricks bundle validate", 0, "ok")["resultado"], "pass")
+        self.assertTrue(self.p.antes("op-1", "databricks bundle validate -t sandbox -p teste", str(self.raiz), "teste"))
+        self.assertEqual(self.p.depois("op-1", "databricks bundle validate -t sandbox -p teste", 0, "ok")["resultado"], "pass")
         self.revisar(agente_id="sub-3")
+        with self.assertRaisesRegex(ValueError, "sandbox_ausente:c1"):
+            self.p.fechar("DONE", "Nao pode sem o registro de ambiente")
+        self.p.registrar_sandbox("c1", dict(identidade="nao_verificado", destinos_resolvidos=["nao_verificado"],
+                                            coordenacao="nao_verificado", agente_id="sub-4"))
         self.assertEqual(self.p.fechar("DONE", "Operacao autorizada observada")["status"], "DONE")
 
         autorizacao.write_text("Autorizacao editada", encoding="utf-8")
@@ -1134,6 +1139,347 @@ class ProvasTestes(unittest.TestCase):
         self.assertEqual(codigo, 0, erro)
         self.assertEqual(json.loads(saida)["decisao"], "descartado")
         self.assertEqual(json.loads(self.chamar_adaptador_prova([*base, "estado"])[1])["pendencias"], [])
+
+    def diagnostico_declarado(self, **extras):
+        return dict(dict(sintoma="A carga termina sem as linhas do dia", hipotese_causa="O filtro exclui o ultimo dia",
+                         base="derived", evidencia_ref="baseline.json", criterio_reproducao="c1",
+                         proximo_passo="Reproduzir com o filtro corrigido"), **extras)
+
+    def test_diagnosticar_registra_na_fatia_e_confere_o_criterio_de_reproducao(self):
+        self.iniciar()
+        resultado = self.p.diagnosticar(self.diagnostico_declarado())
+        pasta = self.p.pasta()
+        evento = ler(pasta / resultado["evidencia_ref"])
+        self.assertEqual((evento["tipo"], evento["produtor"], evento["schema_versao"]),
+                         ("diagnostico", "coordenador", "3.2"))
+        self.p.diagnosticar(self.diagnostico_declarado(base="direct"), produtor="map")
+        self.assertEqual(len(self.p.estado(pasta)["diagnosticos"]), 2)
+        with self.assertRaisesRegex(ValueError, "Criterio de reproducao"):
+            self.p.diagnosticar(self.diagnostico_declarado(criterio_reproducao="nenhum"))
+        with self.assertRaisesRegex(ValueError, "Produtor de diagnostico"):
+            self.p.diagnosticar(self.diagnostico_declarado(), produtor="refute")
+        with self.assertRaisesRegex(ValueError, "base"):
+            self.p.diagnosticar(self.diagnostico_declarado(base="chute"))
+        with self.assertRaisesRegex(ValueError, "Evidencia ausente"):
+            self.p.diagnosticar(self.diagnostico_declarado(evidencia_ref="logs/nao-existe.txt"))
+
+    def test_diagnostico_com_criterio_que_nao_e_de_teste_e_recusado(self):
+        (self.raiz / "docs/nota.md").write_text("fato", encoding="utf-8")
+        self.contrato["aceite"].append(dict(id="doc", tipo="inspecao_documental", obrigatorio=False,
+            esperado="Fonte conferida", verificacao={"caminhos": ["docs/nota.md"],
+            "checagens": [{"id": "fonte", "esperado": "Fonte sustenta"}], "produtor": "coordenador"}))
+        self.iniciar()
+        with self.assertRaisesRegex(ValueError, "Criterio de reproducao"):
+            self.p.diagnosticar(self.diagnostico_declarado(criterio_reproducao="doc"))
+
+    def test_correcao_ativada_sem_diagnostico_bloqueia_a_escrita_e_o_done(self):
+        self.ativar("correcao")
+        self.iniciar()
+        self.chamar("call-repro", "test")
+        self.escrever("call-implement", "implement", "src/a.py", "# correcao sem diagnostico\n")
+        self.assertIn("diagnostico:ausente", self.pendencias_atuais())
+        self.assertIn("escrita_sem_diagnostico:implement:call-implement", self.pendencias_atuais())
+        with self.assertRaisesRegex(ValueError, "diagnostico:ausente"):
+            self.p.fechar("DONE", "Nao pode sem diagnostico")
+        # Registrar depois nao desfaz a escrita que ja aconteceu sem ele.
+        self.p.diagnosticar(self.diagnostico_declarado())
+        self.assertNotIn("diagnostico:ausente", self.pendencias_atuais())
+        self.assertIn("escrita_sem_diagnostico:implement:call-implement", self.pendencias_atuais())
+        self.assertEqual(self.p.fechar("BLOCKED", "Escrita antes do diagnostico")["status"], "BLOCKED")
+
+        self.iniciar()
+        self.p.diagnosticar(self.diagnostico_declarado())
+        self.chamar("call-repro-2", "test")
+        self.escrever("call-implement-2", "implement", "src/a.py", "# correcao diagnosticada\n")
+        self.chamar("call-test", "test")
+        self.executar(agente_id="call-test")
+        self.chamar("call-refute", "refute")
+        self.revisar(agente_id="call-refute")
+        self.assertEqual(self.pendencias_atuais(), [])
+        self.assertEqual(self.p.fechar("DONE", "Correcao com diagnostico anterior a escrita")["status"], "DONE")
+
+    def test_diagnostico_adulterado_deixa_de_valer_e_chave_vazia_dispensa(self):
+        self.ativar("correcao")
+        self.iniciar()
+        self.p.diagnosticar(self.diagnostico_declarado())
+        pasta = self.p.pasta()
+        registro = self.p.estado(pasta)["diagnosticos"][0]
+        evento = ler(pasta / registro["ref"])
+        evento["dados"]["hipotese_causa"] = "Outra hipotese"
+        (pasta / registro["ref"]).write_text(json.dumps(evento), encoding="utf-8")
+        self.assertIn("diagnostico:ausente", self.pendencias_atuais())
+        self.p.fechar("BLOCKED", "Registro adulterado")
+        # Fora da chave, a correcao fecha como antes, sem diagnostico.
+        self.contrato["trilha"] = "manutencao"
+        self.iniciar()
+        self.executar()
+        self.assertEqual(self.p.fechar("DONE", "Trilha fora da chave")["status"], "DONE")
+
+    def iniciar_ambiente(self, comando, ativado=True):
+        (self.raiz / "docs/autorizacao.txt").write_text("Autorizacao da tarefa", encoding="utf-8")
+        (self.raiz / "docs/insumo.txt").write_text("insumo do plan", encoding="utf-8")
+        self.contrato.update(trilha="manutencao", superficie=["src/a.py"])
+        criterio = self.contrato["aceite"][0]
+        criterio.update(tipo="ambiente", autorizacao_ref="docs/autorizacao.txt")
+        criterio["verificacao"].update(comando=comando, caminhos=["src"])
+        if ativado:
+            self.ativar("manutencao")
+        self.iniciar()
+        if ativado:
+            for chamada_id, papel in (("call-prep", "test"), ("call-implement", "implement"),
+                                      ("call-refute", "refute"), ("call-dab", "dab")):
+                self.chamar(chamada_id, papel)
+            self.revisar(agente_id="call-refute")
+
+    def operar(self, comando, chamada="op-1", codigo=0):
+        self.assertTrue(self.p.antes(chamada, comando, str(self.raiz), "teste"))
+        return self.p.depois(chamada, comando, codigo, "saida")["resultado"]
+
+    def gravar_plan(self, selecao=("etapa",), perfil="teste", target="sandbox"):
+        plan = self.raiz / ".execucoes/plans/p.json"
+        plan.parent.mkdir(parents=True, exist_ok=True)
+        insumo = self.raiz / "docs/insumo.txt"
+        plan.write_text(json.dumps(dict(
+            target=target, selecao=sorted(selecao), perfil_sha256=sha256(perfil.encode()).hexdigest(),
+            estado=[dict(caminho=str(insumo), sha256=sha256(insumo.read_bytes()).hexdigest())])),
+            encoding="utf-8")
+        return "plans/p.json"
+
+    def ambiente_declarado(self, **extras):
+        return dict(dict(identidade="nao_verificado", destinos_resolvidos=["nao_verificado"],
+                         coordenacao="nao_verificado", agente_id="call-dab"), **extras)
+
+    def test_sandbox_deploy_com_identidade_ou_destino_nao_verificado_nao_fecha_ambiente(self):
+        comando = "databricks bundle deploy -t sandbox -p teste --select etapa"
+        self.iniciar_ambiente(comando)
+        self.assertEqual(self.operar(comando), "pass")
+        plan_ref = self.gravar_plan()
+        registro = self.p.registrar_sandbox("c1", self.ambiente_declarado(plan_ref=plan_ref))
+        self.assertEqual(registro["resultado"], "pass")
+        self.assertEqual(registro["nao_verificado"], ["identidade", "destinos_resolvidos"])
+        evento = ler(self.p.pasta() / registro["evidencia_ref"])
+        self.assertEqual((evento["tipo"], evento["produtor"]), ("sandbox", "dab"))
+        self.assertEqual(evento["dados"]["operacao"], "deploy")
+        self.assertEqual(evento["dados"]["selecao"], ["etapa"])
+        self.assertEqual(evento["dados"]["plan_estado_compativel"], True)
+        self.assertEqual(evento["dados"]["autorizacao_ref"], "docs/autorizacao.txt")
+        self.assertEqual(self.pendencias_atuais(), ["sandbox_nao_verificado:identidade:c1",
+                                                    "sandbox_nao_verificado:destinos_resolvidos:c1"])
+        with self.assertRaisesRegex(ValueError, "sandbox_nao_verificado:destinos_resolvidos:c1"):
+            self.p.fechar("DONE", "Destino nao verificado")
+
+        registro = self.p.registrar_sandbox("c1", self.ambiente_declarado(
+            plan_ref=plan_ref, identidade="usuario@avante", destinos_resolvidos=["cat.sch.tab"]))
+        self.assertEqual(registro["nao_verificado"], [])
+        self.assertEqual(self.p.fechar("DONE", "Deploy com identidade e destinos verificados")["status"], "DONE")
+        # O plan e pre-condicao do deploy: arquivo do plan alterado depois invalida o registro.
+        (self.raiz / "docs/insumo.txt").write_text("insumo alterado", encoding="utf-8")
+        self.assertEqual(self.pendencias_atuais(), ["sandbox_plan_obsoleto:c1"])
+        self.assertFalse(self.p.conferir()["fecho_valido"])
+
+    def test_sandbox_recusa_registro_que_diverge_do_observado_ou_sem_plan_compativel(self):
+        comando = "databricks bundle deploy -t sandbox -p teste --select etapa"
+        self.iniciar_ambiente(comando)
+        self.operar(comando)
+        base = self.ambiente_declarado(plan_ref=self.gravar_plan(), identidade="usuario@avante",
+                                       destinos_resolvidos=["cat.sch.tab"])
+        for campo, valor in (("target", "dev"), ("perfil", "outro"), ("operacao", "validate"),
+                             ("selecao", ["outra"]), ("cwd", "/x"), ("resultado", "fail"),
+                             ("teste_ref", "tentativas/001/eventos/outro.yaml"),
+                             ("autorizacao_ref", "docs/outra.txt"), ("bundle", "outro_bundle"),
+                             ("plan_estado_compativel", False)):
+            with self.subTest(campo=campo), self.assertRaisesRegex(ValueError, "diverge do observado"):
+                self.p.registrar_sandbox("c1", dict(base, **{campo: valor}))
+        with self.assertRaisesRegex(ValueError, "plan valido"):
+            self.p.registrar_sandbox("c1", dict(base, plan_ref=self.gravar_plan(selecao=("outra",))))
+        self.gravar_plan()
+        with self.assertRaisesRegex(ValueError, "plan valido"):
+            self.p.registrar_sandbox("c1", dict(base, plan_ref="plans/nao-existe.json"))
+        with self.assertRaisesRegex(ValueError, "plan valido"):
+            self.p.registrar_sandbox("c1", {k: v for k, v in base.items() if k != "plan_ref"})
+        with self.assertRaises(ValueError):
+            self.p.registrar_sandbox("c1", dict(base, plan_ref="../fora.json"))
+        with self.assertRaisesRegex(ValueError, "Criterio ambiente ausente"):
+            self.p.registrar_sandbox("nenhum", base)
+        with self.assertRaisesRegex(ValueError, "Registro de ambiente invalido"):
+            self.p.registrar_sandbox("c1", ["nao", "e", "objeto"])
+        self.assertNotIn("sandbox", self.p.estado(self.p.pasta()))
+
+    def test_sandbox_exige_dab_observado_e_fica_obsoleto_se_o_comando_roda_de_novo(self):
+        comando = "databricks bundle validate -t sandbox -p teste"
+        self.iniciar_ambiente(comando)
+        self.assertEqual(self.operar(comando, "op-1", codigo=1), "fail")
+        registro = self.p.registrar_sandbox("c1", self.ambiente_declarado())
+        self.assertEqual(registro["resultado"], "fail")
+        self.assertEqual(self.operar(comando, "op-2"), "pass")
+        self.assertEqual(self.pendencias_atuais(), ["sandbox_obsoleto:c1"])
+        for declarado in (self.ambiente_declarado(agente_id="call-prep"),
+                          {k: v for k, v in self.ambiente_declarado().items() if k != "agente_id"}):
+            self.p.registrar_sandbox("c1", declarado)
+            self.assertEqual(self.pendencias_atuais(), ["sandbox_fora_do_dab:c1"])
+        self.p.registrar_sandbox("c1", self.ambiente_declarado())
+        self.assertEqual(self.pendencias_atuais(), [])
+        self.assertEqual(self.p.fechar("DONE", "Validate com dab observado")["status"], "DONE")
+
+    def test_sandbox_adulterado_perde_o_vinculo_e_chave_vazia_nao_exige_registro(self):
+        comando = "databricks bundle validate -t sandbox -p teste"
+        self.iniciar_ambiente(comando, ativado=False)
+        self.operar(comando)
+        self.assertEqual(self.pendencias_atuais(), [])  # Sem chave, o exit 0 continua bastando.
+        self.p.registrar_sandbox("c1", self.ambiente_declarado())
+        self.assertEqual(self.pendencias_atuais(), [])
+        pasta = self.p.pasta()
+        registro = self.p.estado(pasta)["sandbox"]["c1"]
+        evento = ler(pasta / registro["ref"])
+        evento["dados"]["identidade"] = "alguem@avante"
+        (pasta / registro["ref"]).write_text(json.dumps(evento), encoding="utf-8")
+        self.assertEqual(self.pendencias_atuais(), ["sandbox_invalido:c1"])  # Registro existente vale em qualquer modo.
+        self.p.registrar_sandbox("c1", self.ambiente_declarado())
+        self.operar(comando, "op-2")
+        self.assertEqual(self.pendencias_atuais(), ["sandbox_obsoleto:c1"])
+
+    def paridade_declarada(self, **extras):
+        return dict(dict(recorte="Competencia 2026-09",
+                         insumos=[dict(nome="origem", identificador="a@v1"),
+                                  dict(nome="destino", identificador="b@v1")],
+                         contas=[dict(id="soma", descricao="Soma do valor", valor_origem="10.50",
+                                      valor_destino="10.00", diferenca="0.50")],
+                         divergencias=[dict(id="d1", estado="pendente")], agente_id="call-test"), **extras)
+
+    def test_paridade_com_divergencia_pendente_e_exit_zero_fica_fail_e_recusa_done(self):
+        self.contrato["aceite"][0]["tipo"] = "paridade"
+        self.ativar("manutencao")
+        self.passagem_completa_de_manutencao()
+        self.revisar(agente_id="call-refute")
+        with self.assertRaisesRegex(ValueError, "paridade_ausente:c1"):
+            self.p.fechar("DONE", "Nao pode sem o registro de paridade")
+
+        registro = self.p.registrar_paridade("c1", self.paridade_declarada())
+        self.assertEqual(registro["resultado"], "fail")  # Exit 0 do comando, mas gap sem explicacao.
+        evento = ler(self.p.pasta() / registro["evidencia_ref"])
+        self.assertEqual((evento["tipo"], evento["produtor"], evento["dados"]["criterio_id"]),
+                         ("paridade", "test", "c1"))
+        self.assertEqual(self.pendencias_atuais(), ["paridade_reprovado:c1"])
+        with self.assertRaisesRegex(ValueError, "paridade_reprovado:c1"):
+            self.p.fechar("DONE", "Gap pendente")
+        with self.assertRaisesRegex(ValueError, "diverge do observado"):
+            self.p.registrar_paridade("c1", self.paridade_declarada(resultado="pass"))
+
+        explicada = dict(id="d1", estado="explicada", explicacao="Arredondamento da origem",
+                         evidencia_ref="contrato.yaml")
+        self.assertEqual(self.p.registrar_paridade(
+            "c1", self.paridade_declarada(divergencias=[explicada]))["resultado"], "pass")
+        self.assertEqual(self.pendencias_atuais(), [])
+        self.assertEqual(self.p.fechar("DONE", "Gap explicado com evidencia")["status"], "DONE")
+
+    def test_paridade_exige_test_observado_teste_atual_e_registro_integro(self):
+        self.contrato["aceite"][0]["tipo"] = "paridade"
+        self.ativar("manutencao")
+        self.passagem_completa_de_manutencao()
+        self.revisar(agente_id="call-refute")
+        sem_gap = self.paridade_declarada(contas=[dict(id="linhas", descricao="Linhas", valor_origem="7",
+                                                       valor_destino="7", diferenca="0")], divergencias=[])
+        for declarado in (dict(sem_gap, agente_id="call-refute"),
+                          {k: v for k, v in sem_gap.items() if k != "agente_id"}):
+            self.assertEqual(self.p.registrar_paridade("c1", declarado)["resultado"], "pass")
+            self.assertEqual(self.pendencias_atuais(), ["paridade_fora_do_test:c1"])
+        self.p.registrar_paridade("c1", sem_gap)
+        self.assertEqual(self.pendencias_atuais(), [])
+        pasta = self.p.pasta()
+        registro = self.p.estado(pasta)["paridades"]["c1"]
+        self.assertEqual(registro["teste_ref"], self.p.estado(pasta)["provas"]["c1"]["ref"])
+        self.assertEqual(ler(pasta / registro["ref"])["manifesto_ref"],
+                         ler(pasta / registro["teste_ref"])["manifesto_ref"])
+
+        # O comando de paridade roda de novo: o registro anterior deixa de valer.
+        self.executar(chamada="t2", agente_id="call-test")
+        self.assertEqual(self.pendencias_atuais(), ["paridade_obsoleto:c1"])
+        self.p.registrar_paridade("c1", sem_gap)
+        evento = ler(pasta / self.p.estado(pasta)["paridades"]["c1"]["ref"])
+        evento["dados"]["recorte"] = "Outro recorte"
+        (pasta / self.p.estado(pasta)["paridades"]["c1"]["ref"]).write_text(json.dumps(evento), encoding="utf-8")
+        self.assertEqual(self.pendencias_atuais(), ["paridade_invalido:c1"])
+
+    def test_paridade_exige_criterio_do_tipo_e_comando_ja_executado(self):
+        self.iniciar()  # c1 e do tipo teste.
+        with self.assertRaisesRegex(ValueError, "Criterio paridade ausente"):
+            self.p.registrar_paridade("c1", self.paridade_declarada())
+        self.contrato["aceite"][0]["tipo"] = "paridade"
+        self.p.fechar("BLOCKED", "Troca de contrato")
+        self.iniciar()
+        with self.assertRaisesRegex(ValueError, "Rode o comando do criterio"):
+            self.p.registrar_paridade("c1", self.paridade_declarada())
+        with self.assertRaisesRegex(ValueError, "Registro de paridade invalido"):
+            self.p.registrar_paridade("c1", "texto")
+
+    def test_chave_vazia_paridade_sem_registro_fecha_e_registro_reprovado_bloqueia(self):
+        self.contrato["aceite"][0]["tipo"] = "paridade"
+        self.iniciar()
+        self.executar()
+        self.assertEqual(self.pendencias_atuais(), [])
+        self.p.registrar_paridade("c1", self.paridade_declarada())
+        self.assertEqual(self.pendencias_atuais(), ["paridade_reprovado:c1"])
+        with self.assertRaisesRegex(ValueError, "paridade_reprovado:c1"):
+            self.p.fechar("DONE", "Gap pendente")
+
+    def test_fatia_sem_registros_c6_nao_ganha_chaves_de_estado_e_continua_legivel(self):
+        self.ativar("manutencao")
+        self.passagem_completa_de_manutencao()
+        self.revisar(agente_id="call-refute")
+        self.assertEqual(self.p.fechar("DONE", "Fluxo anterior ao C6")["status"], "DONE")
+        estado = self.p.estado(self.p.pasta())
+        self.assertFalse({"diagnosticos", "sandbox", "paridades"} & set(estado))
+        self.assertTrue(self.p.conferir()["fecho_valido"])
+
+    def test_cli_registra_diagnostico_sandbox_e_paridade(self):
+        (self.raiz / "docs/autorizacao.txt").write_text("Autorizacao da tarefa", encoding="utf-8")
+        comando = "databricks bundle validate -t sandbox -p teste"
+        self.contrato["aceite"] = [
+            dict(id="c1", tipo="paridade", obrigatorio=True, esperado="Origem e destino iguais",
+                 verificacao=dict(comando="python teste.py", cwd=".", caminhos=["src"])),
+            dict(id="c2", tipo="ambiente", obrigatorio=True, esperado="Validate no sandbox",
+                 autorizacao_ref="docs/autorizacao.txt",
+                 verificacao=dict(comando=comando, cwd=".", caminhos=["src"]))]
+        base = ["--sessao", "sessao-a"]
+        codigo, _, erro = self.chamar_adaptador_prova([*base, "iniciar", self.arquivo_yaml("c.yaml", self.contrato)])
+        self.assertEqual(codigo, 0, erro)
+
+        codigo, saida, erro = self.chamar_adaptador_prova([*base, "diagnosticar", self.arquivo_yaml(
+            "d.yaml", dict(self.diagnostico_declarado(criterio_reproducao="c1"), produtor="map"))])
+        self.assertEqual(codigo, 0, erro)
+        self.assertEqual(json.loads(saida)["base"], "derived")
+        self.assertEqual(ler(self.p.pasta() / json.loads(saida)["evidencia_ref"])["produtor"], "map")
+        codigo, _, erro = self.chamar_adaptador_prova([*base, "diagnosticar", self.arquivo_yaml(
+            "d2.yaml", self.diagnostico_declarado(criterio_reproducao="nenhum"))])
+        self.assertEqual(codigo, 2)
+        self.assertIn("Criterio de reproducao", erro)
+
+        self.executar()
+        self.operar(comando, "op-1")
+        entrada = dict(self.paridade_declarada(divergencias=[], contas=[dict(
+            id="linhas", descricao="Linhas", valor_origem="7", valor_destino="7", diferenca="0")]),
+            criterio_id="c1")
+        del entrada["agente_id"]
+        codigo, saida, erro = self.chamar_adaptador_prova(
+            [*base, "registrar-paridade", self.arquivo_yaml("p.yaml", entrada)])
+        self.assertEqual(codigo, 0, erro)
+        self.assertEqual(json.loads(saida)["resultado"], "pass")
+        codigo, saida, erro = self.chamar_adaptador_prova([*base, "registrar-sandbox", self.arquivo_yaml(
+            "s.yaml", dict(self.ambiente_declarado(), criterio_id="c2"))])
+        self.assertEqual(codigo, 0, erro)
+        self.assertEqual(json.loads(saida)["resultado"], "pass")
+        codigo, saida, erro = self.chamar_adaptador_prova([*base, "fechar", "--resultado", "Registros do C6"])
+        self.assertEqual(codigo, 0, erro)
+        self.assertEqual(json.loads(saida)["status"], "DONE")
+
+        for subcomando, dados in (("registrar-sandbox", dict(self.ambiente_declarado(), criterio_id="nenhum")),
+                                  ("registrar-sandbox", self.ambiente_declarado()),
+                                  ("registrar-paridade", ["lista"]), ("diagnosticar", ["lista"])):
+            with self.subTest(subcomando=subcomando):
+                codigo, _, erro = self.chamar_adaptador_prova(
+                    [*base, subcomando, self.arquivo_yaml("ruim.yaml", dados)])
+                self.assertEqual(codigo, 2)
+                self.assertIn("[prova]", erro)
 
     def test_hook_sem_diretorio_com_criterio_de_inspecao_libera_shell(self):
         (self.raiz / "docs/nota.md").write_text("fato", encoding="utf-8")

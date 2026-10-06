@@ -7,7 +7,7 @@ import unittest
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "implementacao"))
-from formas import validar, validar_dados
+from formas import nao_verificados_sandbox, validar, validar_dados
 
 
 class FormasTestes(unittest.TestCase):
@@ -22,6 +22,9 @@ class FormasTestes(unittest.TestCase):
             "inspecao": "refute",
             "chamada": "adaptador",
             "guarda": "hook",
+            "diagnostico": "coordenador",
+            "sandbox": "dab",
+            "paridade": "test",
         }
         return {
             "schema_versao": versao,
@@ -212,6 +215,142 @@ class FormasTestes(unittest.TestCase):
             self.verificar(dict(evento, produtor="coordenador"))
         with self.assertRaisesRegex(ValueError, "Produtor invalido"):
             self.verificar(dict(evento, produtor="nao_listado"))
+
+    def diagnostico(self, **extras):
+        return dict({
+            "sintoma": "A carga termina sem as linhas do dia",
+            "hipotese_causa": "O filtro de data exclui o ultimo dia",
+            "base": "derived",
+            "evidencia_ref": "formas/catalogo.yaml",
+            "criterio_reproducao": "reproduz",
+            "proximo_passo": "Rodar o criterio com o filtro corrigido",
+        }, **extras)
+
+    def test_diagnostico_aceita_coordenador_e_map_e_recusa_o_resto(self):
+        self.verificar(self.evento("diagnostico", self.diagnostico()))
+        self.verificar(self.evento("diagnostico", self.diagnostico(), produtor="map"))
+        with self.assertRaisesRegex(ValueError, "Produtor nao corresponde"):
+            self.verificar(self.evento("diagnostico", self.diagnostico(), produtor="refute"))
+        for campo in self.diagnostico():
+            invalido = self.diagnostico()
+            del invalido[campo]
+            with self.subTest(ausente=campo), self.assertRaises(ValueError):
+                self.verificar(self.evento("diagnostico", invalido))
+        for alteracao in (dict(base="chute"), dict(sintoma="  "), dict(proximo_passo=""),
+                          dict(criterio_reproducao="../x"), dict(evidencia_ref="ausente.txt"),
+                          dict(extra="campo")):
+            with self.subTest(alteracao=alteracao), self.assertRaises(ValueError):
+                self.verificar(self.evento("diagnostico", self.diagnostico(**alteracao)))
+        with self.assertRaisesRegex(ValueError, "Forma ainda nao adotada"):
+            self.verificar(self.evento("diagnostico", self.diagnostico(), versao="3.1"))
+
+    def sandbox(self, **extras):
+        return dict({
+            "operacao": "validate", "cwd": ".", "bundle": "saneamento_migracao", "target": "sandbox",
+            "perfil": "teste", "selecao": [], "plan_ref": None, "plan_estado_compativel": None,
+            "autorizacao_ref": "evidencia/autorizacao.md", "identidade": "nao_verificado",
+            "destinos_resolvidos": ["nao_verificado"], "coordenacao": "nao_verificado",
+            "resultado": "pass", "teste_ref": "formas/catalogo.yaml",
+        }, **extras)
+
+    def deploy(self, **extras):
+        return self.sandbox(**dict(
+            dict(operacao="deploy", selecao=["etapa"], plan_ref="plans/p.json", plan_estado_compativel=True,
+                 identidade="usuario@avante", destinos_resolvidos=["catalogo.esquema.tabela"]), **extras))
+
+    def test_sandbox_aceita_validate_com_campos_nao_verificados_e_deploy_com_plan(self):
+        self.verificar(self.evento("sandbox", self.sandbox()))
+        self.verificar(self.evento("sandbox", self.deploy()))
+        self.verificar(self.evento("sandbox", self.sandbox(operacao="plan", plan_ref="plans/p.json")))
+        with self.assertRaisesRegex(ValueError, "Produtor nao corresponde"):
+            self.verificar(self.evento("sandbox", self.sandbox(), produtor="coordenador"))
+        with self.assertRaisesRegex(ValueError, "Forma ainda nao adotada"):
+            self.verificar(self.evento("sandbox", self.sandbox(), versao="3.1"))
+
+    def test_sandbox_recusa_deploy_aprovado_sem_plan_valido_e_campos_malformados(self):
+        for alteracao in (dict(plan_ref=None), dict(plan_estado_compativel=False),
+                          dict(plan_estado_compativel=None)):
+            with self.subTest(alteracao=alteracao), self.assertRaisesRegex(ValueError, "plan valido"):
+                self.verificar(self.evento("sandbox", self.deploy(**alteracao)))
+        # Deploy reprovado pode ficar registrado sem plan: o registro nao aprova nada.
+        self.verificar(self.evento("sandbox", self.deploy(resultado="fail", plan_ref=None,
+                                                          plan_estado_compativel=None)))
+        for alteracao in (dict(destinos_resolvidos=[]), dict(destinos_resolvidos=["a", "nao_verificado"]),
+                          dict(destinos_resolvidos=[" "]), dict(selecao=[""]), dict(identidade=" "),
+                          dict(target=""), dict(operacao="destroy"), dict(plan_ref="../p.json"),
+                          dict(teste_ref="ausente.json"), dict(agente_id="../x"), dict(extra="campo")):
+            with self.subTest(alteracao=alteracao), self.assertRaises(ValueError):
+                self.verificar(self.evento("sandbox", self.sandbox(**alteracao)))
+        invalido = self.sandbox()
+        del invalido["teste_ref"]
+        with self.assertRaises(ValueError):
+            self.verificar(self.evento("sandbox", invalido))
+
+    def test_sandbox_nao_verificado_depende_da_operacao(self):
+        nao_verificado = self.sandbox()
+        self.assertEqual(nao_verificados_sandbox(dict(nao_verificado, operacao="validate")), [])
+        self.assertEqual(nao_verificados_sandbox(dict(nao_verificado, operacao="plan")), [])
+        self.assertEqual(nao_verificados_sandbox(dict(nao_verificado, operacao="deploy")),
+                         ["identidade", "destinos_resolvidos"])
+        self.assertEqual(nao_verificados_sandbox(dict(nao_verificado, operacao="run")),
+                         ["identidade", "destinos_resolvidos", "coordenacao"])
+        self.assertEqual(nao_verificados_sandbox(self.deploy()), [])
+        self.assertEqual(nao_verificados_sandbox(self.deploy(destinos_resolvidos=["nao_verificado"])),
+                         ["destinos_resolvidos"])
+
+    def paridade(self, **extras):
+        return dict({
+            "criterio_id": "paridade", "recorte": "Competencia 2026-09",
+            "insumos": [{"nome": "origem", "identificador": "tabela_a@v12"},
+                        {"nome": "destino", "identificador": "tabela_b@v7"}],
+            "contas": [{"id": "linhas", "descricao": "Contagem de linhas", "valor_origem": "100",
+                        "valor_destino": "100", "diferenca": "0"}],
+            "divergencias": [], "resultado": "pass", "teste_ref": "formas/catalogo.yaml",
+        }, **extras)
+
+    def conta_com_gap(self):
+        return {"id": "soma", "descricao": "Soma do valor", "valor_origem": "10.50",
+                "valor_destino": "10.00", "diferenca": "0.50"}
+
+    def test_paridade_aceita_igualdade_e_gap_explicado(self):
+        self.verificar(self.evento("paridade", self.paridade()))
+        explicada = {"id": "d1", "estado": "explicada", "explicacao": "Arredondamento da origem",
+                     "evidencia_ref": "implementacao/formas.py"}
+        self.verificar(self.evento("paridade", self.paridade(
+            contas=[self.conta_com_gap()], divergencias=[explicada])))
+        pendente = {"id": "d1", "estado": "pendente"}
+        self.verificar(self.evento("paridade", self.paridade(
+            contas=[self.conta_com_gap()], divergencias=[pendente], resultado="fail")))
+        with self.assertRaisesRegex(ValueError, "Produtor nao corresponde"):
+            self.verificar(self.evento("paridade", self.paridade(), produtor="coordenador"))
+        with self.assertRaisesRegex(ValueError, "Forma ainda nao adotada"):
+            self.verificar(self.evento("paridade", self.paridade(), versao="3.1"))
+
+    def test_paridade_com_gap_pendente_ou_inexplicado_nao_pode_ser_pass(self):
+        pendente = {"id": "d1", "estado": "pendente"}
+        with self.assertRaisesRegex(ValueError, "pendente"):
+            self.verificar(self.evento("paridade", self.paridade(
+                contas=[self.conta_com_gap()], divergencias=[pendente])))
+        with self.assertRaisesRegex(ValueError, "diferenca nas contas"):
+            self.verificar(self.evento("paridade", self.paridade(contas=[self.conta_com_gap()])))
+
+    def test_paridade_recusa_conta_e_divergencia_malformadas(self):
+        explicada = {"id": "d1", "estado": "explicada", "explicacao": "Motivo"}
+        for alteracao in (
+                dict(divergencias=[explicada]),  # sem evidencia
+                dict(divergencias=[dict(explicada, evidencia_ref="implementacao/formas.py", explicacao=" ")]),
+                dict(divergencias=[dict(explicada, evidencia_ref="ausente.txt")]),
+                dict(divergencias=[{"id": "d1", "estado": "pendente"}, {"id": "d1", "estado": "pendente"}],
+                     resultado="fail"),
+                dict(contas=[dict(self.conta_com_gap(), diferenca="0.40")]),
+                dict(contas=[dict(self.conta_com_gap(), valor_origem="muito")]),
+                dict(contas=[dict(self.conta_com_gap(), valor_origem="NaN", diferenca="NaN")]),
+                dict(contas=[]), dict(insumos=[]), dict(recorte=" "),
+                dict(insumos=[{"nome": "origem", "identificador": " "}]),
+                dict(divergencias=[{"id": "d1", "estado": "talvez"}]), dict(agente_id="../x"),
+                dict(extra="campo")):
+            with self.subTest(alteracao=alteracao), self.assertRaises(ValueError):
+                self.verificar(self.evento("paridade", self.paridade(**alteracao)))
 
     def test_eventos_31_adotados_continuam_legiveis_e_candidatas_nao(self):
         legado = self.evento("guarda", {

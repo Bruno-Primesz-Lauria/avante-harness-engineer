@@ -4,10 +4,10 @@ fonte: ../PLANO-AGENTES-TRILHAS.md
 nota: >
   Contrato de campos. Exemplos com exemplo:true ficam em testes/teste_formas.py e
   o consumidor operacional os rejeita. As formas contrato, guarda, brief,
-  teste, ataque, triagem, inspecao e chamada estao adotadas; C2 validou os
-  payloads 3.2. diagnostico, sandbox e paridade estao aprovadas (2026-10-05)
-  e sao adotadas no pacote C6; ate la o validador as recusa. As demais candidatas
-  nao serao adotadas (PLANO-AGENTES-TRILHAS.md, secao 3.3). Registros 3.1 continuam legiveis. A adocao do schema nao
+  teste, ataque, triagem, inspecao, chamada, diagnostico, sandbox e paridade
+  estao adotadas; C2 validou os payloads 3.2 e C6 adotou as tres ultimas
+  (aprovadas em 2026-10-05). As demais candidatas nao serao adotadas
+  (PLANO-AGENTES-TRILHAS.md, secao 3.3). Registros 3.1 continuam legiveis. A adocao do schema nao
   significa que os eventos dos runtimes foram observados: P0.4 (Claude Code)
   e P0.5 (Cursor) foram observadas; a ativacao depende de G2.
   Baseline, manifesto e estado estao descritos em evidencia/uso.md.
@@ -18,9 +18,9 @@ compatibilidade:
     revisao_independente_presumida: false
     verificacao_contrato_obrigatoria: [comando, cwd, caminhos]
   registro_3_2:
-    novas_formas_adotadas: [ataque, triagem, inspecao, chamada]
+    novas_formas_adotadas: [ataque, triagem, inspecao, chamada, diagnostico, sandbox, paridade]
     habilitadas: true
-    nota: "C2 validou a escrita e leitura das formas; a ativacao de cada runtime depende de G2. Na forma teste, agente_id e exit_code_origem sao opcionais e aditivos (decisao P0.3 de 2026-10-05)."
+    nota: "C2 validou a escrita e leitura das formas; a ativacao de cada runtime depende de G2. Na forma teste, agente_id e exit_code_origem sao opcionais e aditivos (decisao P0.3 de 2026-10-05). diagnostico, sandbox e paridade (C6) sao aditivas: a fatia so ganha as chaves de estado ao registrar uma delas."
 produtores_permitidos:
   - coordenador
   - hook
@@ -52,6 +52,8 @@ enums:
   decisao_guarda: [permitir, negar, nao_aplica]
   validade: [valida, obsoleta, nao_verificada]
   origem_exit_code: [campo_resultado, evento_sucesso, texto_falha]
+  operacao_sandbox: [validate, plan, deploy, run]
+  estado_divergencia: [explicada, pendente]
 envelope:
   - campo: schema_versao
     tipo: string
@@ -317,33 +319,84 @@ formas:
 
   - id: diagnostico
     titulo: Diagnóstico
-    estado: aprovada
+    estado: adotada
     pacote: C6
     uso: "Registro mínimo do diagnóstico na correção: causa sustentada ou hipótese com próximo experimento, ligada ao critério de reprodução."
     produtor: [coordenador, map]
     consumidor: [executor, coordenador]
-    validacao: "Na correção ativada, a escrita de config ou implement exige um diagnóstico na tentativa; criterio_reproducao existe no contrato."
-    campos: [sintoma, hipotese_causa, base, evidencia_ref, criterio_reproducao, proximo_passo]
+    validacao: "Campos de texto nao vazios. criterio_reproducao identifica um criterio de teste do contrato (conferido pelo nucleo ao registrar). Na correcao ativada, a escrita de config ou implement exige um diagnostico registrado antes da janela do subagente; sem ele o fecho recusa DONE. evidencia_ref fica dentro da fatia (log, baseline ou contrato)."
+    dados:
+      sintoma: {tipo: string, obrigatorio: true}
+      hipotese_causa: {tipo: string, obrigatorio: true}
+      base: {tipo: enum, enum: base_prova, obrigatorio: true}
+      evidencia_ref: {tipo: caminho, obrigatorio: true}
+      criterio_reproducao: {tipo: string, obrigatorio: true}
+      proximo_passo: {tipo: string, obrigatorio: true}
 
   - id: sandbox
     titulo: Ambiente
-    estado: aprovada
+    estado: adotada
     pacote: C6
     uso: "Pré-condições distintas por operação. Nomes são confirmação adicional."
     produtor: dab
     consumidor: coordenador
-    validacao: "Deploy exige plan válido e compatível. Run de ingestão ou espinha exige coordenação verificada para escopo e rodada. Guardas e autorização anteriores ao efeito. Vinculado à chamada dab observada e ao registro teste do comando. Campo sem observação integrada vale nao_verificado e não aprova critério ambiente obrigatório."
-    campos: [operacao, cwd, bundle, target, perfil, selecao, plan_ref, plan_estado_compativel, autorizacao_ref, identidade, destinos_resolvidos, coordenacao, resultado, teste_ref]
+    validacao: "Deploy exige plan valido e compativel; run exige tambem coordenacao verificada. Vinculado ao registro teste do comando (teste_ref e hash) e, com a trilha ativada, a uma chamada dab observada (agente_id). Campo sem observacao integrada vale nao_verificado (destinos_resolvidos: lista unica [nao_verificado]); em deploy, identidade e destinos nao_verificado, e em run tambem coordenacao, nao aprovam criterio ambiente obrigatorio. resultado pass em deploy ou run exige plan_ref e plan_estado_compativel verdadeiro. plan_ref e relativo a registros_raiz; autorizacao_ref, a raiz do harness."
+    dados:
+      operacao: {tipo: enum, enum: operacao_sandbox, obrigatorio: true}
+      cwd: {tipo: string, obrigatorio: true}
+      bundle: {tipo: string, obrigatorio: true}
+      target: {tipo: string, obrigatorio: true}
+      perfil: {tipo: string, obrigatorio: true}
+      selecao: {tipo: lista, item: string, obrigatorio: true}
+      plan_ref: {tipo: caminho, anulavel: true, obrigatorio: true}
+      plan_estado_compativel: {tipo: bool, anulavel: true, obrigatorio: true}
+      autorizacao_ref: {tipo: caminho, obrigatorio: true}
+      identidade: {tipo: string, obrigatorio: true}
+      destinos_resolvidos: {tipo: lista, item: string, min: 1, obrigatorio: true}
+      coordenacao: {tipo: string, obrigatorio: true}
+      resultado: {tipo: enum, enum: resultado_prova, obrigatorio: true}
+      teste_ref: {tipo: caminho, obrigatorio: true}
+      agente_id: {tipo: string}
 
   - id: paridade
     titulo: Paridade
-    estado: aprovada
+    estado: adotada
     pacote: C6
     uso: "Mesmo recorte, insumos identificados, cálculo reproduzível e gap tratado."
     produtor: test
     consumidor: coordenador
-    validacao: "Diferença deriva dos insumos do mesmo recorte. Gap sem explicação comprovada impede aprovação quando paridade é obrigatória, mesmo com exit 0. Vinculado ao registro teste do comando de paridade e ao hash do artefato."
-    campos: [criterio_id, recorte, insumos, contas, divergencias, resultado, teste_ref]
+    validacao: "Cada conta traz valores como decimais e diferenca igual a valor_origem menos valor_destino. Diferenca diferente de zero exige ao menos uma divergencia. Divergencia explicada exige explicacao e evidencia_ref; pendente impede pass, mesmo com exit 0. Vinculado ao registro teste do comando de paridade (teste_ref e hash) e ao estado testado: o manifesto_ref do envelope e o do teste. Com a trilha ativada, agente_id precisa casar com uma chamada test concluida."
+    dados:
+      criterio_id: {tipo: string, obrigatorio: true}
+      recorte: {tipo: string, obrigatorio: true}
+      insumos:
+        tipo: lista
+        obrigatorio: true
+        min: 1
+        item:
+          nome: {tipo: string, obrigatorio: true}
+          identificador: {tipo: string, obrigatorio: true}
+      contas:
+        tipo: lista
+        obrigatorio: true
+        min: 1
+        item:
+          id: {tipo: string, obrigatorio: true}
+          descricao: {tipo: string, obrigatorio: true}
+          valor_origem: {tipo: string, obrigatorio: true}
+          valor_destino: {tipo: string, obrigatorio: true}
+          diferenca: {tipo: string, obrigatorio: true}
+      divergencias:
+        tipo: lista
+        obrigatorio: true
+        item:
+          id: {tipo: string, obrigatorio: true}
+          estado: {tipo: enum, enum: estado_divergencia, obrigatorio: true}
+          explicacao: {tipo: string}
+          evidencia_ref: {tipo: caminho}
+      resultado: {tipo: enum, enum: resultado_prova, obrigatorio: true}
+      teste_ref: {tipo: caminho, obrigatorio: true}
+      agente_id: {tipo: string}
 
   - id: resposta
     titulo: Resposta

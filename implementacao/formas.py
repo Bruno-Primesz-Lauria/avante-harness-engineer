@@ -1,5 +1,6 @@
 """Valida as formas adotadas (3.1 e 3.2), usando o catalogo existente."""
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
 import re
@@ -8,8 +9,13 @@ import yaml
 
 CATALOGO = Path(__file__).resolve().parents[1] / "formas/catalogo.yaml"
 ADOTADAS = {"contrato", "guarda", "brief", "teste"}
-FORMAS_32 = {"ataque", "triagem", "inspecao", "chamada"}
+FORMAS_32 = {"ataque", "triagem", "inspecao", "chamada", "diagnostico", "sandbox", "paridade"}
 VERSOES = {"3.1", "3.2"}
+NAO_VERIFICADO = "nao_verificado"
+# Campos de sandbox sem observação integrada que não podem ficar nao_verificado, por operação.
+EXIGIDOS_VERIFICADOS = {"validate": (), "plan": (),
+                        "deploy": ("identidade", "destinos_resolvidos"),
+                        "run": ("identidade", "destinos_resolvidos", "coordenacao")}
 
 
 def exigir(condicao, motivo):
@@ -114,6 +120,21 @@ def validar_verificacao_contrato(dados, versao, regras):
                        f"Produtor de {criterio['tipo']} invalido")
 
 
+def nao_verificados_sandbox(dados):
+    """Campos que a operação exige verificados e que ainda valem nao_verificado."""
+    return [c for c in EXIGIDOS_VERIFICADOS[dados["operacao"]]
+            if NAO_VERIFICADO in (dados[c] if isinstance(dados[c], list) else [dados[c]])]
+
+
+def decimal(valor):
+    try:
+        numero = Decimal(valor)
+    except InvalidOperation:
+        raise ValueError("Valor de conta nao e decimal") from None
+    exigir(numero.is_finite(), "Valor de conta nao e decimal")
+    return numero
+
+
 def validar_dados(tipo, dados, schema_versao="3.1"):
     c = catalogo()
     exigir(isinstance(schema_versao, str) and schema_versao in VERSOES,
@@ -171,6 +192,48 @@ def validar_dados(tipo, dados, schema_versao="3.1"):
         exigir(len(ids) == len(set(ids)), "Checagem duplicada")
         exigir(re.fullmatch(r"[0-9a-fA-F]{64}", dados["manifesto_sha256"]) is not None,
                "Hash do manifesto invalido")
+    if tipo == "diagnostico":
+        identificador(dados["criterio_reproducao"])
+        for campo in ("sintoma", "hipotese_causa", "proximo_passo"):
+            exigir(bool(dados[campo].strip()), f"Diagnostico exige {campo}")
+    if tipo == "sandbox":
+        if "agente_id" in dados:
+            identificador(dados["agente_id"])
+        for campo in ("cwd", "bundle", "target", "perfil", "identidade", "coordenacao"):
+            exigir(bool(dados[campo].strip()), f"Sandbox exige {campo}")
+        exigir(all(item.strip() for item in dados["selecao"] + dados["destinos_resolvidos"]),
+               "Selecao e destinos nao aceitam item vazio")
+        exigir(NAO_VERIFICADO not in dados["destinos_resolvidos"] or dados["destinos_resolvidos"] == [NAO_VERIFICADO],
+               "nao_verificado em destinos_resolvidos deve ser o unico item")
+        if dados["operacao"] in ("deploy", "run") and dados["resultado"] == "pass":
+            exigir(dados["plan_ref"] is not None and dados["plan_estado_compativel"] is True,
+                   "Deploy ou run com pass exige plan valido e compativel")
+    if tipo == "paridade":
+        identificador(dados["criterio_id"])
+        if "agente_id" in dados:
+            identificador(dados["agente_id"])
+        exigir(bool(dados["recorte"].strip()), "Paridade exige recorte")
+        exigir(all(i["nome"].strip() and i["identificador"].strip() for i in dados["insumos"]),
+               "Insumos exigem nome e identificador")
+        for lista in ("contas", "divergencias"):
+            ids = [identificador(item["id"]) for item in dados[lista]]
+            exigir(len(ids) == len(set(ids)), f"{lista}: identificador duplicado")
+        com_diferenca = False
+        for conta in dados["contas"]:
+            origem, destino, diferenca = (decimal(conta[c]) for c in ("valor_origem", "valor_destino", "diferenca"))
+            exigir(diferenca == origem - destino, "Conta inconsistente: diferenca difere de origem menos destino")
+            com_diferenca = com_diferenca or diferenca != 0
+        pendente = False
+        for item in dados["divergencias"]:
+            if item["estado"] == "explicada":
+                exigir(bool(item.get("explicacao", "").strip()) and bool(item.get("evidencia_ref")),
+                       "Divergencia explicada exige explicacao e evidencia")
+            else:
+                pendente = True
+        if dados["resultado"] == "pass":
+            exigir(not pendente, "Pass exige nenhuma divergencia pendente")
+            exigir(not com_diferenca or bool(dados["divergencias"]),
+                   "Pass com diferenca nas contas exige divergencia explicada")
     if tipo == "chamada":
         identificador(dados["chamada_id"])
         nomes = []
@@ -226,6 +289,13 @@ def validar(evento, raiz, execucao_id, fatia_id):
         refs.append(dados["revisao_ref"])
         if dados.get("evidencia_resolucao_ref"):
             refs.append(dados["evidencia_resolucao_ref"])
+    elif evento["tipo"] == "diagnostico":
+        refs.append(dados["evidencia_ref"])
+    elif evento["tipo"] == "sandbox":
+        refs.append(dados["teste_ref"])
+    elif evento["tipo"] == "paridade":
+        refs.append(dados["teste_ref"])
+        refs += [i["evidencia_ref"] for i in dados["divergencias"] if i.get("evidencia_ref")]
     elif evento["tipo"] == "inspecao":
         digest = sha256(manifesto.read_bytes()).hexdigest()
         exigir(digest.lower() == dados["manifesto_sha256"].lower(),

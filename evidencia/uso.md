@@ -66,6 +66,24 @@ As pendências de violação ficam na fatia; para recomeçar, feche com `BLOCKED
 
 Chamada de subagente depois do `DONE` entra na fatia ainda ativa e anula o fecho, de propósito: trabalho novo pede fecho novo. Repetir um papel conta como retorno e reabre as etapas seguintes do plano, com o mesmo ID de chamada prevista. Para trabalho fora da fatia, feche-a e use outra sessão, ou rode antes do `iniciar`.
 
+### Diagnóstico, ambiente e paridade
+
+Três subcomandos registram as formas `diagnostico`, `sandbox` e `paridade` (3.2, aditivas). Leem um YAML, validam a forma e gravam o registro na tentativa; o agente não escreve registro à mão. O que o núcleo observa não é declarado: se vier no YAML, precisa coincidir, senão o registro é recusado (`Campo X diverge do observado`).
+
+```powershell
+py -3 adaptadores/prova.py --sessao ID diagnosticar .execucoes/diagnostico.yaml
+py -3 adaptadores/prova.py --sessao ID registrar-sandbox .execucoes/sandbox.yaml
+py -3 adaptadores/prova.py --sessao ID registrar-paridade .execucoes/paridade.yaml
+```
+
+- `diagnosticar`: `sintoma`, `hipotese_causa`, `base` (`direct`, `derived` ou `reported`), `evidencia_ref` (dentro da fatia: log de verificação, `baseline.json` ou `contrato.yaml`), `criterio_reproducao` (ID de um critério de teste do contrato) e `proximo_passo`; `produtor` opcional (`coordenador`, padrão, ou `map`). Na correção com a trilha ativada, o fecho aponta `diagnostico:ausente` sem um diagnóstico íntegro. Se config ou implement abrir a janela antes dele, a fatia guarda `escrita_sem_diagnostico:<papel>:<chamada>`: registrar depois não desfaz a escrita, e o caminho é fechar com `BLOCKED` e abrir fatia nova, como nas pendências de superfície. Fora da chave, nada disso vale.
+- `registrar-sandbox`: `criterio_id` (critério `ambiente` com `autorizacao_ref`; o comando dele já precisa ter rodado), `plan_ref` (recibo de plan, relativo a `registros_raiz`, por exemplo `plans/<id>.json`; só em deploy e run), `identidade`, `destinos_resolvidos` (lista), `coordenacao` e `agente_id` opcional. O núcleo deriva operação, target, perfil e seleção do comando do critério, e `cwd`, `resultado` e `teste_ref` do registro `teste` atual; calcula `plan_estado_compativel` relendo o recibo (target, seleção, perfil e hashes dos arquivos do plan). A operação precisa ser `bundle validate`, `plan`, `deploy` ou `run` literal no comando.
+- Campo sem observação integrada vale `nao_verificado` (em `destinos_resolvidos`, a lista `[nao_verificado]`). Em `deploy`, `identidade` e `destinos_resolvidos` `nao_verificado` não aprovam o critério; em `run`, `coordenacao` também. `validate` e `plan` não têm efeito externo e dispensam esses campos. Hoje a CLI não observa identidade nem destinos, então um deploy contratado fica em `sandbox_nao_verificado:<campo>:<critério>` até essa integração existir. Deploy ou run `pass` exige `plan_ref` e plan compatível.
+- `registrar-paridade`: `criterio_id` (critério `paridade`), `recorte`, `insumos` (`nome` e `identificador`), `contas` (`id`, `descricao`, `valor_origem`, `valor_destino` e `diferenca`, em decimal, com a diferença igual a origem menos destino), `divergencias` (`id`, `estado` `explicada` ou `pendente`; a explicada leva `explicacao` e `evidencia_ref` dentro da fatia) e `agente_id` opcional. O `resultado` é do núcleo: exit 0 com divergência pendente grava `fail`, e diferença nas contas sem divergência listada é recusada. Quem registra uma divergência `pendente` fecha a paridade em `fail`.
+- Vínculo: o registro guarda `teste_ref` e o hash do registro `teste` do comando, e o evento usa o manifesto desse teste, então rodar o comando de novo ou editar os caminhos de verificação o torna obsoleto. Com a trilha ativada, o `agente_id` precisa casar com uma chamada concluída de `dab` (sandbox) ou `test` (paridade) quando o papel está no plano.
+
+Pendências no fecho, por critério `ambiente` ou `paridade` provado pelo teste: `sandbox_ausente` e `paridade_ausente` (só com a trilha ativada), `<forma>_invalido` (registro alterado), `<forma>_obsoleto` (o comando rodou de novo), `<forma>_reprovado`, `sandbox_fora_do_dab` e `paridade_fora_do_test`, `sandbox_nao_verificado:<campo>` e `sandbox_plan_obsoleto`. Registro existente reprovado, inválido ou obsoleto bloqueia também sem a chave; a ausência dele só bloqueia com a trilha ativada.
+
 Pergunta simples não usa contrato. Só a fatia iniciada entra neste fluxo.
 
 ## Contrato de entrada
@@ -136,7 +154,7 @@ Sem `exitCode` inteiro ou sem eventos, não há prova de sucesso. Não complete 
 
 ## Plan e deploy
 
-Um `plan` declarado como verificação gera recibo só após resultado observado com exit 0 e estado preservado. O pré-hook não grava sucesso. O recibo sozinho não libera deploy: ele é pré-condição. O deploy só passa em `sandbox` com `deploy_sandbox_autorizado` na política; identidade autenticada, destinos e cobertura completa do plan não estão integrados. Não implementado: `run`.
+Um `plan` declarado como verificação gera recibo só após resultado observado com exit 0 e estado preservado. O pré-hook não grava sucesso. O recibo sozinho não libera deploy: ele é pré-condição. O deploy só passa em `sandbox` com `deploy_sandbox_autorizado` na política; identidade autenticada, destinos e cobertura completa do plan não estão integrados. Não implementado: `run`. Com a trilha ativada, o critério `ambiente` fecha só com o registro `sandbox` (seção acima), e o que não é observado fica `nao_verificado`.
 
 ## Fecho e `stop`
 
