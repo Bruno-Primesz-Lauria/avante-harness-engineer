@@ -34,7 +34,7 @@ EXTENSOES = {
     "docs": {".md", ".rst", ".txt"},
 }
 # Papéis de escrita cuja superfície o núcleo confere por janela de chamada (C5).
-ESCRITORES = {"config", "implement"}
+ESCRITORES = {"config", "implement", "docs"}
 
 
 def agora():
@@ -710,29 +710,44 @@ class Provas:
         return [c["etapa"] for c in plano if c["id"] not in feitas]
 
     def revisao_faltante(self, pasta, estado, trilha):
-        """A última revisão cobre o estado atual e seus achados foram tratados."""
+        """A última revisão cobre o estado atual e seus achados foram tratados.
+
+        Cada refute observado tem a sua revisão registrada, e achado de revisão anterior tem triagem:
+        chamar o refute de novo não descarta o que o anterior achou.
+        """
         revisoes = estado.get("revisoes", [])
         if not revisoes:
             return ["revisao:ausente"]
-        ataque = self.registrado(pasta, estado, revisoes[-1])
+        ataques = [(r["ref"], self.registrado(pasta, estado, r)) for r in revisoes]
+        ataque = ataques[-1][1]
         if ataque is None:
             return ["revisao:invalida"]
         if not self.manifesto_valido(pasta, ataque["manifesto_ref"]):
             return ["revisao:obsoleta"]
         if ataque["dados"].get("agente_id") not in self.agentes_do_papel(pasta, estado, "refute"):
             return ["revisao:fora_do_refute"]
+        revisados = {a["dados"].get("agente_id") for _, a in ataques if a is not None}
+        faltam = [f"revisao:sem_registro:{registro['chamada_id']}"
+                  for registro, e in self.chamadas_validas(pasta, estado)
+                  if registro["papel"] == "refute" and registro["status"] == "concluida" and
+                  not revisados & {i["valor"] for i in e["dados"]["ids_observados"] if i["nome"] == "agente_id"}]
         if trilha == "review":
-            return []  # O veredito é do artefato; a tarefa de revisar fecha mesmo com achados.
+            return faltam  # O veredito é do artefato; a tarefa de revisar fecha mesmo com achados.
         if ataque["dados"]["veredito"] == "inconclusivo":
-            return ["revisao:inconclusiva"]
+            return faltam + ["revisao:inconclusiva"]
         decisoes = {}
         for registro in estado.get("triagens", []):
             t = self.registrado(pasta, estado, registro)
-            if t is not None and t["dados"]["revisao_ref"] == revisoes[-1]["ref"]:
-                decisoes[t["dados"]["achado_id"]] = t["dados"]["decisao"]
+            if t is not None:
+                decisoes[(t["dados"]["revisao_ref"], t["dados"]["achado_id"])] = t["dados"]["decisao"]
+        for ref, anterior in ataques[:-1]:
+            if anterior is not None:
+                faltam.extend(f"achado:{a['id']}:sem_triagem" for a in anterior["dados"]["achados"]
+                              if (ref, a["id"]) not in decisoes)
         # Procedente sobre o estado atual ainda não foi resolvido: a correção muda o estado e pede nova revisão.
-        return [f"achado:{a['id']}:{decisoes.get(a['id'], 'sem_triagem')}"
-                for a in ataque["dados"]["achados"] if decisoes.get(a["id"]) != "descartado"]
+        ultima = revisoes[-1]["ref"]
+        return faltam + [f"achado:{a['id']}:{decisoes.get((ultima, a['id']), 'sem_triagem')}"
+                         for a in ataque["dados"]["achados"] if decisoes.get((ultima, a["id"])) != "descartado"]
 
     def pendencias(self, pasta, estado):
         """Critérios e, com a trilha ativada, chamadas previstas, revisão atual e achados tratados."""

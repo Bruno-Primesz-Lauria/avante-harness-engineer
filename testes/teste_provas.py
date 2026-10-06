@@ -699,7 +699,7 @@ class ProvasTestes(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "chamada:refute"):
             self.p.fechar("DONE", "Correcao sem nova revisao")
         self.chamar("call-refute-2", "refute")
-        self.revisar()
+        self.revisar(agente_id="call-refute-2")
         self.assertEqual(self.p.fechar("DONE", "Achado corrigido e revisado de novo")["status"], "DONE")
 
     def test_achado_descartado_com_motivo_permite_done_e_inconclusivo_nao(self):
@@ -816,6 +816,32 @@ class ProvasTestes(unittest.TestCase):
         (self.raiz / "src/a.py").write_text("# chamada que falhou\n", encoding="utf-8")
         self.assertTrue(self.p.encerrar_chamada("call-config"))
         self.assertIn("superficie_violada:config:src/a.py", self.pendencias_atuais())
+
+    def iniciar_docs(self):
+        (self.raiz / "docs/nota.md").write_text("fato\n", encoding="utf-8")
+        self.contrato.update(trilha="docs", superficie=["docs/nota.md"])
+        self.contrato["aceite"] = [dict(id="doc", tipo="inspecao_documental", obrigatorio=True,
+            esperado="Afirmação sustentada", verificacao={"caminhos": ["docs/nota.md"],
+            "checagens": [{"id": "fonte", "esperado": "A fonte sustenta a afirmação"}],
+            "produtor": "coordenador"})]
+        self.ativar("docs")
+        self.iniciar()
+
+    def test_c5_docs_na_sua_superficie_nao_gera_pendencia(self):
+        self.iniciar_docs()
+        self.assertIn("vigilancia_superficie", self.p.estado(self.p.pasta()))
+        self.escrever("call-docs", "docs", "docs/nota.md", "fato com fonte\n")
+        self.assertFalse([p for p in self.pendencias_atuais() if "superficie" in p or "papel" in p])
+
+    def test_c5_edicao_do_principal_no_documento_impede_done(self):
+        # O-CU 2026-10-06: o coordenador corrigiu o guia sozinho e o núcleo não viu.
+        self.iniciar_docs()
+        self.escrever("call-docs", "docs", "docs/nota.md", "fato com fonte\n")
+        (self.raiz / "docs/nota.md").write_text("principal corrigiu\n", encoding="utf-8")
+        self.assertIn("edicao_fora_do_papel:docs/nota.md", self.pendencias_atuais())
+        self.p.inspecionar("doc", [{"id": "fonte", "resultado": "pass"}])
+        with self.assertRaisesRegex(ValueError, "edicao_fora_do_papel"):
+            self.p.fechar("DONE", "Principal escreveu o documento")
 
     def test_c5_chave_vazia_nao_vigia_superficie(self):
         self.contrato["trilha"] = "manutencao"
@@ -992,6 +1018,28 @@ class ProvasTestes(unittest.TestCase):
         codigo, _, erro = self.chamar_adaptador_prova([*base, "fechar", "--resultado", "Sem chamada"])
         self.assertEqual(codigo, 2)
         self.assertIn("revisao:fora_do_refute", erro)
+
+    def test_refute_observado_sem_revisao_registrada_impede_done(self):
+        # O-CU 2026-10-06: o primeiro refute achou A1, só o segundo, limpo, foi registrado.
+        self.ativar("manutencao")
+        self.passagem_completa_de_manutencao()
+        self.chamar("call-refute-2", "refute")
+        self.revisar(agente_id="call-refute-2")
+        self.assertIn("revisao:sem_registro:call-refute", self.pendencias_atuais())
+        with self.assertRaisesRegex(ValueError, "revisao:sem_registro:call-refute"):
+            self.p.fechar("DONE", "Achado do primeiro refute descartado sem registro")
+
+    def test_achado_de_revisao_anterior_exige_triagem(self):
+        self.ativar("manutencao")
+        self.passagem_completa_de_manutencao()
+        primeira = self.revisar("com_achados", ["A1"])["evidencia_ref"]
+        self.chamar("call-refute-2", "refute")
+        self.revisar(agente_id="call-refute-2")
+        self.assertEqual(self.pendencias_atuais(), ["achado:A1:sem_triagem"])
+        self.p.triar(dict(revisao_ref=primeira, achado_id="A1", decisao="procedente",
+                          responsavel="coordenador", evidencia_resolucao_ref="contrato.yaml"))
+        self.assertEqual(self.pendencias_atuais(), [])
+        self.assertEqual(self.p.fechar("DONE", "Achado tratado e revisado de novo")["status"], "DONE")
 
     def test_cli_triagem_registra_decisao_sobre_achado_da_revisao(self):
         self.ativar("manutencao")

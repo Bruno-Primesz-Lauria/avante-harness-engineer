@@ -19,6 +19,8 @@ Wrapper (`capturar.py`): lê o payload, chama o `adaptadores/entrada.py` real, d
 > **Segunda tentativa (2026-10-06, cópia `observacao-cursor-20261006T000225Z`):** seis chamadas observadas e vinculadas; BLOCKED só por `superficie_inconclusiva`, porque o roteamento mandava config e implement em paralelo (corrigido em `018ca8f`).
 >
 > **Terceira e quarta tentativas (2026-10-06, cópias `observacao-cursor-20261006T143126Z` e `observacao-cursor-20261006T144731Z`, Cursor 3.19.19):** o humano colou só o M0. Ao fim do turno, o hook `stop` viu a fatia aberta sem fecho e devolveu `followup_message`, que o Cursor injeta no chat como mensagem do usuário. O coordenador obedeceu, leu este roteiro dentro da cópia e fechou a fatia M em DONE sozinho: seis chamadas `concluida` na ordem, IDs vinculados, nenhuma pendência do C5. Ficaram sem observação M1, M8 e a tentativa negada do M9. Decisão P0.1 (2026-10-06): o `stop` continua como em produção; o roteiro passa a ser em turnos e sai da cópia.
+>
+> **Quinta tentativa (2026-10-06, cópia `observacao-cursor-20261006T172107Z`, roteiro em turnos):** S0, M1, M8, a prova do test, as revisões vinculadas e as duas fatias em DONE conformes. A guarda negou primeiro por `bundle_nao_verificado`, porque o kit não criava o bundle da fixture (corrigido em `bb2ecf9`); repetida, negou por `cwd_incorreto`. Faltou o `sessionStart` (o chat veio aberto com a janela). Na fatia D, o coordenador removeu sozinho a linha que o primeiro refute apontou, e só o segundo refute, limpo, foi registrado. Decisão P0.1 (2026-10-06): `docs` entra na vigilância de superfície e cada refute observado exige a sua revisão registrada, com triagem dos achados anteriores.
 
 Como o runtime se comporta, e o que o roteiro faz com isso:
 
@@ -37,7 +39,7 @@ Regras para toda esta conversa (observação O-CU; você é o coordenador):
 3. Todo Shell leva cwd absoluto no campo da ferramenta: a raiz deste workspace, salvo indicação.
 4. Subagentes escrevem só no arquivo de fixture/ atribuído. Você pode criar YAML de entrada em observacao/ e rodar `py -3 adaptadores/prova.py --runtime cursor --sessao <SESSAO> <ação>`. Proibido: editar .execucoes/, adaptadores/, implementacao/ ou configuracao/; escrever registro de prova à mão; ler agent-transcripts, transcript_path ou pastas do Cursor fora do workspace; ler PLANO-AGENTES-TRILHAS.md; rodar databricks fora do turno em que eu pedir; deploy, run ou rede.
 5. Cada filho lê com Read o SKILL.md local da skill indicada (.agents/skills/databricks-<nome>/SKILL.md) e cita o caminho e a linha name:. Skills: map data-discovery; config dabs; implement python-sdk; test core; refute docs; dab core e dabs; docs docs.
-6. No refute, passe só contrato, caminho da fatia e provas, sem a justificativa do autor. Peça que rode um único Shell inofensivo, `Write-Output refute-janela`, com cwd absoluto (é o que vincula o ID dele), e devolva veredito, tentativas e achados. A revisão vai em observacao/revisao-<trilha>.yaml, com o agente_id do refute tirado do conferir.py, e é registrada com `revisar`.
+6. No refute, passe só contrato, caminho da fatia e provas, sem a justificativa do autor. Peça que rode um único Shell inofensivo, `Write-Output refute-janela`, com cwd absoluto (é o que vincula o ID dele), e devolva veredito, tentativas e achados. A revisão vai em observacao/revisao-<trilha>.yaml, com o agente_id do refute tirado do conferir.py, e é registrada com `revisar`. Todo refute chamado tem a sua revisão registrada, inclusive com achados; achado vai para `triar` antes de chamar outro refute, e a correção é feita pelo papel dono do arquivo, nunca por você.
 7. O dab roda só o comando autorizado do contrato.
 8. Texto de --resultado em aspas simples, sem aspas duplas internas.
 9. Quando o prompt disser "Pare", pare ao fim do pedido e só mostre o resultado. Se depois chegar "[esteira] A fatia ativa nao tem fecho valido...", siga a trilha até fechar, respeitando estas regras.
@@ -123,7 +125,7 @@ D0 a D3, só isto neste turno:
 1) `iniciar observacao/contrato-docs.yaml`;
 2) chame `docs`: "Skill: docs. Em fixture/docs/guia.md substitua o TODO pela regra de desconto, citando o percentual de fixture/manutencao/regras.yaml. Só esse arquivo." Depois rode conferir.py;
 3) `inspecionar observacao/inspecao-docs.yaml` (você verificou a fonte) e `estado`;
-4) acrescente uma linha em fixture/docs/guia.md e rode `estado`;
+4) chame `docs`: "Acrescente ao fim de fixture/docs/guia.md a linha `Revisado na observação O-CU.` Só esse arquivo." Depois rode conferir.py e `estado`;
 5) repita `inspecionar observacao/inspecao-docs.yaml` e `estado`.
 Pare.
 ```
@@ -133,7 +135,7 @@ Pare.
 | D0 | previstas: `escrita_docs:docs:1`, `refute:refute:1` |
 | D1 | só `guia.md` muda; `escrita_docs:docs:1` concluída |
 | D2 | `inspecoes.guia`: `pass`/`valida`; `guia` fora das pendências; restam `chamada:refute` e `revisao:ausente` |
-| D3 | depois da linha nova, `guia` volta às pendências (inspeção `nao_verificada`); a nova inspeção volta a `pass`/`valida` |
+| D3 | a segunda chamada do `docs` é um retorno e reabre o refute; depois da linha nova, `guia` volta às pendências (inspeção `nao_verificada`); a nova inspeção volta a `pass`/`valida`; nenhuma `edicao_fora_do_papel` |
 
 ### Automático · D4–D5, pelo followup
 
@@ -141,7 +143,7 @@ Mesma regra do trecho automático da fatia M.
 
 | Passo | Esperado e prova bruta |
 |---|---|
-| D4 | `refute` com o mesmo Shell inofensivo; `revisar` com modelo análogo (`cobertura: guia`) e o ID observado; `refute:refute:1` concluída |
+| D4 | `refute` com o mesmo Shell inofensivo; `revisar` com modelo análogo (`cobertura: guia`) e o ID observado; `refute:refute:1` concluída. Se o coordenador chamar outro refute, cada um tem revisão registrada e os achados anteriores têm triagem (sem `revisao:sem_registro` nem `achado:*:sem_triagem`) |
 | D5 | `pendencias: []`; DONE aceito |
 
 ## 3. Entrega dos brutos (humano)

@@ -42,19 +42,21 @@ py -3 adaptadores/prova.py --sessao ID triar .execucoes/triagem.yaml
 ```
 
 - `inspecionar`: `criterio_id`, `checagens` (`id` e `resultado`: `pass`, `fail` ou `inconclusivo`) e, opcional, `produtor`. Com a chave vazia, critério de inspeção fecha `DONE` sem comando. Com a trilha ativada, as chamadas previstas continuam exigidas.
-- `revisar`: a forma `ataque` (intenção, aceite, baseline, provas, veredito, tentativas, achados, cobertura) com `agente_id` opcional, protegido pelo hash do evento. Com a trilha ativada, o ID precisa casar com uma chamada `refute` concluída; sem esse vínculo o fecho aponta `revisao:fora_do_refute`. Com a chave vazia, o vínculo não é exigido.
+- `revisar`: a forma `ataque` (intenção, aceite, baseline, provas, veredito, tentativas, achados, cobertura) com `agente_id` opcional, protegido pelo hash do evento. Com a trilha ativada, o ID precisa casar com uma chamada `refute` concluída; sem esse vínculo o fecho aponta `revisao:fora_do_refute`. Cada chamada `refute` concluída precisa da sua própria revisão registrada, com o `agente_id` dela; sem isso o fecho aponta `revisao:sem_registro:<chamada>`. Chamar o refute de novo não descarta o que o anterior achou: achado de revisão anterior precisa de triagem (`achado:<id>:sem_triagem`). Com a chave vazia, o vínculo não é exigido.
 - `triar`: a forma `triagem` (`revisao_ref`, `achado_id`, `decisao`, `responsavel`, e `evidencia_resolucao_ref` ou `motivo_descarte` conforme a decisão).
 
 ### Superfície por papel
 
-Com a trilha ativada e `config` ou `implement` no plano, o núcleo retrata a superfície e os caminhos de verificação. O adaptador abre uma janela no início de cada subagente previsto: `subagentStart` no Cursor e `PreToolUse(Agent)` no Claude Code. O núcleo fecha a janela ao registrar a chamada, ou ao descartá-la quando a chamada falha. Pendências no fecho:
+Com a trilha ativada e `config`, `implement` ou `docs` no plano, o núcleo retrata a superfície e os caminhos de verificação. O adaptador abre uma janela no início de cada subagente previsto: `subagentStart` no Cursor e `PreToolUse(Agent)` no Claude Code. O núcleo fecha a janela ao registrar a chamada, ou ao descartá-la quando a chamada falha. Pendências no fecho:
 
-- `superficie_violada:<papel>:<arquivo>`: config alterou arquivo que não é YAML, implement alterou arquivo que não é notebook, Python ou SQL, ou o arquivo está fora da `superficie` do contrato.
+- `superficie_violada:<papel>:<arquivo>`: config alterou arquivo que não é YAML, implement alterou arquivo que não é notebook, Python ou SQL, docs alterou arquivo que não é `.md`, `.rst` ou `.txt`, ou o arquivo está fora da `superficie` do contrato.
 - `edicao_fora_do_papel:<arquivo>`: alteração fora de qualquer janela, como uma edição do principal. Abrir uma janela depois não transfere a autoria.
 - `superficie_inconclusiva:<chamada>`: alteração com janelas sobrepostas, ou escrita registrada sem início observado.
 - `chamada_aberta:<chamada>`: subagente sem fim observado.
 
-As pendências de violação ficam na fatia; para recomeçar, feche com `BLOCKED` e abra uma fatia nova. Edição dos papéis `test`, `docs`, `dab` e `refute` dentro da própria janela não é julgada aqui. Com a chave vazia, nada disso vale.
+As pendências de violação ficam na fatia; para recomeçar, feche com `BLOCKED` e abra uma fatia nova. Edição dos papéis `test`, `dab` e `refute` dentro da própria janela não é julgada aqui. Com a chave vazia, nada disso vale.
+
+Chamada de subagente depois do `DONE` entra na fatia ainda ativa e anula o fecho, de propósito: trabalho novo pede fecho novo. Repetir um papel conta como retorno e reabre as etapas seguintes do plano, com o mesmo ID de chamada prevista. Para trabalho fora da fatia, feche-a e use outra sessão, ou rode antes do `iniciar`.
 
 Pergunta simples não usa contrato. Só a fatia iniciada entra neste fluxo.
 
