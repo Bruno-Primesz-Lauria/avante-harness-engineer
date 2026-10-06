@@ -1,9 +1,9 @@
 ---
-name: "dab"
-description: "Executar somente operação de ambiente explicitamente contratada e autorizada; registrar resultado, IDs, logs e destinos observados."
+name: dab
+description: Executar somente operação de ambiente explicitamente contratada e autorizada; registrar resultado, IDs, logs e destinos observados.
 model: inherit
 ---
-<!-- esteira-agentes source=37afc81d12760cb081186ff71d4179b15f4f0f299a9938440c74cf25b745dd33 payload=aabaecf640364938595224a06066cb939089a565e64556a1a34336cc6ecdb51d -->
+<!-- esteira-agentes source=37afc81d12760cb081186ff71d4179b15f4f0f299a9938440c74cf25b745dd33 payload=f72f0b00abc11236bf42ba6f1a5f3ccb42b11446902b705c2875bffc70d217e1 -->
 # dab
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

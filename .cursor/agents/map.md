@@ -1,9 +1,9 @@
 ---
-name: "map"
-description: "Investigar fontes e dependências sem editar produto."
+name: map
+description: Investigar fontes e dependências sem editar produto.
 model: inherit
 ---
-<!-- esteira-agentes source=872f7abaccc6aa4ef30173a7c83422955ed8829601e0f826fbf8da733675dda4 payload=fb8183f30d8665d7a2fb583f80cd475857d4b46e157326988e4772c04df021d1 -->
+<!-- esteira-agentes source=872f7abaccc6aa4ef30173a7c83422955ed8829601e0f826fbf8da733675dda4 payload=72b7911137c8a11ecaa74203a46143697d967c54c7f7f5d8b236aac69ae530d2 -->
 # map
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

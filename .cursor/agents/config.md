@@ -1,9 +1,9 @@
 ---
-name: "config"
-description: "Alterar somente a superfície YAML atribuída pelo contrato."
+name: config
+description: Alterar somente a superfície YAML atribuída pelo contrato.
 model: inherit
 ---
-<!-- esteira-agentes source=eda37cf514ae6fa3e6153b7e8017392904a8b106bf96b09dc94502fcaa60980c payload=7fab72d00abe07e56c6341d8ab86e673e7dc884c938f4d758f71a179596c7806 -->
+<!-- esteira-agentes source=eda37cf514ae6fa3e6153b7e8017392904a8b106bf96b09dc94502fcaa60980c payload=d7b46f5f21fc7fcd59d635d74e259fc0f2d947b1725a92809610692ad9b45138 -->
 # config
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

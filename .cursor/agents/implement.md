@@ -1,9 +1,9 @@
 ---
-name: "implement"
-description: "Alterar somente a superfície de notebook, Python ou SQL atribuída; não mudar o aceite unilateralmente."
+name: implement
+description: Alterar somente a superfície de notebook, Python ou SQL atribuída; não mudar o aceite unilateralmente.
 model: inherit
 ---
-<!-- esteira-agentes source=9f9f84e51772e84913e812ea335c02c1540c4c0e0968d067559a5eb839ec1bf1 payload=8d84e9f0ab7468e30f5d0906c4c54a5fbe89ffe957f642cbf71d6676acc04320 -->
+<!-- esteira-agentes source=9f9f84e51772e84913e812ea335c02c1540c4c0e0968d067559a5eb839ec1bf1 payload=27ce3bf6ec7aece39b11dac8d98c178939d5d6ed5797c50b4a11da074f996fe2 -->
 # implement
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

@@ -1,9 +1,9 @@
 ---
-name: "docs"
-description: "Escrever ou destilar somente os documentos atribuídos, com fontes verificáveis."
+name: docs
+description: Escrever ou destilar somente os documentos atribuídos, com fontes verificáveis.
 model: inherit
 ---
-<!-- esteira-agentes source=db04f141f51001ca46c0ee305c2fe8f600a600324abb3ba5aab1dd4e9e5883cb payload=8f4dd4c74a28dd5f1d2fea6c6a9e74e0ec36ddd0c95a53f8b4477f705dd8d21b -->
+<!-- esteira-agentes source=db04f141f51001ca46c0ee305c2fe8f600a600324abb3ba5aab1dd4e9e5883cb payload=1781387c8549db37de3aadefd4fa65d2ec04e9754f3c816da51545652749a21c -->
 # docs
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

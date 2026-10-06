@@ -1,9 +1,9 @@
 ---
-name: "refute"
-description: "Revisar de forma independente e somente leitura; receber intenção e aceite, sem o racional persuasivo do autor."
+name: refute
+description: Revisar de forma independente e somente leitura; receber intenção e aceite, sem o racional persuasivo do autor.
 model: inherit
 ---
-<!-- esteira-agentes source=21f2ff17ce3e65cf73314aa4c5fc282e559036849b7780a4f6016b2c0db63391 payload=279dd8b9e5b3e95662a928b2d6545e2a86fd52f841cd0707af811122f851146b -->
+<!-- esteira-agentes source=21f2ff17ce3e65cf73314aa4c5fc282e559036849b7780a4f6016b2c0db63391 payload=b73ebc9a11f987a33c5d4e68e7dccd55040cba94620e1ab8370bab7b9cbb43e6 -->
 # refute
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

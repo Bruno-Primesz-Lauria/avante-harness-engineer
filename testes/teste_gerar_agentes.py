@@ -71,6 +71,23 @@ class GerarAgentesTestes(unittest.TestCase):
         for skill in ("core", "dabs", "jobs", "pipelines"):
             self.assertIn(f".agents/skills/databricks-{skill}/SKILL.md", dab_cursor)
 
+    def test_nome_e_descricao_sem_aspas_porque_o_cursor_as_mantem_no_nome(self):
+        for runtime in ("claude_code", "cursor"):
+            for caminho, texto in gerar_agentes.gerar(self.raiz, runtime).items():
+                papel = Path(caminho).stem
+                self.assertIn(f"\nname: {papel}\n", texto, caminho)
+                self.assertRegex(texto, r"\ndescription: [^\"']", caminho)
+                dados = yaml.safe_load(FRONTMATTER.search(texto).group(1))
+                self.assertEqual(papel, dados["name"])
+
+    def test_descricao_que_exigiria_aspas_e_recusada(self):
+        rota = self.raiz / "agentes/roteamento.yaml"
+        texto = rota.read_text(encoding="utf-8")
+        rota.write_text(texto.replace("Investigar fontes e dependências sem editar produto.",
+                                      "Investigar: fontes e dependências.", 1), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "exige aspas"):
+            gerar_agentes.gerar(self.raiz, "cursor")
+
     def test_gerador_recusa_definicao_sem_campo_da_secao_4(self):
         caminho = self.raiz / "agentes" / "map.md"
         texto = caminho.read_text(encoding="utf-8")

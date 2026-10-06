@@ -17,7 +17,7 @@ Uso da prova: [evidencia/uso.md](../../evidencia/uso.md).
 
 Cursor 3.17.8 (user setup), app interativo, Windows, numa worktree temporária com a guarda real, um hook de registro em todos os eventos de agente e o subagente `sonda`. Bruto em `.execucoes/sondagens/brutos/cursor/2026-10-05_cursor-3.17.8/` e relatório em `.execucoes/sondagens/cursor.json`, ambos fora do Git; este resumo é o registro versionado.
 
-- Frontmatter: `name`, `description` e `model: inherit` funcionam. `inherit` não preservou a variante do modelo (principal `grok-4.7`, subagente `grok-4.7-high-fast`). `/sonda` vira uma chamada `Task` do principal.
+- Frontmatter: `name`, `description` e `model: inherit` funcionam. Na primeira sessão O-CU (2026-10-05, mesma versão), `name: "test"` virou o tipo literal `"test"`, com aspas, e o papel não foi reconhecido; o gerador passou a escrever `name` e `description` sem aspas. `inherit` não preservou a variante do modelo (principal `grok-4.7`, subagente `grok-4.7-high-fast`). `/sonda` vira uma chamada `Task` do principal.
 - O subagente recebe o `AGENTS.md` e enxerga as skills `databricks-*` sem prefixo.
 - Os hooks de shell (`preToolUse`, `beforeShellExecution`, `postToolUse`, `postToolUseFailure`) disparam no subagente com `conversation_id` próprio, diferente do principal, e sem `subagent_id` ou `parent_conversation_id`.
 - `subagentStart` e `subagentStop` chegam na conversa do principal, com `subagent_id` igual ao `tool_use_id` do `preToolUse(Task)`, mas sem o `conversation_id` do subagente. A única ligação observável é o transcript do principal (`transcript_path`), que guarda `subagents/<conversation_id do subagente>.jsonl`. Os contadores `message_count` e `tool_call_count` do `subagentStop` vieram 0 e não são confiáveis.

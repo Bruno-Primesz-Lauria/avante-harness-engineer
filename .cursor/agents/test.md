@@ -1,9 +1,9 @@
 ---
-name: "test"
-description: "Executar o esperado contratado; pode preparar casos apenas no escopo roteado e não corrige produto."
+name: test
+description: Executar o esperado contratado; pode preparar casos apenas no escopo roteado e não corrige produto.
 model: inherit
 ---
-<!-- esteira-agentes source=046032926025c0dc6bd134e8a09df898c2f398359b32139afbbf53ca85f2f459 payload=ce696d237309b1e5d76c92bc76f6bf7a00b461405b165fcf8e2b64cfef2feb37 -->
+<!-- esteira-agentes source=046032926025c0dc6bd134e8a09df898c2f398359b32139afbbf53ca85f2f459 payload=8ee822902f2a1870567b21f8e1b899ec9c4d5552cb3a8888b1b91dcc9e16b249 -->
 # test
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

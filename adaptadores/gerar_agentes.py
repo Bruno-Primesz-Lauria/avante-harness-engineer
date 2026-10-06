@@ -121,12 +121,22 @@ def _yaml_string(valor):
     return json.dumps(str(valor), ensure_ascii=False)
 
 
+def _yaml_simples(valor):
+    """Escalar sem aspas: o Cursor 3.17.8 guarda as aspas no nome do subagente (O-CU, 2026-10-05)."""
+    valor = str(valor)
+    seguro = (valor == valor.strip() and not re.match(r"[-?:,\[\]{}#&*!|>'\"%@`]", valor) and
+              ": " not in valor and " #" not in valor)
+    if not seguro or yaml.safe_load(valor) != valor:
+        raise ValueError(f"Valor exige aspas no frontmatter e nao e aceito pelo Cursor: {valor!r}")
+    return valor
+
+
 def _frontmatter(rota, papel, runtime):
     agente = rota["agentes"][papel]
     linhas = [
         "---",
-        f"name: {_yaml_string(papel)}",
-        f"description: {_yaml_string(agente['responsabilidade'])}",
+        f"name: {_yaml_simples(papel)}",
+        f"description: {_yaml_simples(agente['responsabilidade'])}",
     ]
     if runtime == "claude_code":
         linhas.append("tools: [" + ", ".join(FERRAMENTAS_CLAUDE[papel]) + "]")
