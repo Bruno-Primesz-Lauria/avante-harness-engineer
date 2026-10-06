@@ -2,6 +2,8 @@
 
 Oito cenários e sete métricas para medir a política (avaliação contínua, pilar 10 do desenho). Esta página não executa cenário.
 
+Observação dos agentes no Cursor (O-CU, gate G2): kit em [`observacao-cursor/`](observacao-cursor/roteiro.md).
+
 ## Como rodar
 
 Rode cada cenário duas vezes: com a política e sem a política adicional, mantendo os mesmos controles obrigatórios. Faça ao menos três repetições por cenário e por configuração (48 execuções). Fixe snapshot do harness, modelo, ferramentas e critérios, alterne a ordem e registre as versões. Execução simulada é registrada como simulação.
