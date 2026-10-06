@@ -368,6 +368,7 @@ class ProvasTestes(unittest.TestCase):
     def test_session_start_injeta_id_sem_estado_global(self):
         r = self.hook("sessionStart")
         self.assertEqual(r["env"], {"ESTEIRA_SESSAO": "sessao-a"})
+        self.assertIn("--runtime cursor", r["additional_context"])
         self.assertFalse(self.p.indice.exists())
 
     def test_hook_nega_bundle_antes_de_gravar_teste(self):
@@ -535,6 +536,31 @@ class ProvasTestes(unittest.TestCase):
         self.iniciar()
         self.executar()
         self.assertEqual(self.p.fechar("DONE", "Rollback para chave vazia")["status"], "DONE")
+
+    def test_e0_chave_real_ativa_so_manutencao_no_cursor_e_esvaziar_restaura(self):
+        real = ler(RAIZ / "configuracao/politica.json")["agentes_obrigatorios"]
+        self.assertEqual(real, {"claude_code": [], "cursor": ["manutencao"]})
+        self.politica["agentes_obrigatorios"] = real
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        self.contrato["trilha"] = "manutencao"
+        self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-sem-runtime")
+        with self.assertRaisesRegex(ValueError, "Runtime explicito"):
+            self.iniciar()
+        self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-claude", runtime="claude_code")
+        self.assertFalse(self.p.ativada("manutencao", "claude_code"))
+        self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-cursor", runtime="cursor")
+        self.assertFalse(self.p.ativada("correcao", "cursor"))
+        self.iniciar()
+        self.executar()
+        with self.assertRaisesRegex(ValueError, "chamada:"):
+            self.p.fechar("DONE", "Sem as chamadas previstas")
+
+        self.politica["agentes_obrigatorios"] = {"claude_code": [], "cursor": []}
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-rollback")
+        self.iniciar()
+        self.executar()
+        self.assertEqual(self.p.fechar("DONE", "Chave vazia restaura o fluxo atual")["status"], "DONE")
 
     def test_teste_ativado_exige_prova_de_subagente_test_observado(self):
         self.ativar("manutencao")

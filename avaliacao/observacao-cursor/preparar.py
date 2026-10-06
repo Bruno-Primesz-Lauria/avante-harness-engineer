@@ -227,8 +227,8 @@ def verificar_head():
         faltas.append("agentes/roteamento.yaml do HEAD sem instalado: true no cursor para os sete papeis (B2-CU)")
     try:
         politica = json.loads(mostrar("configuracao/politica.json"))
-        if politica["agentes_obrigatorios"].get("cursor") != []:
-            faltas.append("agentes_obrigatorios.cursor do HEAD nao esta vazio")
+        if not set(politica["agentes_obrigatorios"].get("cursor", [])) <= set(TRILHAS_CURSOR):
+            faltas.append("agentes_obrigatorios.cursor do HEAD tem trilha fora da observacao")
     except (TypeError, ValueError, KeyError):
         faltas.append("configuracao/politica.json do HEAD ilegivel")
     return faltas

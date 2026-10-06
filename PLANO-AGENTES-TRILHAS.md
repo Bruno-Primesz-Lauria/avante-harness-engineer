@@ -584,7 +584,7 @@ D-CC e D-CU podem começar sobre os brutos das sondagens (`.execucoes/sondagens/
 - Arquivos: `formas/catalogo.yaml`, `formas/README.md`, `implementacao/formas.py`, `implementacao/provas.py` (só as exigências no fecho), `evidencia/uso.md` e testes.
 - Aceite: testes de aceite e recusa por forma; diagnóstico ausente bloqueia a escrita na correção ativada; deploy com destino `nao_verificado` não fecha critério `ambiente` obrigatório; paridade com gap pendente e exit 0 fica `fail`; registros 3.1 e 3.2 anteriores continuam legíveis.
 
-**E0 · ativação da onda 1** (agente, depois do aceite humano de G2): pela decisão de 2026-10-05, preencher primeiro apenas `agentes_obrigatorios.cursor` com `manutencao`. Correção e Claude Code ficam para depois, cada runtime aprovado em G2. Aceite: esvaziar a chave restaura o comportamento atual (teste).
+**E0 · ativação da onda 1** (agente, depois do aceite humano de G2): pela decisão de 2026-10-05, preencher primeiro apenas `agentes_obrigatorios.cursor` com `manutencao`. Correção e Claude Code ficam para depois, cada runtime aprovado em G2. Aceite: esvaziar a chave restaura o comportamento atual (teste). **Aplicado em 2026-10-06:** chave `cursor: [manutencao]`; teste `test_e0_chave_real_ativa_so_manutencao_no_cursor_e_esvaziar_restaura` confere a chave real, a recusa sem runtime, o Claude Code fora e o rollback; o `sessionStart` do Cursor passa a indicar `--runtime cursor`; `preparar.py` aceita chave do HEAD contida nas trilhas observadas. Limite: Codex e OpenCode não informam runtime e têm o `iniciar` de `manutencao` recusado.
 
 **E1 · onda 1** (humano escolhe as tarefas; agente coordena em sessão real): rodar no produto os cenários de manutenção e correção da seção 8. As tarefas e a autorização de ambiente são decisão humana (`DECIDE` até lá). Saída: registros em `.execucoes/` e tabela da onda com chamadas previstas × observadas, falso DONE e violações de escopo. **G3a** (humano).
 
@@ -594,7 +594,7 @@ D-CC e D-CU podem começar sobre os brutos das sondagens (`.execucoes/sondagens/
 
 ### 10.4 Retomada noutra máquina
 
-Estado em 2026-10-06, HEAD da branch `feat/engenheiro-bruno-lauria`: G1 aprovado; B2-CU, D-CU, C4 e C5 commitados; P0.1 de escrita em série aplicado; P0.1 do roteiro O-CU em turnos aplicado; P0.1 de `docs` na vigilância e de revisão por refute aplicado. G2 do Cursor aceito na sexta sessão O-CU. Próximo passo: E0 (manutenção no Cursor) e, em paralelo, C6 (formas diagnóstico, ambiente e paridade; falta decidir se o pacote inclui os subcomandos de registro em `adaptadores/prova.py`).
+Estado em 2026-10-06, HEAD da branch `feat/engenheiro-bruno-lauria`: G1 aprovado; B2-CU, D-CU, C4 e C5 commitados; P0.1 de escrita em série aplicado; P0.1 do roteiro O-CU em turnos aplicado; P0.1 de `docs` na vigilância e de revisão por refute aplicado. G2 do Cursor aceito na sexta sessão O-CU; E0 aplicado (`agentes_obrigatorios.cursor = [manutencao]`). Próximo passo: E1 (onda 1 de manutenção no Cursor, tarefas escolhidas pelo humano) e, em paralelo, C6 (formas diagnóstico, ambiente e paridade; falta decidir se o pacote inclui os subcomandos de registro em `adaptadores/prova.py`).
 
 1. Pré-requisitos: Windows com `py` (Python 3.12+), `pip install -r requirements.txt`, Node, Git e Cursor 3.17.8 ou superior (as sessões de 2026-10-06 à tarde rodaram no 3.19.19).
 2. `git clone` e `git checkout feat/engenheiro-bruno-lauria`. Abra o clone no Cursor só para conferir; a observação roda na cópia.

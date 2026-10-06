@@ -187,7 +187,7 @@ def tratar(evento, politica, raiz):
         exigir(isinstance(sessao, str) and sessao, "Sessao ausente")
         return {"env": {"ESTEIRA_SESSAO": sessao}, "additional_context":
                 "Leia AGENTS.md. Sessao para --sessao: " + sessao + ". "
-                "Em trabalho de varias etapas, use adaptadores/prova.py (iniciar, estado, fechar) "
+                "Em trabalho de varias etapas, use adaptadores/prova.py --runtime cursor (iniciar, estado, fechar) "
                 "conforme evidencia/uso.md. Pergunta simples nao precisa de registro."}
     if nome == "stop" and evento.get("status") != "completed":
         return {}

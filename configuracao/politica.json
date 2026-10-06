@@ -5,6 +5,6 @@
   "deploy_sandbox_autorizado": true,
   "agentes_obrigatorios": {
     "claude_code": [],
-    "cursor": []
+    "cursor": ["manutencao"]
   }
 }
