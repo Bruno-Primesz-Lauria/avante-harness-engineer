@@ -236,7 +236,7 @@ def extrair(destino):
     proc = subprocess.Popen(["git", "-C", str(RAIZ), "archive", "--format=tar", "HEAD"], stdout=subprocess.PIPE)
     with tarfile.open(fileobj=proc.stdout, mode="r|") as tar:
         for membro in tar:
-            if membro.name.split("/", 1)[0] not in REMOVER and not membro.name.startswith(KIT):
+            if membro.name.split("/", 1)[0] not in REMOVER and not (membro.name + "/").startswith(KIT):
                 tar.extract(membro, destino, filter="data")
     if proc.wait() != 0:
         raise RuntimeError("git archive falhou")
