@@ -515,10 +515,10 @@ td.m, th.m { text-align: center; }
 <text class="t mono" x="1176.0" y="124.5">gerar_agentes.py</text>
 <text class="s" x="1176.0" y="144.5">neutro → nativo</text>
 </g>
-<g class="ab plan arq-hit" data-arq="nativos" tabindex="0" role="button" aria-pressed="false" aria-label=".claude/agents — .cursor/agents, Cursor instalado · CC pendente"><rect x="1330" y="76" width="236" height="104" rx="12"/>
+<g class="ab plan arq-hit" data-arq="nativos" tabindex="0" role="button" aria-pressed="false" aria-label=".claude/agents — .cursor/agents, Cursor e Claude Code instalados"><rect x="1330" y="76" width="236" height="104" rx="12"/>
 <text class="t mono" x="1448.0" y="116.0">.claude/agents</text>
 <text class="s" x="1448.0" y="136.0">.cursor/agents</text>
-<text class="s" x="1448.0" y="153.0">Cursor instalado · CC pendente</text>
+<text class="s" x="1448.0" y="153.0">Cursor e Claude Code instalados</text>
 </g>
 <path class="ar " d="M324 128 H364" marker-end="url(#m-c)"/>
 <path class="ar " d="M1022 128 H1062" marker-end="url(#m-c)"/>
@@ -716,7 +716,7 @@ td.m, th.m { text-align: center; }
 <div class="pills" id="tabs-trilha" role="group" aria-label="Trilha"></div>
 <p class="note-uso" id="uso"></p><p class="note-papeis" id="papeis"></p>
 <div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny,back"></div><figure class="flow-map"><div id="g-trilha"></div><figcaption>Selecione um nó para ver entradas e saídas. Fecho sem DONE: DECIDE, BLOCKED ou FAILED.</figcaption></figure></div>
-<div class="callout">As definições dos papéis estão em <code>agentes/</code>. <span id="estacao-cursor" class="chip ok">Cursor: instalado</span> em <code>.cursor/agents/</code>; sessão nova ainda não observada (O-CU/G2). Claude Code: versões nativas em <code>.claude/agents/</code> pendentes. Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
+<div class="callout">As definições dos papéis estão em <code>agentes/</code>. <span id="estacao-cursor" class="chip ok">Cursor: instalado</span> em <code>.cursor/agents/</code>; sessão nova ainda não observada (O-CU/G2). <span id="estacao-claude" class="chip ok">Claude Code: instalado</span> em <code>.claude/agents/</code>; sessão nova ainda não observada (O-CC/G2). Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
 </section>
 
 <section id="guardas">
@@ -780,7 +780,7 @@ td.m, th.m { text-align: center; }
 <tr><td>Prova e fecho (<code>prova.py</code>); coleta só no Cursor</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
 <tr><td>Roteamento e definições neutras dos agentes</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
 <tr><td>Coleta de prova no Claude Code (sobre fixture)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">parcial</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
-<tr><td>Agentes nativos por runtime e observação (G2)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor instalado</span></td><td class="m"><span class="chip warn">G2 pendente</span></td></tr>
+<tr><td>Agentes nativos por runtime e observação (G2)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code instalados</span></td><td class="m"><span class="chip warn">G2 do Claude Code pendente</span></td></tr>
 <tr><td>Formas 3.2: oito adotadas (contrato, guarda, teste, ataque, triagem, inspeção, chamada, brief)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
 <tr><td>Formas diagnóstico, ambiente e paridade (C6); superfície por papel de config e implement (C5)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
 <tr><td>Guardas de run, identidade, dados compartilhados, fronteira do produto</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
@@ -1230,7 +1230,7 @@ const ARQ = {
   nativos: { tipo: "Planejado / parcial", chip: "warn", t: ".claude/agents · .cursor/agents", onde: ".claude/agents/, .cursor/agents/",
     oque: "As versões nativas dos papéis, no formato que cada runtime entende.",
     serve: "Permitir que o runtime ative de fato os subagentes da trilha.",
-    importa: "Estado: Cursor instalado, sessão nova ainda não observada (G2). Claude Code pendente. Papel obrigatório indisponível fecha BLOCKED.",
+    importa: "Estado: Cursor e Claude Code instalados; o Claude Code ainda não foi observado em sessão nova (G2). Papel obrigatório indisponível fecha BLOCKED.",
     liga: ["gerar", "subagentes"] },
 
   g_runtime: { tipo: "Grupo", chip: "info", t: "Runtime", onde: "Cursor, Claude Code, Codex, OpenCode",

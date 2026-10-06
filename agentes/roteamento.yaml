@@ -101,7 +101,7 @@ agentes:
         classe: obrigatoria
         quando: "Correção, em colaboração com o coordenador."
     metadados:
-      claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: pendente, versao: null, data: null, referencia: null}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", data: "2026-10-06", referencia: ".execucoes/sondagens/brutos/cursor/2026-10-06_cursor-3.19.19_ocu/"}}
 
   config:
@@ -111,7 +111,7 @@ agentes:
       - {id: regras, classe: orientativa}
       - {id: ingestao, classe: orientativa}
     metadados:
-      claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: pendente, versao: null, data: null, referencia: null}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", data: "2026-10-06", referencia: ".execucoes/sondagens/brutos/cursor/2026-10-06_cursor-3.19.19_ocu/"}}
 
   implement:
@@ -121,7 +121,7 @@ agentes:
       - {id: novo-objeto, classe: orientativa}
       - {id: esteira, classe: orientativa}
     metadados:
-      claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: pendente, versao: null, data: null, referencia: null}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", data: "2026-10-06", referencia: ".execucoes/sondagens/brutos/cursor/2026-10-06_cursor-3.19.19_ocu/"}}
 
   test:
@@ -135,7 +135,7 @@ agentes:
         classe: obrigatoria
         quando: "O contrato contém critério paridade."
     metadados:
-      claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: pendente, versao: null, data: null, referencia: null}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", data: "2026-10-06", referencia: ".execucoes/sondagens/brutos/cursor/2026-10-06_cursor-3.19.19_ocu/"}}
 
   refute:
@@ -145,7 +145,7 @@ agentes:
       - skill: docs
     capacidades: []
     metadados:
-      claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: pendente, versao: null, data: null, referencia: null}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", data: "2026-10-06", referencia: ".execucoes/sondagens/brutos/cursor/2026-10-06_cursor-3.19.19_ocu/"}}
 
   docs:
@@ -155,7 +155,7 @@ agentes:
       - {id: distill, classe: obrigatoria, quando: destilar}
       - {id: docs-objeto, classe: orientativa}
     metadados:
-      claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: pendente, versao: null, data: null, referencia: null}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", data: "2026-10-06", referencia: ".execucoes/sondagens/brutos/cursor/2026-10-06_cursor-3.19.19_ocu/"}}
 
   dab:
@@ -171,7 +171,7 @@ agentes:
         classe: referencia_obrigatoria
         referencias: [../guardas/README.md, ../AGENTS.md]
     metadados:
-      claude_code: {politica: aprovada, instalado: false, observado: {estado: pendente, versao: null, data: null, referencia: null}}
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: pendente, versao: null, data: null, referencia: null}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", data: "2026-10-06", referencia: ".execucoes/sondagens/brutos/cursor/2026-10-06_cursor-3.19.19_ocu/"}}
 
 trilhas:
