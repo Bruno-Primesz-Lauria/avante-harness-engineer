@@ -4,6 +4,8 @@ Oito cenários e sete métricas para medir a política (avaliação contínua, p
 
 Observação dos agentes no Cursor (O-CU, gate G2): kit em [`observacao-cursor/`](observacao-cursor/roteiro.md).
 
+Observação dos agentes no Claude Code (O-CC, gate G2): kit em [`observacao-claude-code/`](observacao-claude-code/roteiro.md), ainda não executado.
+
 ## Como rodar
 
 Rode cada cenário duas vezes: com a política e sem a política adicional, mantendo os mesmos controles obrigatórios. Faça ao menos três repetições por cenário e por configuração (48 execuções). Fixe snapshot do harness, modelo, ferramentas e critérios, alterne a ordem e registre as versões. Execução simulada é registrada como simulação.
