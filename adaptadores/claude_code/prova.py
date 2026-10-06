@@ -77,6 +77,10 @@ def _marcar_inicio(provas, evento):
     if arquivo.exists():
         return
     gravar(arquivo, {"chamada_id": chamada_id, "papel": papel, "inicio": _agora()})
+    pasta = provas.pasta()
+    if any(c["papel"] == papel for c in provas.estado(pasta)["chamadas_previstas"]):
+        # Retrato de superficie no inicio do subagente (C5); o fim e conferido em registrar_chamada.
+        provas.abrir_chamada(chamada_id, papel)
 
 
 def _registrar_fim(provas, evento):
@@ -88,15 +92,21 @@ def _registrar_fim(provas, evento):
         return
     inicio = ler(arquivo)
     resposta = evento.get("tool_response")
-    if not isinstance(resposta, dict):
+
+    def descartar():
+        # Sem registro de chamada, a janela de superficie aberta no inicio ainda e conferida (C5).
+        provas.encerrar_chamada(chamada_id)
         arquivo.unlink(missing_ok=True)
+
+    if not isinstance(resposta, dict):
+        descartar()
         return
     papel = resposta.get("agentType")
     agente_id = resposta.get("agentId")
     if (papel not in PAPEIS_REGISTRAVEIS or papel != inicio.get("papel") or
             not isinstance(agente_id, str) or not agente_id or
             resposta.get("status") != "completed"):
-        arquivo.unlink(missing_ok=True)
+        descartar()
         return
     pasta = provas.pasta()
     if pasta is None:
@@ -104,7 +114,7 @@ def _registrar_fim(provas, evento):
         return
     estado = provas.estado(pasta)
     if not any(chamada["papel"] == papel for chamada in estado["chamadas_previstas"]):
-        arquivo.unlink(missing_ok=True)
+        descartar()
         return
     provas.registrar_chamada(
         chamada_id, papel, "claude_code", [{"nome": "agente_id", "valor": agente_id}],

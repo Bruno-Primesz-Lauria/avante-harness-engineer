@@ -211,6 +211,25 @@ class CursorSubagenteTestes(unittest.TestCase):
         self.assertEqual(estado["provas"], {})
         self.assertEqual(estado["chamadas_observadas"], [])
 
+    def test_c5_subagent_start_abre_janela_e_stop_confere_superficie(self):
+        contrato = ler(self.provas.pasta() / "contrato.yaml")["dados"]
+        self.provas.fechar("BLOCKED", "Reabrir com a trilha ativada")
+        self.politica["agentes_obrigatorios"]["cursor"] = ["correcao"]
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        self.provas.iniciar(contrato)
+
+        reproduz = self.chamada(TASK_ID, "test")
+        tratar(self.evento(STOP, subagent_id=reproduz, subagent_type="test"), self.politica, self.raiz)
+        escrita = self.chamada(TASK_ID_2, "implement")
+        self.assertTrue(self.provas.estado(self.provas.pasta())["vigilancia_superficie"]["abertas"])
+        (self.raiz / "src/b.yaml").write_text("fora: sim\n", encoding="utf-8")
+        tratar(self.evento(STOP, subagent_id=escrita, subagent_type="implement"), self.politica, self.raiz)
+
+        pasta = self.provas.pasta()
+        _, faltam = self.provas.pendencias(pasta, self.provas.estado(pasta))
+        self.assertIn("superficie_violada:implement:src/b.yaml", faltam)
+        self.assertFalse([p for p in faltam if p.startswith("chamada_aberta")])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

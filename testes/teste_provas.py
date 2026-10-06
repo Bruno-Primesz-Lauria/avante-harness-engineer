@@ -685,6 +685,7 @@ class ProvasTestes(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "achado:A1:sem_triagem"):
             self.p.fechar("DONE", "Achado sem tratamento")
 
+        self.p.abrir_chamada("call-implement-2", "implement")
         (self.raiz / "src/a.py").write_text("# requisito que faltava\n", encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "revisao:obsoleta"):
             self.p.fechar("DONE", "Edicao posterior a revisao")
@@ -744,6 +745,86 @@ class ProvasTestes(unittest.TestCase):
         self.contrato["superficie"] = ["src/dados.json"]
         with self.assertRaisesRegex(ValueError, "sem papel de escrita"):
             self.iniciar()
+
+    def iniciar_superficie_mista(self):
+        """Manutenção ativada com YAML e Python na superfície: config e implement no plano."""
+        (self.raiz / "src/regra.yaml").write_text("regra: 1\n", encoding="utf-8")
+        self.contrato.update(trilha="manutencao", superficie=["src/a.py", "src/regra.yaml"])
+        self.ativar("manutencao")
+        self.iniciar()
+
+    def escrever(self, chamada_id, papel, arquivo, texto):
+        self.p.abrir_chamada(chamada_id, papel)
+        (self.raiz / arquivo).write_text(texto, encoding="utf-8")
+        return self.chamar(chamada_id, papel)
+
+    def pendencias_atuais(self):
+        pasta = self.p.pasta()
+        return self.p.pendencias(pasta, self.p.estado(pasta))[1]
+
+    def test_c5_cada_papel_na_sua_superficie_nao_gera_pendencia(self):
+        self.iniciar_superficie_mista()
+        self.chamar("call-prep", "test")
+        self.escrever("call-config", "config", "src/regra.yaml", "regra: 2\n")
+        self.escrever("call-implement", "implement", "src/a.py", "# nova regra\n")
+        self.assertFalse([p for p in self.pendencias_atuais() if "superficie" in p or "papel" in p])
+
+    def test_c5_papel_fora_da_sua_classe_viola_superficie(self):
+        self.iniciar_superficie_mista()
+        self.chamar("call-prep", "test")
+        self.escrever("call-config", "config", "src/a.py", "# config editou codigo\n")
+        self.p.abrir_chamada("call-implement", "implement")
+        (self.raiz / "src/regra.yaml").write_text("regra: 3\n", encoding="utf-8")
+        self.chamar("call-implement", "implement")
+        pendencias = self.pendencias_atuais()
+        self.assertIn("superficie_violada:config:src/a.py", pendencias)
+        self.assertIn("superficie_violada:implement:src/regra.yaml", pendencias)
+        with self.assertRaisesRegex(ValueError, "superficie_violada"):
+            self.p.fechar("DONE", "Papel fora da superficie")
+
+    def test_c5_escrita_fora_da_superficie_do_contrato_viola(self):
+        self.iniciar_superficie_mista()  # Verificação cobre src/, a superfície só dois arquivos.
+        self.chamar("call-prep", "test")
+        self.escrever("call-implement", "implement", "src/extra.py", "# fora do contrato\n")
+        self.assertIn("superficie_violada:implement:src/extra.py", self.pendencias_atuais())
+
+    def test_c5_edicao_do_principal_fora_de_janela_impede_done(self):
+        self.iniciar_superficie_mista()
+        self.chamar("call-prep", "test")
+        (self.raiz / "src/a.py").write_text("# principal editou\n", encoding="utf-8")
+        self.assertIn("edicao_fora_do_papel:src/a.py", self.pendencias_atuais())
+        # Abrir a janela depois não transfere a autoria ao papel.
+        self.escrever("call-config", "config", "src/regra.yaml", "regra: 2\n")
+        self.assertIn("edicao_fora_do_papel:src/a.py", self.pendencias_atuais())
+
+    def test_c5_janelas_sobrepostas_com_edicao_ficam_inconclusivas(self):
+        self.iniciar_superficie_mista()
+        self.chamar("call-prep", "test")
+        self.p.abrir_chamada("call-config", "config")
+        self.p.abrir_chamada("call-implement", "implement")
+        self.assertIn("chamada_aberta:call-config", self.pendencias_atuais())
+        (self.raiz / "src/a.py").write_text("# autoria ambigua\n", encoding="utf-8")
+        self.chamar("call-config", "config")
+        self.chamar("call-implement", "implement")
+        pendencias = self.pendencias_atuais()
+        self.assertIn("superficie_inconclusiva:call-config", pendencias)
+        self.assertIn("superficie_inconclusiva:call-implement", pendencias)
+
+    def test_c5_chamada_encerrada_sem_registro_ainda_e_conferida(self):
+        self.iniciar_superficie_mista()
+        self.p.abrir_chamada("call-config", "config")
+        (self.raiz / "src/a.py").write_text("# chamada que falhou\n", encoding="utf-8")
+        self.assertTrue(self.p.encerrar_chamada("call-config"))
+        self.assertIn("superficie_violada:config:src/a.py", self.pendencias_atuais())
+
+    def test_c5_chave_vazia_nao_vigia_superficie(self):
+        self.contrato["trilha"] = "manutencao"
+        self.iniciar()
+        self.assertNotIn("vigilancia_superficie", self.p.estado(self.p.pasta()))
+        self.assertFalse(self.p.abrir_chamada("call-implement", "implement"))
+        (self.raiz / "src/a.py").write_text("# sem chave\n", encoding="utf-8")
+        self.executar()
+        self.assertEqual(self.p.fechar("DONE", "Fluxo atual preservado")["status"], "DONE")
 
     def test_paridade_preve_chamada_de_test_em_novo(self):
         self.contrato.update(trilha="novo")

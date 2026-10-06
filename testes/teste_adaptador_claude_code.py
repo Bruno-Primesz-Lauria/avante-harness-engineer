@@ -186,6 +186,31 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertEqual(self.tratar_evento(depois), {})
         self.assertEqual(self.p.estado(self.p.pasta())["chamadas_observadas"], [])
 
+    def test_c5_pretooluse_agent_abre_janela_e_falha_ainda_confere_superficie(self):
+        self.politica["agentes_obrigatorios"]["claude_code"] = ["manutencao"]
+        self.escrever_politica()
+        self.p = Provas(self.raiz, self.politica["registros_raiz"], SESSAO, runtime="claude_code")
+        self.p.iniciar(dict(objetivo="Alterar codigo", termino_fatia="Superficie conferida",
+                            trilha="manutencao", superficie=["src/a.py"], artefatos_raiz=".execucoes/provas",
+                            fora=[], fontes=["src/a.py"], prazo=None,
+                            aceite=[dict(id="c1", tipo="teste", obrigatorio=True, esperado="Teste verde",
+                                         verificacao=dict(comando=self.comando("echo ok"), cwd=".",
+                                                          caminhos=["src"]))],
+                            orcamento={"ciclos_correcao_max": 3}, responsaveis={"coordenador": "agente"}))
+        antes = evento_p0_4("PreToolUse_Agent")
+        antes["tool_input"]["subagent_type"] = "implement"
+        self.assertEqual(self.tratar_evento(antes), {})
+        self.assertIn(antes["tool_use_id"],
+                      self.p.estado(self.p.pasta())["vigilancia_superficie"]["abertas"])
+        (self.raiz / "src/b.yaml").write_text("fora: sim\n", encoding="utf-8")
+        depois = evento_p0_4("PostToolUse_Agent")
+        depois["tool_response"].update(agentType="implement", status="failed")
+        self.assertEqual(self.tratar_evento(depois), {})
+
+        _, faltam = self.p.pendencias(self.p.pasta(), self.p.estado(self.p.pasta()))
+        self.assertIn("superficie_violada:implement:src/b.yaml", faltam)
+        self.assertFalse([p for p in faltam if p.startswith("chamada_aberta")])
+
     def test_principal_que_rodou_teste_fica_fora_do_papel_test(self):
         self.iniciar("echo principal-sucesso", ativada=True)
         antes = evento_p0_4("PreToolUse_Bash_principal")

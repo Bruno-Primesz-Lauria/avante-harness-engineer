@@ -45,6 +45,17 @@ py -3 adaptadores/prova.py --sessao ID triar .execucoes/triagem.yaml
 - `revisar`: a forma `ataque` (intenção, aceite, baseline, provas, veredito, tentativas, achados, cobertura) com `agente_id` opcional, protegido pelo hash do evento. Com a trilha ativada, o ID precisa casar com uma chamada `refute` concluída; sem esse vínculo o fecho aponta `revisao:fora_do_refute`. Com a chave vazia, o vínculo não é exigido.
 - `triar`: a forma `triagem` (`revisao_ref`, `achado_id`, `decisao`, `responsavel`, e `evidencia_resolucao_ref` ou `motivo_descarte` conforme a decisão).
 
+### Superfície por papel
+
+Com a trilha ativada e `config` ou `implement` no plano, o núcleo retrata a superfície e os caminhos de verificação. O adaptador abre uma janela no início de cada subagente previsto: `subagentStart` no Cursor e `PreToolUse(Agent)` no Claude Code. O núcleo fecha a janela ao registrar a chamada, ou ao descartá-la quando a chamada falha. Pendências no fecho:
+
+- `superficie_violada:<papel>:<arquivo>`: config alterou arquivo que não é YAML, implement alterou arquivo que não é notebook, Python ou SQL, ou o arquivo está fora da `superficie` do contrato.
+- `edicao_fora_do_papel:<arquivo>`: alteração fora de qualquer janela, como uma edição do principal. Abrir uma janela depois não transfere a autoria.
+- `superficie_inconclusiva:<chamada>`: alteração com janelas sobrepostas, ou escrita registrada sem início observado.
+- `chamada_aberta:<chamada>`: subagente sem fim observado.
+
+As pendências de violação ficam na fatia; para recomeçar, feche com `BLOCKED` e abra uma fatia nova. Edição dos papéis `test`, `docs`, `dab` e `refute` dentro da própria janela não é julgada aqui. Com a chave vazia, nada disso vale.
+
 Pergunta simples não usa contrato. Só a fatia iniciada entra neste fluxo.
 
 ## Contrato de entrada
@@ -124,7 +135,7 @@ O fecho persistido é recusado quando a prova não vale. No evento `stop`, o Cur
 ## Limites
 
 - Os registros são isolados entre sessões, e há detecção de mudança durante a verificação.
-- Não há bloqueio de edição dos arquivos de produto entre agentes, nem atribuição automática de autoria de cada edição.
+- Não há bloqueio de edição dos arquivos de produto entre agentes. A autoria é atribuída por janela de chamada, só com a trilha ativada e só na superfície e nos caminhos de verificação; arquivo fora deles não é retratado.
 - Edição seguida de reversão entre os dois retratos não é detectada.
 - Quem pode editar a pasta de registros pode adulterá-la. Hashes não assinam autoria.
 

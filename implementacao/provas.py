@@ -33,6 +33,8 @@ EXTENSOES = {
     "implement": {".ipynb", ".py", ".sql"},
     "docs": {".md", ".rst", ".txt"},
 }
+# Papéis de escrita cuja superfície o núcleo confere por janela de chamada (C5).
+ESCRITORES = {"config", "implement"}
 
 
 def agora():
@@ -110,6 +112,16 @@ def retrato(raiz, caminhos):
 def limpar_log(texto):
     texto = re.sub(r"(?i)(bearer\s+|(?:token|password|secret)\s*[=:]\s*)[^\s,;]+", r"\1[omitido]", texto)
     return re.sub(r"\bdapi[a-zA-Z0-9]{20,}\b", "[omitido]", texto)
+
+
+def alterados(antes, depois):
+    """Arquivos com conteúdo diferente entre dois retratos, inclusive criados e removidos."""
+    return sorted(r for r in set(antes) | set(depois)
+                  if antes.get(r) != depois.get(r) and "diretorio" not in (antes.get(r), depois.get(r)))
+
+
+def anotar(lista, itens):
+    lista.extend(i for i in dict.fromkeys(itens) if i not in lista)
 
 
 def concluidas(plano, registros):
@@ -323,6 +335,9 @@ class Provas:
                           autorizacoes=autorizacoes, manifestos_autorizacao={},
                           revisao=0, tentativa=0, pendente=None, chamadas=[], provas={}, inspecoes={},
                           revisoes=[], triagens=[], fecho=None, contrato_sha256="")
+            if ativa and ESCRITORES & {c["papel"] for c in chamadas_previstas}:
+                estado["vigilancia_superficie"] = dict(
+                    retrato=retrato(self.raiz, self.vigiados(contrato)), abertas={}, pendencias=[])
             gravar(pasta / "baseline.json", dict(versao=1, registrado_em=agora(), arquivos=baseline))
             for criterio_id, ref in autorizacoes.items():
                 manifesto_ref = f"tentativas/001/autorizacoes/{criterio_id}.json"
@@ -335,6 +350,77 @@ class Provas:
             gravar(pasta / "estado.json", estado)
             gravar(self.indice / "ativa.json", {"fatia": pasta.relative_to(self.registros).as_posix()}, substituir=True)
             return {"execucao_id": execucao, "fatia": str(pasta), "revisao": 0}
+
+    def vigiados(self, contrato):
+        return sorted(set(contrato["superficie"]) |
+                      {p for c in contrato["aceite"] for p in c["verificacao"]["caminhos"]})
+
+    def abrir_chamada(self, chamada_id, papel):
+        """Início observado de um subagente: o que mudou desde o último retrato não foi feito por papel (C5)."""
+        pasta = self.pasta()
+        if pasta is None:
+            return False
+        with trava(pasta):
+            estado = self.estado(pasta)
+            vigia = estado.get("vigilancia_superficie")
+            if vigia is None or chamada_id in vigia["abertas"]:
+                return False
+            atual = retrato(self.raiz, self.vigiados(ler(pasta / "contrato.yaml")["dados"]))
+            if vigia["abertas"]:
+                for janela in vigia["abertas"].values():
+                    janela["sobreposta"] = True
+            else:
+                anotar(vigia["pendencias"], ["edicao_fora_do_papel:" + r for r in alterados(vigia["retrato"], atual)])
+            vigia["abertas"][chamada_id] = dict(papel=papel, retrato=atual, sobreposta=bool(vigia["abertas"]))
+            vigia["retrato"] = atual
+            estado["fecho"] = None
+            self.atualizar(pasta, estado)
+            return True
+
+    def encerrar_chamada(self, chamada_id):
+        """Fim de subagente sem registro de chamada (falha ou papel recusado): a janela ainda é conferida."""
+        pasta = self.pasta()
+        if pasta is None:
+            return False
+        with trava(pasta):
+            estado = self.estado(pasta)
+            vigia = estado.get("vigilancia_superficie")
+            if vigia is None or chamada_id not in vigia["abertas"]:
+                return False
+            self.fechar_janela(vigia, ler(pasta / "contrato.yaml")["dados"], chamada_id, None)
+            self.atualizar(pasta, estado)
+            return True
+
+    def fechar_janela(self, vigia, contrato, chamada_id, papel):
+        atual = retrato(self.raiz, self.vigiados(contrato))
+        janela = vigia["abertas"].pop(chamada_id, None)
+        if janela is None:
+            # Sem início observado, o que mudou desde o último retrato não tem autoria atribuível.
+            if papel in ESCRITORES and alterados(vigia["retrato"], atual):
+                anotar(vigia["pendencias"], ["superficie_inconclusiva:" + chamada_id])
+        else:
+            mudou = alterados(janela["retrato"], atual)
+            if janela["sobreposta"] and mudou:
+                anotar(vigia["pendencias"], ["superficie_inconclusiva:" + chamada_id])
+            elif janela["papel"] in ESCRITORES:
+                dentro_superficie = lambda r: any(r == s or r.startswith(s + "/") for s in contrato["superficie"])
+                anotar(vigia["pendencias"], [
+                    f"superficie_violada:{janela['papel']}:{r}" for r in mudou
+                    if not dentro_superficie(r) or Path(r).suffix.casefold() not in EXTENSOES[janela["papel"]]])
+        if not vigia["abertas"]:
+            vigia["retrato"] = atual
+
+    def pendencias_superficie(self, pasta, estado):
+        vigia = estado.get("vigilancia_superficie")
+        if vigia is None:
+            return []
+        faltam = list(vigia["pendencias"])
+        if vigia["abertas"]:
+            anotar(faltam, ["chamada_aberta:" + c for c in vigia["abertas"]])
+        else:
+            atual = retrato(self.raiz, self.vigiados(ler(pasta / "contrato.yaml")["dados"]))
+            anotar(faltam, ["edicao_fora_do_papel:" + r for r in alterados(vigia["retrato"], atual)])
+        return faltam
 
     def registrar_chamada(self, chamada_id, papel, runtime, ids_observados, inicio, fim, status):
         pasta = self.pasta()
@@ -369,6 +455,9 @@ class Provas:
             ref = self.evento(pasta, estado, "chamada", dados, manifesto_ref, max(1, estado["tentativa"]),
                               produtor="adaptador", schema_versao="3.2")
             estado["runtime"] = runtime
+            if estado.get("vigilancia_superficie") is not None:
+                self.fechar_janela(estado["vigilancia_superficie"], ler(pasta / "contrato.yaml")["dados"],
+                                   chamada_id, papel)
             estado["chamadas_observadas"].append({"id": esperada["id"], "etapa": esperada["etapa"],
                                                   "papel": papel, "status": status, "chamada_id": chamada_id,
                                                   "ref": ref,
@@ -658,6 +747,7 @@ class Provas:
             plano = estado.get("chamadas_previstas") or self.plano_chamadas(contrato)
             if any(c["papel"] == "refute" for c in plano):
                 faltam.extend(self.revisao_faltante(pasta, estado, trilha))
+            faltam.extend(self.pendencias_superficie(pasta, estado))
         return criterios, faltam
 
     def fechar(self, status, resultado):

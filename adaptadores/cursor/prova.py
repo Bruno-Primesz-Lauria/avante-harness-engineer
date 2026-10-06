@@ -70,9 +70,13 @@ def _abrir_janela(provas, evento):
         rastreio["janelas"][chamada] = {
             "papel": pendente["papel"], "inicio": _agora(), "agente_id": None,
         }
-        return None, True
+        previsto = any(c["papel"] == pendente["papel"] for c in estado["chamadas_previstas"])
+        return pendente["papel"] if previsto else None, True
 
-    _editar_estado(provas, alterar)
+    _, papel = _editar_estado(provas, alterar)
+    if papel in PAPEIS_REGISTRAVEIS:
+        # Retrato de superficie no inicio do subagente (C5); o fim e conferido em registrar_chamada.
+        provas.abrir_chamada(_chamada_id(chamada), papel)
 
 
 def _fechar_janela(provas, evento):
