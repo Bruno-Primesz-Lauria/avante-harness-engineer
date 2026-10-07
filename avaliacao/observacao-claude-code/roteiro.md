@@ -1,10 +1,10 @@
 # Roteiro O-CC — observação do Claude Code em cópia temporária
 
-Para quem conduz a observação: o humano, ou um agente em modo headless (`claude -p`), como na P0.4. Nada aqui declara `observado`: isso só existe depois do aceite de G2, que é do humano. Fonte: `PLANO-AGENTES-TRILHAS.md` §2, §3 e §4.3 (O-CC). O kit foi montado com as lições das seis tentativas da O-CU (`avaliacao/observacao-cursor/roteiro.md`) e **ainda não foi executado**.
+Para quem conduz a observação: o humano, ou um agente em modo headless (`claude -p`). Serve para observar de novo o Claude Code (CLI nova ou mudança no adaptador). Nada aqui declara `observado`: isso só existe depois do aceite humano. Fonte: `PLANO-AGENTES-TRILHAS.md` §2 e §3; resultado no painel (O-CC).
 
 ## 0. Antes
 
-1. **Máquina:** Windows com o launcher `py` (Python 3.12 ou superior) e `pip install -r requirements.txt`; Node para `testes/teste_opencode.mjs`; Git; a CLI `claude` (a P0.4 usou a 2.1.289; registre `claude --version`) com o plugin `databricks@claude-plugins-official` habilitado, porque os agentes pré-carregam as skills `databricks:databricks-*`. Os hooks usam `py -3` e `powershell`.
+1. **Máquina:** Windows com o launcher `py` (Python 3.12 ou superior) e `pip install -r requirements.txt`; Node para `testes/teste_opencode.mjs`; Git; a CLI `claude` (registre `claude --version`) com o plugin `databricks@claude-plugins-official` habilitado, porque os agentes pré-carregam as skills `databricks:databricks-*`. Os hooks usam `py -3` e `powershell`.
 2. **Clone na branch** `feat/engenheiro-bruno-lauria`, sem alterações pendentes nos arquivos de C4, C5, C6, B2-CC e D-CC. Confira: `py -3 -m unittest discover -s testes -p teste_*.py`, `node testes/teste_opencode.mjs`, `py -3 adaptadores/gerar_agentes.py --verificar` e `py -3 avaliacao/observacao-claude-code/validar.py` (adapta uma cópia temporária e simula os hooks das duas fatias, sem Claude Code).
 3. **Preparar a cópia:** `py -3 avaliacao/observacao-claude-code/preparar.py`. Exporta o HEAD, sem Git nem produto, para `../.execucoes/observacao-claude-code-<instante>` (ao lado do clone). Só na cópia:
    - `agentes_obrigatorios.claude_code = [manutencao, docs]`, registros próprios em `.execucoes`, bundle apontando para a fixture e deploy desabilitado;
@@ -31,14 +31,14 @@ claude -p $prompt --resume <SESSAO> --output-format stream-json --verbose --allo
 
 ## 1. Por que o roteiro é em turnos, e o que muda do Cursor
 
-Lições da O-CU que valem aqui:
+O que define o roteiro:
 
 - **Sem fatia ativa, o `Stop` não bloqueia.** S0, M1 e M9a rodam antes do `iniciar`. A guarda de bundle vale com ou sem fatia.
-- **Com a fatia aberta, o `Stop` bloqueia uma vez por turno** (`decision: block`); o `Stop` seguinte vem com `stop_hook_active: true` e passa. No Cursor o `followup_message` chegou ao chat como mensagem do usuário e o coordenador seguiu a trilha sozinho, fechou a fatia e deixou de observar M1, M8 e a guarda. Aqui nenhum trecho corre sozinho: **cada passo é um prompt**, e a regra 9 manda não avançar quando o bloqueio chegar.
+- **Com a fatia aberta, o `Stop` bloqueia uma vez por turno** (`decision: block`); o `Stop` seguinte vem com `stop_hook_active: true` e passa, e com subagente rodando não bloqueia. No Cursor o `followup_message` chega ao chat como mensagem do usuário e o coordenador segue a trilha sozinho, fechando a fatia antes dos passos observados. Aqui nenhum trecho corre sozinho: **cada passo é um prompt**, e a regra 9 manda não avançar quando o bloqueio chegar.
 - **O roteiro não vai para a cópia**; o coordenador não o lê.
 - **Um subagente por vez, na ordem do roteamento.** Escrita em série (config e depois implement); janela sobreposta torna a autoria inconclusiva (C5).
-- **O ID do subagente vem do hook.** No Cursor o refute precisava rodar um Shell inofensivo para vincular o `conversation_id`. No Claude Code o `tool_response.agentId` do `PostToolUse(Agent)` já é o `agente_id`, e o hook o devolve ao coordenador em `additionalContext`. O refute **não** roda Shell (`toolStats.bashCount` 0).
-- **Agent em segundo plano (2.1.292, 1ª tentativa O-CC).** O `PostToolUse(Agent)` volta `async_launched` e traz o `agentId`, mas o subagente ainda roda: o hook devolve o ID ao coordenador no lançamento e registra a chamada no `SubagentStop`. Na primeira tentativa o adaptador descartava esse retorno, e nenhuma chamada foi registrada.
+- **O ID do subagente vem do hook.** No Cursor o refute roda um Shell inofensivo para vincular o `conversation_id`. No Claude Code o `tool_response.agentId` do `PostToolUse(Agent)` já é o `agente_id`, e o hook o devolve ao coordenador em `additionalContext`. O refute **não** roda Shell (`toolStats.bashCount` 0).
+- **Agent em segundo plano (CLI 2.1.292).** O `PostToolUse(Agent)` volta `async_launched` e traz o `agentId`, mas o subagente ainda roda: o hook devolve o ID ao coordenador no lançamento e registra a chamada no `SubagentStop`.
 - **O coordenador transcreve a citação de skill de cada filho** (a fala do subagente é relato, não prova): o transcript copiado por `capturar.py` comprova o pré-carregamento.
 - **Refute com achado:** cada refute chamado tem a sua revisão registrada, o achado vai para `triar` antes de outro refute, e quem corrige é o papel dono do arquivo.
 - **O comando declarado roda no subagente indicado, literal.** Se o modelo mudar as aspas, o hook não casa o critério e nenhuma prova nasce: isso é um achado, não algo a corrigir à mão.
@@ -204,7 +204,7 @@ Em `<cópia>`, depois do turno 10 (ou do ponto em que parou), copie para o harne
 - `<cópia>-turnos/` (os streams `stream-json` de cada turno) → `.../turnos/`
 - `.execucoes/provas/`, `.execucoes/sessoes/` e `observacao/PREPARO.json` da cópia → `.../registros/`
 
-Prints não são necessários. Avise o agente com o caminho: ele só lê esses arquivos e monta a tabela abaixo. O resumo versionado no README do adaptador e `observado` em `agentes/roteamento.yaml` (versão, data, referência) só entram depois do aceite do G2.
+Prints não são necessários. Avise o agente com o caminho: ele só lê esses arquivos e monta a tabela abaixo. O resumo versionado no README do adaptador e `observado` em `agentes/roteamento.yaml` (versão e referência) só mudam depois do aceite humano.
 
 ## 4. O que decide G2 (humano)
 

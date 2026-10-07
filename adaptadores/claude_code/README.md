@@ -12,13 +12,13 @@ Visão geral e tabela: [adaptadores](../README.md). Estado dos gates e históric
 - O `cwd` do envelope é da sessão e não vale como prova. A guarda interpreta somente `Set-Location -LiteralPath '...' -ErrorAction Stop;` (PowerShell) ou `cd -- '...' &&` (Bash). Uma verificação declarada sem esse prefixo é negada com orientação para informar o diretório.
 - Um `plan` literal declarado no contrato e concluído com sucesso grava o recibo de plan, como no Cursor; o prefixo de diretório é retirado antes de interpretar o comando.
 - `Stop` confere a fatia e bloqueia uma saída sem fecho válido. Quando `stop_hook_active` é `true`, ou quando `background_tasks` traz um subagente `running`, não bloqueia.
-- **Limite vigente:** o adaptador foi exercitado só sobre fixtures. Até o G2 do Claude Code, o `fechar` não comprova `DONE` nesse runtime (regra do `AGENTS.md`): feche a fatia como `BLOCKED`, com motivo e condição de retomada, ou execute-a no Cursor. Relato de agente não substitui prova observada.
+- **Limite vigente:** papéis, coleta e fecho foram observados em sessão real, mas, até a ativação do runtime, o `fechar` não comprova `DONE` no Claude Code (regra do `AGENTS.md`): feche a fatia como `BLOCKED`, com motivo e condição de retomada, ou execute-a no Cursor. Relato de agente não substitui prova observada.
 - Observação (O-CC): kit em [`avaliacao/observacao-claude-code/`](../../avaliacao/observacao-claude-code/roteiro.md).
 - Confira: `/hooks` e `/agents`.
 
 ## Comportamento observado do runtime
 
-Observado no CLI 2.1.283 e 2.1.289, headless, e no 2.1.292, interativo (O-CC, 2026-10-07), Windows, hooks em PowerShell.
+Observado no CLI 2.1.283 e 2.1.289 (headless) e 2.1.292 (interativo), Windows, hooks em PowerShell.
 
 - Frontmatter: `name`, `description`, `tools`, `model: inherit` e `skills` são efetivos. A skill listada é pré-carregada no subagente, inclusive com escopo de plugin (`databricks:databricks-core`).
 - O subagente recebe `CLAUDE.md`/`AGENTS.md` e as skills do plugin `databricks:databricks-*`. Skills de `.agents/skills/` não aparecem no Claude Code.

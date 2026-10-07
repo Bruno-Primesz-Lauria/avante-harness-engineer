@@ -19,7 +19,7 @@ Contexto do projeto Avante (vocabulário, etapas, papéis): `nucleo/contexto-ava
   Rode as verificações pelo chat, consulte com `estado` e feche com `fechar`.
   Só escreva `DONE` se `fechar` aceitar. Se recusar, verifique de novo ou feche com `BLOCKED`, `FAILED` ou `DECIDE` (`evidencia/fecho.md`).
 - **Agentes obrigatórios**: se a trilha estiver em `agentes_obrigatorios` do seu runtime (`configuracao/politica.json`), você coordena e delega aos papéis de `agentes/` na ordem de [`trilhas/README.md`](trilhas/README.md#agentes). Não faça em silêncio o trabalho de um papel obrigatório: papel indisponível fecha `BLOCKED`. Fora da chave, um único agente executa a trilha.
-- **Limite temporário no Claude Code**: até o gate G2 do Claude Code, a coleta de provas desse runtime não foi observada em sessão real; portanto, `fechar` não comprova `DONE`. Feche a fatia como `BLOCKED`, registrando o motivo e a condição de retomada, ou execute a fatia no Cursor. Relato de agente não substitui prova.
+- **Limite temporário no Claude Code**: até a ativação desse runtime (E0 no plano), `fechar` não comprova `DONE` no Claude Code. Feche a fatia como `BLOCKED`, registrando o motivo e a condição de retomada, ou execute a fatia no Cursor. Relato de agente não substitui prova.
 
 ## Databricks
 

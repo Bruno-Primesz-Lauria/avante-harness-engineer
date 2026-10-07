@@ -106,15 +106,16 @@ Adotadas: `contrato`, `guarda`, `teste`, `brief`, `ataque`, `triagem`, `inspecao
 | B2-CU, D-CU, O-CU | Sete agentes no Cursor, janelas de subagente e vínculo do shell; seis sessões de observação. | `b4669f0`, `0457571`; **G2 do Cursor aceito em 2026-10-06** (Cursor 3.19.19) |
 | E0 Cursor | `agentes_obrigatorios.cursor = [manutencao]`; esvaziar a chave restaura o comportamento anterior. | `a152529` (2026-10-06) |
 | RT | `--runtime codex` e `--runtime opencode` no `prova.py`, fora da chave e sem coleta de provas de shell. | `f0fe0e9` (2026-10-06) |
-| B2-CC, D-CC | Sete agentes no Claude Code; sessão, coleta de prova, chamada observada com o `agente_id` devolvido ao coordenador e `Stop`, testados sobre fixture. Kit O-CC pronto. | `6bb45d4`, `dbce6b9`, `f01ee05` (2026-10-06); **O-CC não executada** |
+| B2-CC, D-CC, O-CC | Sete agentes no Claude Code; sessão, coleta de prova, chamada observada com o `agente_id` devolvido ao coordenador e `Stop`; Agent em segundo plano registrado no `SubagentStop`; duas sessões de observação. | `6bb45d4`, `dbce6b9`, `f01ee05` (2026-10-06), `d6292d0` (2026-10-07); **G2 do Claude Code aceito em 2026-10-07** (CLI 2.1.292) |
 | Higienização | Brutos das sondagens, da O-CU e registros antigos arquivados em `../arquivo-harness/2026-10-06_execucoes.zip`, fora do clone; estado e histórico só neste plano. | `9b802d2` (2026-10-06) |
 | AL | Alinhamento ao estado real: recibo de plan também no Claude Code; `estado` lista as chamadas observadas com `agente_id`; refute do Cursor vincula o ID com um Shell inofensivo; registros do C6 instruídos nas trilhas e nos papéis; linha `Skills:` nos retornos; regras só no harness (o produto não tem `AGENTS.md`); HTML e plano sintetizados; produto clonado em `prj-avante-analytics-adb/`, branch `feat/lista_tarefas`. | 2026-10-07; suíte com 229 testes |
+| Higienização 2 | Datas, versões de sessão, commits e narrativa de tentativas retirados de READMEs, roteiros, código, testes, roteamento e HTML; `user-harness-esteira-v3.html` removido (`776ca8d`); histórico só neste plano. | 2026-10-07; suíte com 237 testes |
 
 | Gate | Critério | Status |
 |---|---|---|
 | G1 | Suíte e A4 verdes; geração estável | Aprovado em 2026-10-05 |
 | G2 Cursor | Observação aceita em sessão nova | Aceito em 2026-10-06 |
-| G2 Claude Code | Idem | Pendente: O-CC não executada |
+| G2 Claude Code | Idem | Aceito em 2026-10-07 |
 | G3a | Onda 1 sem falso `DONE`, sem violação de escopo e com chamadas previstas iguais às observadas | Pendente |
 | G3b | Mesmo critério, por trilha da onda 2 | Pendente |
 | G4 | Aceite final (seção 5) | Pendente |
@@ -127,15 +128,17 @@ As sessões anteriores motivaram correções já incorporadas: nome e descriçã
 
 ### Observado no Claude Code
 
-Só as sondagens da Fase 0: frontmatter efetivo, `CLAUDE.md`/`AGENTS.md` e skills do plugin no subagente, hooks de shell no subagente com `agent_id`, formato de sucesso e falha e guarda negando no subagente. Papéis, coleta e fecho não foram observados em sessão real.
+Sondagens da Fase 0 (CLI 2.1.283 e 2.1.289): frontmatter efetivo, `CLAUDE.md`/`AGENTS.md` e skills do plugin no subagente, hooks de shell no subagente com `agent_id`, formato de sucesso e falha e guarda negando no subagente.
+
+Duas sessões O-CC em 2026-10-07 (CLI 2.1.292, interativo). Na primeira, o `Agent` voltou `async_launched`, com o subagente em segundo plano sem `run_in_background`, e o adaptador descartava a chamada: nenhuma chamada registrada, `edicao_fora_do_papel` nas três escritas e o refute sem `agente_id` para a revisão. A correção (`d6292d0`) devolve o ID no lançamento, mantém a janela de superfície aberta, registra a chamada no `SubagentStop` e não bloqueia o `Stop` com subagente rodando. Na segunda: os sete papéis descobertos e chamados em série; onze chamadas `concluida` com o `agente_id` do filho; recorte sem pendência de superfície; guarda negando no `dab` por `cwd_incorreto`, sem execução; prova do test e `ambiente_local` com o ID do filho; revisões dos refutes com o ID devolvido pelo hook, sem Bash no refute; falso `DONE` recusado com `chamada:dab`; inspeção invalidada pela edição e refeita; `DONE` aceito nas fatias de manutenção e docs; skills pré-carregadas e citadas conforme o roteamento em todos os filhos, conferidas nos transcripts dos subagentes.
+
+Ressalvas aceitas no G2: o coordenador não transcreveu a citação de skill de dois dos onze filhos e resumiu errado o retorno do config; a sessão foi interativa, sem os streams `turnos/*.jsonl`, com os brutos dos hooks completos; o implement rodou um unittest próprio, sem efeito na prova; o registro da chamada depende de o `SubagentStop` chegar antes do passo seguinte do coordenador, o que ocorreu nas onze chamadas.
 
 ## 4. Pendências
 
 | ID | O que falta | Quem | Depende de |
 |---|---|---|---|
-| O-CC | Rodar o kit `avaliacao/observacao-claude-code/` em sessão nova | Humano (ou agente headless numa cópia temporária) | — |
-| G2 Claude Code | Aceitar ou não a observação | Humano | O-CC |
-| E0 Claude Code | Remover o limite temporário do `AGENTS.md` e do README do adaptador; preencher `observado` do `claude_code` no roteamento; `agentes_obrigatorios.claude_code = [manutencao]`; ajustar o teste da chave real | Agente | G2 Claude Code |
+| E0 Claude Code | Remover o limite temporário do `AGENTS.md`, do README do adaptador e do HTML; `agentes_obrigatorios.claude_code = [manutencao]`; ajustar o teste da chave real | Decisão humana; aplicação pelo agente | — |
 | E0 correção | Incluir `correcao` na chave do runtime aprovado. Formas e instruções do C6 já estão prontas | Decisão humana; aplicação pelo agente | — |
 | E1 | Onda 1: tarefas reais de manutenção e correção (seção 5). Candidata: lista de tarefas, na branch `feat/lista_tarefas` do produto | Humano escolhe e autoriza; agente coordena | E0 da trilha |
 | G3a | Gate da onda 1 | Humano | E1 |
@@ -144,7 +147,7 @@ Só as sondagens da Fase 0: frontmatter efetivo, `CLAUDE.md`/`AGENTS.md` e skill
 
 ```mermaid
 flowchart LR
-  OCC["O-CC"] --> G2CC{{"G2 · Claude Code"}} --> E0CC["E0 Claude Code"]
+  G2CC["G2 Claude Code ✓"] --> E0CC["E0 Claude Code"]
   E0CU["E0 Cursor: manutenção ✓"] --> E1["E1 · onda 1"]
   DEC(["correção na chave"]) --> E1
   E0CC -.->|entra pelo próprio E0| E1
@@ -162,8 +165,6 @@ flowchart LR
 Não implementados: guarda de `run`, identidade autenticada na guarda, coordenação de dados compartilhados, fronteira do produto por código, skills do projeto e `docs-distill` (previsto em `plano_memoria_harness.md`).
 
 ### 4.3 Briefs
-
-**O-CC.** `py -3 avaliacao/observacao-claude-code/preparar.py` e o [roteiro](avaliacao/observacao-claude-code/roteiro.md), em dez turnos (`claude -p ... --resume` ou interativo, na cópia). Diferenças da O-CU: um prompt por passo, porque o `Stop` bloqueia uma vez por turno; o `agente_id` do refute vem do contexto do hook, sem shell no refute; contratos com prefixo `cd --`; o limite temporário do `AGENTS.md` é removido só da cópia. Aceite: descoberta dos sete, chamada real, recorte respeitado, skill citada, guarda negando no subagente, prova do test na fatia do coordenador e `fechar` recusando `DONE` sem a chamada prevista. Saída: brutos em `.execucoes/sondagens/`, resumo no README do adaptador e `observado` no roteamento.
 
 **E1.** Rodar no produto os cenários de manutenção e correção da seção 5, em sessão real. As tarefas e a autorização de ambiente são decisão humana (`DECIDE` até lá). Saída: registros em `.execucoes/` e a tabela da onda, com chamadas previstas × observadas, falso `DONE` e violações de escopo.
 
@@ -227,4 +228,4 @@ Fora deste plano: implementar de uma vez todas as candidatas do acervo, mudar re
 1. Windows com `py` (Python 3.12+), `pip install -r requirements.txt`, Node e Git. Cursor 3.17.8 ou superior; para a O-CC, o CLI `claude` com o plugin `databricks@claude-plugins-official`.
 2. Clone do harness na branch `feat/engenheiro-bruno-lauria`. O produto vai dentro da raiz, em `prj-avante-analytics-adb/` (ignorado pelo Git do harness), com `core.longpaths true` no Windows; a branch de trabalho sai de `dev`.
 3. Conferência: a suíte, `node testes/teste_opencode.mjs`, `py -3 adaptadores/gerar_agentes.py --verificar` (14 `OK`) e os `validar.py` de `avaliacao/observacao-cursor/` e `avaliacao/observacao-claude-code/`.
-4. Os brutos das sondagens e da O-CU estão em `../arquivo-harness/2026-10-06_execucoes.zip`, fora do clone.
+4. Os brutos das sondagens e da O-CU estão em `../arquivo-harness/2026-10-06_execucoes.zip`; os da O-CC, nas cópias `../.execucoes/observacao-claude-code-20261007T*`. Tudo fora do clone.

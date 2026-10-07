@@ -1,4 +1,4 @@
-"""Prepara a copia temporaria da observacao O-CC (PLANO-AGENTES-TRILHAS 4.3).
+"""Prepara a copia temporaria da observacao O-CC (PLANO-AGENTES-TRILHAS, painel).
 
 Uso, com o HEAD commitado: py -3 avaliacao/observacao-claude-code/preparar.py
 A copia fica em ../.execucoes/observacao-claude-code-<instante>, ao lado do clone.
@@ -262,7 +262,7 @@ def verificar_head():
     if "agente_id=" not in (mostrar("adaptadores/claude_code/prova.py") or ""):
         faltas.append("adaptadores/claude_code/prova.py do HEAD nao devolve o agente_id ao coordenador (D-CC)")
     if "async_launched" not in (mostrar("adaptadores/claude_code/prova.py") or ""):
-        faltas.append("adaptadores/claude_code/prova.py do HEAD nao registra Agent em segundo plano (O-CC 2.1.292)")
+        faltas.append("adaptadores/claude_code/prova.py do HEAD nao registra Agent em segundo plano")
     rota = mostrar("agentes/roteamento.yaml") or ""
     if len(re.findall(r"claude_code: \{[^}]*instalado: true", rota)) != len(PAPEIS):
         faltas.append("agentes/roteamento.yaml do HEAD sem instalado: true no claude_code para os sete papeis (B2-CC)")

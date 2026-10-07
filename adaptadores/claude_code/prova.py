@@ -139,12 +139,12 @@ def _registrar_fim(provas, evento):
     )
     arquivo.unlink(missing_ok=True)
     # O coordenador nao ve o agentId do subagente: sem ele, a revisao, o ambiente e a paridade
-    # nao se vinculam a chamada observada (O-CU: revisao:fora_do_refute).
+    # nao se vinculam a chamada observada (revisao:fora_do_refute).
     return _contexto_agente(papel, agente_id, f"registrada (etapa {registro['etapa']})")
 
 
 def _lancar_em_segundo_plano(provas, inicio, agente_id, descartar):
-    """O-CC (CLI 2.1.292): o Agent volta async_launched, sem agentType, com o subagente ainda rodando.
+    """CLI 2.1.292: o Agent volta async_launched, sem agentType, com o subagente ainda rodando.
 
     A janela de superficie fica aberta e o registro espera o SubagentStop do mesmo agent_id.
     O agentId ja vem aqui, unico ponto em que o hook ainda fala com o coordenador.

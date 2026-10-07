@@ -291,7 +291,7 @@ class ProvasTestes(unittest.TestCase):
         self.assertIn("nao_verificada", json.dumps(self.p.pendencias(self.p.pasta(), self.p.estado(self.p.pasta()))))
 
     def test_hook_falha_com_exit_code_no_texto_registra_fail(self):
-        # Payload do Cursor 3.17.8 (sondagem P0.5): exit diferente de zero so como texto.
+        # Payload do Cursor 3.17.8: exit diferente de zero so como texto.
         self.iniciar()
         self.hook("preToolUse")
         self.hook("postToolUseFailure", failure_type="error", error_message="Command failed with exit code 3")
@@ -919,7 +919,7 @@ class ProvasTestes(unittest.TestCase):
         self.assertFalse([p for p in self.pendencias_atuais() if "superficie" in p or "papel" in p])
 
     def test_c5_edicao_do_principal_no_documento_impede_done(self):
-        # O-CU 2026-10-06: o coordenador corrigiu o guia sozinho e o núcleo não viu.
+        # Coordenador que corrige o guia sozinho: o núcleo precisa ver a edição.
         self.iniciar_docs()
         self.escrever("call-docs", "docs", "docs/nota.md", "fato com fonte\n")
         (self.raiz / "docs/nota.md").write_text("principal corrigiu\n", encoding="utf-8")
@@ -1117,7 +1117,7 @@ class ProvasTestes(unittest.TestCase):
         self.assertIn("revisao:fora_do_refute", erro)
 
     def test_refute_observado_sem_revisao_registrada_impede_done(self):
-        # O-CU 2026-10-06: o primeiro refute achou A1, só o segundo, limpo, foi registrado.
+        # Primeiro refute com achado e só o segundo, limpo, registrado: falta a revisão do primeiro.
         self.ativar("manutencao")
         self.passagem_completa_de_manutencao()
         self.chamar("call-refute-2", "refute")
@@ -1351,7 +1351,7 @@ class ProvasTestes(unittest.TestCase):
         self.assertEqual(self.pendencias_atuais(), ["sandbox_obsoleto:c1"])
 
     def test_ambiente_com_script_local_nao_leva_sandbox(self):
-        # O-CU 2026-10-06: o criterio ambiente_local roda um script, nao uma operacao de bundle.
+        # O criterio ambiente_local roda um script, nao uma operacao de bundle.
         comando = "py -3 fixture/manutencao/ambiente_local.py"
         self.iniciar_ambiente(comando)
         self.assertEqual(self.operar(comando), "pass")

@@ -256,7 +256,7 @@ def tratar(evento, politica, raiz):
     codigo, origem = None, "campo_resultado"
     if nome == "postToolUseFailure":
         erro = evento.get("error_message")
-        # Exit diferente de zero chega so como texto (sondagem P0.5); timeout ou negacao seguem inconclusivos.
+        # Exit diferente de zero chega so como texto; timeout ou negacao seguem inconclusivos.
         lido = FALHA.fullmatch(erro.strip()) if evento.get("failure_type") == "error" and isinstance(erro, str) else None
         if lido and int(lido.group(1)) != 0:
             codigo, origem, saida = int(lido.group(1)), "texto_falha", erro

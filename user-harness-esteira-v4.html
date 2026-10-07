@@ -402,7 +402,7 @@ td.m, th.m { text-align: center; }
 <header class="page">
 <p class="eyebrow">Arquitetura de agente · saneamento_migracao</p>
 <h1>Autonomia com prova.</h1>
-<p class="lede">Guia visual: o princípio, o que o harness faz e como ele se organiza. Fluxos conforme <code>agentes/roteamento.yaml</code>. Versão 4, estado de 2026-10-07.</p>
+<p class="lede">Guia visual: o princípio, o que o harness faz e como ele se organiza. Fluxos conforme <code>agentes/roteamento.yaml</code>. Versão 4.</p>
 </header>
 
 <section id="principio">
@@ -576,9 +576,9 @@ td.m, th.m { text-align: center; }
 <text class="t mono" x="805.0" y="471.5">cursor/prova.py</text>
 <text class="s" x="805.0" y="491.5">coleta prova e subagentes</text>
 </g>
-<g class="ab  arq-hit" data-arq="ad_cc" tabindex="0" role="button" aria-pressed="false" aria-label="claude_code/prova.py — prova e subagentes · G2 pendente"><rect x="686" y="526" width="238" height="70" rx="12"/>
+<g class="ab  arq-hit" data-arq="ad_cc" tabindex="0" role="button" aria-pressed="false" aria-label="claude_code/prova.py — prova e subagentes · observado"><rect x="686" y="526" width="238" height="70" rx="12"/>
 <text class="t mono" x="805.0" y="557.5">claude_code/prova.py</text>
-<text class="s" x="805.0" y="577.5">prova e subagentes · G2 pendente</text>
+<text class="s" x="805.0" y="577.5">prova e subagentes · observado</text>
 </g>
 <g class="ab  arq-hit" data-arq="prova_cli" tabindex="0" role="button" aria-pressed="false" aria-label="prova.py (CLI) — iniciar · registros · fechar"><rect x="686" y="612" width="238" height="70" rx="12"/>
 <text class="t mono" x="805.0" y="643.5">prova.py (CLI)</text>
@@ -698,7 +698,7 @@ td.m, th.m { text-align: center; }
 <tr><td><span class="chip warn">BLOCKED</span></td><td>acesso, capacidade ou estado externo impede</td></tr>
 <tr><td><span class="chip bad">FAILED</span></td><td>a verificação rodou e reprovou</td></tr>
 </tbody></table></div></div>
-<div class="callout warn">Limite atual: no Claude Code a coleta de prova existe e foi testada sobre fixture, mas ainda não foi observada em sessão real (G2). Até lá, <code>fechar</code> não comprova DONE nesse runtime: use <code>BLOCKED</code> com a condição de retomada, ou execute no Cursor.</div>
+<div class="callout warn">Limite atual: no Claude Code a coleta de prova foi observada em sessão real, mas, até a ativação do runtime (E0), <code>fechar</code> não comprova DONE nele: use <code>BLOCKED</code> com a condição de retomada, ou execute no Cursor.</div>
 </section>
 
 <section id="trilhas">
@@ -718,7 +718,7 @@ td.m, th.m { text-align: center; }
 <div class="pills" id="tabs-trilha" role="group" aria-label="Trilha"></div>
 <p class="note-uso" id="uso"></p><p class="note-papeis" id="papeis"></p>
 <div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny,back"></div><figure class="flow-map"><div id="g-trilha"></div><figcaption>Selecione um nó para ver entradas e saídas. Fecho sem DONE: DECIDE, BLOCKED ou FAILED.</figcaption></figure></div>
-<div class="callout">As definições dos papéis estão em <code>agentes/</code>. <span id="estacao-cursor" class="chip ok">Cursor: observado</span> em <code>.cursor/agents/</code>, G2 aceito em 2026-10-06; obrigatórios na trilha <code>manutencao</code>. <span id="estacao-claude" class="chip warn">Claude Code: instalado</span> em <code>.claude/agents/</code>; sessão nova ainda não observada (O-CC/G2). Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
+<div class="callout">As definições dos papéis estão em <code>agentes/</code>. <span id="estacao-cursor" class="chip ok">Cursor: observado</span> em <code>.cursor/agents/</code>; obrigatórios na trilha <code>manutencao</code>. <span id="estacao-claude" class="chip ok">Claude Code: observado</span> em <code>.claude/agents/</code>; ainda não obrigatórios (E0). Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
 </section>
 
 <section id="guardas">
@@ -778,16 +778,16 @@ td.m, th.m { text-align: center; }
 
 <section id="estado">
 <h2>Estado</h2>
-<p class="section-note">Só o que existe no repositório ou no plano, em 2026-10-07. “Testado” é cobertura da suíte (229 testes); “observado” é sessão real de um runtime. Pendências e decisões abertas: painel do plano.</p>
+<p class="section-note">Só o que existe no repositório ou no plano. “Testado” é cobertura da suíte; “observado” é sessão real de um runtime. Pendências e decisões abertas: painel do plano.</p>
 <div class="tbl-wrap"><table>
 <thead><tr><th scope="col">Capacidade</th><th scope="col" class="m">Implementado</th><th scope="col" class="m">Testado</th><th scope="col" class="m">Observado</th></tr></thead><tbody>
-<tr><td>Guarda de shell Databricks e SQL só leitura</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor; Claude Code nas sondagens</span></td></tr>
+<tr><td>Guarda de shell Databricks e SQL só leitura</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
 <tr><td>Prova e fecho no Cursor (hooks e <code>prova.py</code>)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
-<tr><td>Prova e fecho no Claude Code (sessão, coleta, recibo de plan, <code>Stop</code>)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim, sobre fixture</span></td><td class="m"><span class="chip warn">ainda não (O-CC)</span></td></tr>
-<tr><td>Roteamento, definições neutras e agentes nativos</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">Cursor; Claude Code pendente</span></td></tr>
+<tr><td>Prova e fecho no Claude Code (sessão, coleta, recibo de plan, <code>Stop</code>)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">sim; DONE só após o E0</span></td></tr>
+<tr><td>Roteamento, definições neutras e agentes nativos</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
 <tr><td>Agentes obrigatórios por trilha (<code>agentes_obrigatorios</code>)</td><td class="m"><span class="chip ok">Cursor: manutenção</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor</span></td></tr>
-<tr><td>Superfície por papel (C5) e revisão por refute observado</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor</span></td></tr>
-<tr><td>Formas 3.2: onze adotadas</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">oito no Cursor; C6 ainda não</span></td></tr>
+<tr><td>Superfície por papel (C5) e revisão por refute observado</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
+<tr><td>Formas 3.2: onze adotadas</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">oito no Cursor e no Claude Code; C6 ainda não</span></td></tr>
 <tr><td>Diagnóstico, ambiente e paridade (C6)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
 <tr><td>Identidade e destinos do deploy</td><td class="m"><span class="chip warn">decisão aberta (ID-DEP)</span></td><td class="m"><span class="chip neutral">—</span></td><td class="m"><span class="chip neutral">—</span></td></tr>
 <tr><td>Guardas de run, dados compartilhados e fronteira do produto</td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">—</span></td><td class="m"><span class="chip neutral">—</span></td></tr>
@@ -795,9 +795,9 @@ td.m, th.m { text-align: center; }
 </tbody></table></div>
 <h3>Roteiro até o aceite final</h3>
 <div class="tiles fixed">
-<div class="tile"><div class="v sm">G1</div><div class="k">aprovado em 2026-10-05; suíte, consistência e geração estáveis</div></div>
-<div class="tile cur"><div class="v sm">G2</div><div class="k">Cursor aceito em 2026-10-06; Claude Code pendente (O-CC)</div></div>
-<div class="tile"><div class="v sm">E0 / E1</div><div class="k">manutenção ativa no Cursor; onda 1 (manutenção e correção) em tarefa real</div></div>
+<div class="tile"><div class="v sm">G1</div><div class="k">aprovado; suíte, consistência e geração estáveis</div></div>
+<div class="tile"><div class="v sm">G2</div><div class="k">aceito no Cursor e no Claude Code</div></div>
+<div class="tile cur"><div class="v sm">E0 / E1</div><div class="k">manutenção ativa no Cursor; Claude Code a ativar; onda 1 (manutenção e correção) em tarefa real</div></div>
 <div class="tile"><div class="v sm">E2</div><div class="k">segunda onda, trilha a trilha</div></div>
 <div class="tile"><div class="v sm">G4</div><div class="k">medição e aceite final</div></div>
 </div>
@@ -1237,7 +1237,7 @@ const ARQ = {
   nativos: { tipo: "Instalado", chip: "ok", t: ".claude/agents · .cursor/agents", onde: ".claude/agents/, .cursor/agents/",
     oque: "As versões nativas dos papéis, no formato que cada runtime entende.",
     serve: "Permitir que o runtime ative de fato os subagentes da trilha.",
-    importa: "Instalados nos dois runtimes. Observados em sessão real no Cursor (G2 aceito em 2026-10-06); no Claude Code, a observação (O-CC) ainda não foi feita. Papel obrigatório indisponível fecha BLOCKED.",
+    importa: "Instalados nos dois runtimes. Observados em sessão real no Cursor e no Claude Code. Papel obrigatório indisponível fecha BLOCKED.",
     liga: ["gerar", "subagentes"] },
 
   g_runtime: { tipo: "Grupo", chip: "info", t: "Runtime", onde: "Cursor, Claude Code, Codex, OpenCode",
@@ -1258,7 +1258,7 @@ const ARQ = {
   runtimes: { tipo: "Runtimes", chip: "info", t: "Cursor · Claude Code · Codex · OpenCode", onde: "",
     oque: "Os quatro ambientes suportados. Todos leem o mesmo AGENTS.md.",
     serve: "Deixar o time usar a ferramenta que preferir sem mudar as regras.",
-    importa: "Prova observada em sessão real só no Cursor. No Claude Code a coleta existe e foi testada sobre fixture, mas até o G2 o fechar não comprova DONE. Codex e OpenCode têm só a guarda.",
+    importa: "Prova observada em sessão real no Cursor e no Claude Code; no Claude Code, até a ativação (E0), o fechar não comprova DONE. Codex e OpenCode têm só a guarda.",
     liga: ["h_cursor", "h_cc", "h_codex", "h_opencode"] },
 
   g_hooks: { tipo: "Grupo", chip: "info", t: "Hooks do runtime", onde: "configuração de cada runtime",
@@ -1271,10 +1271,10 @@ const ARQ = {
     serve: "Interceptar o shell e observar o resultado e o ciclo dos subagentes.",
     importa: "Coleta de prova e chamadas de subagente observadas em sessão real (G2 aceito).",
     liga: ["entrada", "ad_cursor"] },
-  h_cc: { tipo: "Hook", chip: "warn", t: "Hooks do Claude Code", onde: ".claude/settings.json",
-    oque: "PreToolUse e PostToolUse em Bash, PowerShell e Agent; PostToolUseFailure; SessionStart; Stop.",
+  h_cc: { tipo: "Hook", chip: "ok", t: "Hooks do Claude Code", onde: ".claude/settings.json",
+    oque: "PreToolUse e PostToolUse em Bash, PowerShell e Agent; PostToolUseFailure; SessionStart; Stop; SubagentStop.",
     serve: "Passar o shell pela guarda, coletar o resultado e observar as chamadas de subagente.",
-    importa: "Guarda e coleta implementadas e testadas sobre fixture; falta a observação em sessão real (O-CC, G2).",
+    importa: "Guarda, coleta de prova e chamadas de subagente observadas em sessão real (G2 aceito).",
     liga: ["entrada", "ad_cc"] },
   h_codex: { tipo: "Hook", chip: "neutral", t: "Hook do Codex", onde: "",
     oque: "PreToolUse.", serve: "Passar a chamada pela guarda antes do efeito.",
@@ -1300,10 +1300,10 @@ const ARQ = {
     serve: "Transformar a verificação rodada no chat em prova gravada com hash.",
     importa: "Sem esta coleta, o fecho não teria como confirmar DONE.",
     liga: ["provas", "h_cursor"] },
-  ad_cc: { tipo: "Coleta de prova · G2 pendente", chip: "warn", t: "claude_code/prova.py", onde: "adaptadores/claude_code/prova.py",
+  ad_cc: { tipo: "Coleta de prova · observada", chip: "ok", t: "claude_code/prova.py", onde: "adaptadores/claude_code/prova.py",
     oque: "Sessão, coleta de prova, recibo de plan, chamadas de subagente com o agente_id devolvido ao coordenador e Stop.",
     serve: "Permitir DONE comprovado também no Claude Code.",
-    importa: "Testado só sobre fixture. Até o G2 do Claude Code, feche a fatia estruturada como BLOCKED com a condição de retomada, ou execute no Cursor.",
+    importa: "Observado em sessão real. Até a ativação do Claude Code (E0), feche a fatia estruturada como BLOCKED com a condição de retomada, ou execute no Cursor.",
     liga: ["provas", "h_cc", "prova_cli"] },
   prova_cli: { tipo: "CLI", chip: "neutral", t: "prova.py (CLI)", onde: "adaptadores/prova.py",
     oque: "iniciar, estado e fechar da fatia, e os registros inspecionar, revisar, triar, diagnosticar, registrar-sandbox e registrar-paridade.",

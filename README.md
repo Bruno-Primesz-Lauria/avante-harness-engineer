@@ -51,7 +51,7 @@ O que existe hoje. Gates, pendências e histórico: [painel do plano](PLANO-AGEN
 
 **Skills Databricks**: as 10 de `.agents/skills/` valem para Cursor, Codex e OpenCode. O Claude Code recebe as `databricks:databricks-*` pelo plugin `databricks` do projeto, inclusive no subagente.
 
-**Observado em sessão real**: no Cursor, os sete papéis em série, guarda negando no subagente e fatias de manutenção e docs fechando `DONE` com prova. No Claude Code, só as sondagens de eventos e da guarda; os papéis ainda não.
+**Observado em sessão real**: no Cursor e no Claude Code, os sete papéis em série, guarda negando no subagente e fatias de manutenção e docs fechando `DONE` com prova. No Claude Code, o `DONE` segue limitado pela regra do `AGENTS.md` até a ativação do runtime.
 
 **Não implementado**: skills do projeto, conferência de identidade e destinos no deploy, coordenação de dados e `docs-distill`.
 

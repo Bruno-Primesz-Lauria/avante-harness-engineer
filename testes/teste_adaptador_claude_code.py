@@ -1,4 +1,4 @@
-"""Traducoes D-CC exercitadas com eventos P0.4 e fatias temporarias."""
+"""Traducoes do Claude Code exercitadas com eventos reais e fatias temporarias."""
 import copy
 import json
 from pathlib import Path
@@ -8,24 +8,13 @@ import unittest
 from uuid import uuid4
 
 RAIZ = Path(__file__).resolve().parents[1]
-BRUTOS = RAIZ / ".execucoes/sondagens/brutos/claude_code/2026-10-05_cli-2.1.289/hooks"
 SESSAO = "8839e862-c493-43cf-a289-3b8e2adff1f0"
 AGENTE = "a4882a617b9ea83c1"
-ARQUIVOS_P0_4 = {
-    "SessionStart": "SessionStart_e2301f", "PreToolUse_Agent": "PreToolUse_9ee1a5",
-    "PostToolUse_Agent": "PostToolUse_dfdd8e", "PreToolUse_Bash_subagent": "PreToolUse_65ea8d",
-    "PostToolUse_Bash_subagent": "PostToolUse_39d8e3", "PreToolUse_Bash_failure": "PreToolUse_d23d66",
-    "PostToolUseFailure_Bash": "PostToolUseFailure_a7042d", "PreToolUse_PowerShell": "PreToolUse_e88aa9",
-    "PostToolUseFailure_PowerShell": "PostToolUseFailure_438421",
-    "PreToolUse_Bash_principal": "PreToolUse_22e802", "PostToolUse_Bash_principal": "PostToolUse_61a65b",
-    "Stop": "Stop_6577ee", "Stop_active": "Stop_561d58",
-}
-
-EVENTOS_P0_4 = {
+EVENTOS_REAIS = {
     "SessionStart": {"hook_event_name": "SessionStart", "session_id": SESSAO, "source": "startup"},
     "PreToolUse_Agent": {"hook_event_name": "PreToolUse", "session_id": SESSAO,
         "tool_name": "Agent", "tool_use_id": "toolu_01CbHBMDCt1JJ4i9uHE5DUVq",
-        "tool_input": {"description": "Sondagem P0.4", "prompt": "execute sua rotina",
+        "tool_input": {"description": "Chamada de teste", "prompt": "execute sua rotina",
                        "subagent_type": "sonda", "run_in_background": False}},
     "PostToolUse_Agent": {"hook_event_name": "PostToolUse", "session_id": SESSAO,
         "tool_name": "Agent", "tool_use_id": "toolu_01CbHBMDCt1JJ4i9uHE5DUVq",
@@ -65,7 +54,7 @@ EVENTOS_P0_4 = {
         "tool_response": {"stdout": "principal-sucesso", "stderr": "", "interrupted": False,
                           "isImage": False, "noOutputExpected": False}},
     "Stop": {"hook_event_name": "Stop", "session_id": SESSAO,
-        "stop_hook_active": False, "last_assistant_message": "Sondagem concluida."},
+        "stop_hook_active": False, "last_assistant_message": "Turno concluido."},
     "Stop_active": {"hook_event_name": "Stop", "session_id": SESSAO, "stop_hook_active": True},
 }
 
@@ -75,12 +64,8 @@ from gerenciar import gerar
 from provas import Provas, ler, validar
 
 
-def evento_p0_4(nome):
-    """Lê o bruto versionado localmente; o espelho mínimo mantém o teste portátil."""
-    caminho = next(iter(sorted(BRUTOS.glob(f"*_{ARQUIVOS_P0_4[nome]}.json"))), None)
-    if caminho is not None:
-        return copy.deepcopy(json.loads(caminho.read_text(encoding="utf-8"))["evento"])
-    return copy.deepcopy(EVENTOS_P0_4[nome])
+def evento_real(nome):
+    return copy.deepcopy(EVENTOS_REAIS[nome])
 
 
 class AdaptadorClaudeCodeTestes(unittest.TestCase):
@@ -135,25 +120,25 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         return validar(ler(pasta / registro["ref"]), pasta, estado["execucao_id"], "principal")
 
     def test_session_start_expoe_id_observado(self):
-        resposta = self.tratar_evento(evento_p0_4("SessionStart"))
+        resposta = self.tratar_evento(evento_real("SessionStart"))
         self.assertEqual(resposta["hookSpecificOutput"]["hookEventName"], "SessionStart")
         self.assertIn(SESSAO, resposta["hookSpecificOutput"]["additionalContext"])
 
     def test_subagente_test_casa_chamada_e_prova(self):
         self.iniciar(ativada=True)
-        chamada_pre = evento_p0_4("PreToolUse_Agent")
+        chamada_pre = evento_real("PreToolUse_Agent")
         chamada_pre["tool_input"]["subagent_type"] = "test"
         self.assertEqual(self.tratar_evento(chamada_pre), {})
-        chamada_post = evento_p0_4("PostToolUse_Agent")
+        chamada_post = evento_real("PostToolUse_Agent")
         chamada_post["tool_response"]["agentType"] = "test"
         contexto = self.tratar_evento(chamada_post)["hookSpecificOutput"]["additionalContext"]
         self.assertIn("agente_id=" + AGENTE, contexto)
 
-        antes = evento_p0_4("PreToolUse_Bash_subagent")
+        antes = evento_real("PreToolUse_Bash_subagent")
         antes["agent_type"] = "test"
         antes["tool_input"]["command"] = self.comando("echo sonda-sucesso")
         self.assertEqual(self.tratar_evento(antes), {})
-        depois = evento_p0_4("PostToolUse_Bash_subagent")
+        depois = evento_real("PostToolUse_Bash_subagent")
         depois["agent_type"] = "test"
         depois["tool_input"]["command"] = self.comando("echo sonda-sucesso")
         self.assertEqual(self.tratar_evento(depois), {})
@@ -168,8 +153,8 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
 
     def test_tipo_sondado_fora_dos_sete_papeis_nao_registra_chamada(self):
         self.iniciar(ativada=True)
-        self.assertEqual(self.tratar_evento(evento_p0_4("PreToolUse_Agent")), {})
-        self.assertEqual(self.tratar_evento(evento_p0_4("PostToolUse_Agent")), {})
+        self.assertEqual(self.tratar_evento(evento_real("PreToolUse_Agent")), {})
+        self.assertEqual(self.tratar_evento(evento_real("PostToolUse_Agent")), {})
         self.assertEqual(self.p.estado(self.p.pasta())["chamadas_observadas"], [])
 
     def test_envelope_desconhecido_com_tool_input_invalido_falha_fechado(self):
@@ -179,9 +164,9 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
 
     def test_papel_valido_fora_do_plano_nao_registra_nem_derruba_hook(self):
         self.iniciar(ativada=True)
-        antes = evento_p0_4("PreToolUse_Agent")
+        antes = evento_real("PreToolUse_Agent")
         antes["tool_input"]["subagent_type"] = "config"
-        depois = evento_p0_4("PostToolUse_Agent")
+        depois = evento_real("PostToolUse_Agent")
         depois["tool_response"]["agentType"] = "config"
         self.assertEqual(self.tratar_evento(antes), {})
         self.assertEqual(self.tratar_evento(depois), {})
@@ -198,13 +183,13 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
                                          verificacao=dict(comando=self.comando("echo ok"), cwd=".",
                                                           caminhos=["src"]))],
                             orcamento={"ciclos_correcao_max": 3}, responsaveis={"coordenador": "agente"}))
-        antes = evento_p0_4("PreToolUse_Agent")
+        antes = evento_real("PreToolUse_Agent")
         antes["tool_input"]["subagent_type"] = "implement"
         self.assertEqual(self.tratar_evento(antes), {})
         self.assertIn(antes["tool_use_id"],
                       self.p.estado(self.p.pasta())["vigilancia_superficie"]["abertas"])
         (self.raiz / "src/b.yaml").write_text("fora: sim\n", encoding="utf-8")
-        depois = evento_p0_4("PostToolUse_Agent")
+        depois = evento_real("PostToolUse_Agent")
         depois["tool_response"].update(agentType="implement", status="failed")
         self.assertEqual(self.tratar_evento(depois), {})
 
@@ -214,10 +199,10 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
 
     def test_principal_que_rodou_teste_fica_fora_do_papel_test(self):
         self.iniciar("echo principal-sucesso", ativada=True)
-        antes = evento_p0_4("PreToolUse_Bash_principal")
+        antes = evento_real("PreToolUse_Bash_principal")
         antes["tool_input"]["command"] = self.comando("echo principal-sucesso")
         self.assertEqual(self.tratar_evento(antes), {})
-        depois = evento_p0_4("PostToolUse_Bash_principal")
+        depois = evento_real("PostToolUse_Bash_principal")
         depois["tool_input"]["command"] = self.comando("echo principal-sucesso")
         self.assertEqual(self.tratar_evento(depois), {})
         _, faltam = self.p.pendencias(self.p.pasta(), self.p.estado(self.p.pasta()))
@@ -225,7 +210,7 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
 
     def test_verificacao_declarada_sem_prefixo_literal_e_negada(self):
         self.iniciar(comando="echo principal-sucesso")
-        resposta = self.tratar_evento(evento_p0_4("PreToolUse_Bash_principal"))
+        resposta = self.tratar_evento(evento_real("PreToolUse_Bash_principal"))
         self.assertEqual(resposta["hookSpecificOutput"]["permissionDecision"], "deny")
         self.assertIn("cd --", resposta["hookSpecificOutput"]["permissionDecisionReason"])
         self.assertIsNone(self.p.estado(self.p.pasta())["pendente"])
@@ -243,16 +228,16 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
                                          verificacao=dict(comando=comando, cwd="bundle", caminhos=["src"]))],
                             orcamento={"ciclos_correcao_max": 3}, responsaveis={"coordenador": "agente"}))
         recibos = Path(self.politica["registros_raiz"]) / "plans"
-        antes = evento_p0_4("PreToolUse_Bash_principal")
+        antes = evento_real("PreToolUse_Bash_principal")
         antes["tool_input"]["command"] = comando
         self.assertNotEqual(self.tratar_evento(antes).get("hookSpecificOutput", {}).get("permissionDecision"),
                             "deny")
         self.assertFalse(recibos.exists())
-        depois = evento_p0_4("PostToolUse_Bash_principal")
+        depois = evento_real("PostToolUse_Bash_principal")
         depois["tool_input"]["command"] = comando
         self.tratar_evento(depois)
         self.assertEqual(len(list(recibos.glob("*.json"))), 1)
-        deploy = evento_p0_4("PreToolUse_Bash_principal")
+        deploy = evento_real("PreToolUse_Bash_principal")
         deploy["tool_use_id"] = "toolu_deploy"
         deploy["tool_input"]["command"] = comando.replace("plan", "deploy")
         motivo = self.tratar_evento(deploy)["hookSpecificOutput"]["permissionDecisionReason"]
@@ -260,10 +245,10 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
 
     def test_posttoolusefailure_le_exit_code_da_primeira_linha(self):
         self.iniciar("exit 3")
-        antes = evento_p0_4("PreToolUse_Bash_failure")
+        antes = evento_real("PreToolUse_Bash_failure")
         antes["tool_input"]["command"] = self.comando("exit 3")
         self.assertEqual(self.tratar_evento(antes), {})
-        depois = evento_p0_4("PostToolUseFailure_Bash")
+        depois = evento_real("PostToolUseFailure_Bash")
         depois["tool_input"]["command"] = self.comando("exit 3")
         self.assertEqual(self.tratar_evento(depois), {})
         dados = self.prova_registrada()["dados"]
@@ -272,10 +257,10 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
 
     def test_posttoolusefailure_com_formato_desconhecido_fica_inconclusivo(self):
         self.iniciar("exit 3")
-        antes = evento_p0_4("PreToolUse_Bash_failure")
+        antes = evento_real("PreToolUse_Bash_failure")
         antes["tool_input"]["command"] = self.comando("exit 3")
         self.tratar_evento(antes)
-        depois = evento_p0_4("PostToolUseFailure_Bash")
+        depois = evento_real("PostToolUseFailure_Bash")
         depois["tool_input"]["command"] = self.comando("exit 3")
         depois["error"] = "process was interrupted"
         self.tratar_evento(depois)
@@ -284,13 +269,13 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertEqual(dados["resultado"], "inconclusivo")
         self.assertNotIn("exit_code_origem", dados)
 
-    def test_powerShell_failure_payload_p0_4_registra_texto_falha(self):
+    def test_powerShell_failure_payload_registra_texto_falha(self):
         comando = "Write-Output sonda-ps; exit 4"
         self.iniciar(comando)
-        antes = evento_p0_4("PreToolUse_PowerShell")
+        antes = evento_real("PreToolUse_PowerShell")
         antes["tool_input"]["command"] = self.comando(comando)
         self.tratar_evento(antes)
-        depois = evento_p0_4("PostToolUseFailure_PowerShell")
+        depois = evento_real("PostToolUseFailure_PowerShell")
         depois["tool_input"]["command"] = self.comando(comando)
         self.tratar_evento(depois)
         dados = self.prova_registrada()["dados"]
@@ -299,22 +284,22 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
 
     def test_stop_bloqueia_fecho_pendente_e_nao_repete_com_stop_hook_active(self):
         self.iniciar()
-        self.assertEqual(self.tratar_evento(evento_p0_4("Stop"))["decision"], "block")
-        self.assertEqual(self.tratar_evento(evento_p0_4("Stop_active")), {})
+        self.assertEqual(self.tratar_evento(evento_real("Stop"))["decision"], "block")
+        self.assertEqual(self.tratar_evento(evento_real("Stop_active")), {})
 
     def subagente(self, papel, agente_id, tool_use_id, comando=None):
         """Agent pre, shell do subagente (com agent_id) e Agent pos; devolve a resposta do pos."""
-        pre = evento_p0_4("PreToolUse_Agent")
+        pre = evento_real("PreToolUse_Agent")
         pre["tool_use_id"] = tool_use_id
         pre["tool_input"]["subagent_type"] = papel
         self.assertEqual(self.tratar_evento(pre), {})
         if comando is not None:
             for base in ("PreToolUse_Bash_subagent", "PostToolUse_Bash_subagent"):
-                shell = evento_p0_4(base)
+                shell = evento_real(base)
                 shell.update(agent_id=agente_id, agent_type=papel, tool_use_id=tool_use_id + "-shell")
                 shell["tool_input"]["command"] = comando
                 self.tratar_evento(shell)
-        pos = evento_p0_4("PostToolUse_Agent")
+        pos = evento_real("PostToolUse_Agent")
         pos["tool_use_id"] = tool_use_id
         pos["tool_response"].update(agentType=papel, agentId=agente_id)
         return self.tratar_evento(pos)
@@ -349,11 +334,11 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         # Tipo fora dos sete papeis, papel fora do plano e retorno sem agentId nao devolvem contexto.
         self.assertEqual(self.subagente("sonda", "agente-x", "toolu_sonda"), {})
         self.assertEqual(self.subagente("implement", "agente-y", "toolu_fora"), {})
-        pre = evento_p0_4("PreToolUse_Agent")
+        pre = evento_real("PreToolUse_Agent")
         pre.update(tool_use_id="toolu_sem_id")
         pre["tool_input"]["subagent_type"] = "refute"
         self.tratar_evento(pre)
-        pos = evento_p0_4("PostToolUse_Agent")
+        pos = evento_real("PostToolUse_Agent")
         pos.update(tool_use_id="toolu_sem_id")
         pos["tool_response"].update(agentType="refute")
         del pos["tool_response"]["agentId"]
@@ -362,13 +347,13 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertEqual([c["papel"] for c in estado["chamadas_observadas"]], ["test"])
         self.assertNotIn("chamada_aberta", " ".join(self.pendencias()))
 
-    def test_payload_completo_do_agent_p0_4_registra_a_chamada(self):
+    def test_payload_completo_do_agent_registra_a_chamada(self):
         # Formato real do PostToolUse(Agent): alem de status, agentId e agentType, traz conteudo, uso e toolStats.
         self.iniciar(ativada=True)
-        pre = evento_p0_4("PreToolUse_Agent")
+        pre = evento_real("PreToolUse_Agent")
         pre["tool_input"]["subagent_type"] = "test"
         self.tratar_evento(pre)
-        pos = evento_p0_4("PostToolUse_Agent")
+        pos = evento_real("PostToolUse_Agent")
         pos["duration_ms"] = 8514
         pos["tool_response"].update(
             agentType="test", prompt="Rode o teste", harnessNoteCount=0, harnessTailCount=0,
@@ -391,7 +376,7 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertEqual(self.p.fechar("DONE", "Revisao do refute observado")["status"], "DONE")
 
     def test_ambiente_local_do_dab_leva_o_agente_id_do_subagente_sem_sandbox(self):
-        # O-CU: ambiente_local roda um script; a prova leva o ID do dab e o fecho nao pede registro sandbox.
+        # ambiente_local roda um script; a prova leva o ID do dab e o fecho nao pede registro sandbox.
         (self.raiz / "src/autorizacao.md").write_text("Autorizado: script local\n", encoding="utf-8")
         local = self.comando("py -3 src/ambiente_local.py")
         self.comando_teste = local
@@ -415,13 +400,13 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
             id="c1", tipo="teste", obrigatorio=True, esperado="Teste verde",
             verificacao=dict(comando=self.comando("echo ok"), cwd=".", caminhos=["src"])))
         for papel, uso in (("test", "toolu_a"), ("implement", "toolu_b")):
-            pre = evento_p0_4("PreToolUse_Agent")
+            pre = evento_real("PreToolUse_Agent")
             pre.update(tool_use_id=uso)
             pre["tool_input"]["subagent_type"] = papel
             self.tratar_evento(pre)
         (self.raiz / "src/a.py").write_text("# editado com duas janelas abertas\n", encoding="utf-8")
         for papel, uso, agente in (("test", "toolu_a", "agente-a"), ("implement", "toolu_b", "agente-b")):
-            pos = evento_p0_4("PostToolUse_Agent")
+            pos = evento_real("PostToolUse_Agent")
             pos.update(tool_use_id=uso)
             pos["tool_response"].update(agentType=papel, agentId=agente)
             self.tratar_evento(pos)
@@ -429,13 +414,13 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertIn("superficie_inconclusiva:toolu_b", self.pendencias())
 
     def lancar_async(self, papel, agente_id, tool_use_id):
-        """CLI 2.1.292 (O-CC): o Agent volta async_launched, sem agentType; o fim chega no SubagentStop."""
-        pre = evento_p0_4("PreToolUse_Agent")
+        """CLI 2.1.292: o Agent volta async_launched, sem agentType; o fim chega no SubagentStop."""
+        pre = evento_real("PreToolUse_Agent")
         pre["tool_use_id"] = tool_use_id
         pre["tool_input"]["subagent_type"] = papel
         del pre["tool_input"]["run_in_background"]
         self.assertEqual(self.tratar_evento(pre), {})
-        pos = evento_p0_4("PostToolUse_Agent")
+        pos = evento_real("PostToolUse_Agent")
         pos["tool_use_id"] = tool_use_id
         pos["tool_input"] = dict(pre["tool_input"])
         pos["tool_response"] = {"isAsync": True, "status": "async_launched", "agentId": agente_id,
@@ -457,7 +442,7 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertIn("agente_id=" + AGENTE, contexto["additionalContext"])
         self.assertEqual(self.p.estado(self.p.pasta())["chamadas_observadas"], [])
         for base in ("PreToolUse_Bash_subagent", "PostToolUse_Bash_subagent"):
-            shell = evento_p0_4(base)
+            shell = evento_real(base)
             shell.update(agent_id=AGENTE, agent_type="test")
             shell["tool_input"]["command"] = self.comando("echo sonda-sucesso")
             self.tratar_evento(shell)
@@ -492,11 +477,11 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.iniciar(ativada=True)
         self.assertEqual(self.lancar_async("implement", "agente-fora", "toolu_fora"), {})
         self.assertEqual(self.parar_subagente("implement", "agente-fora"), {})
-        pre = evento_p0_4("PreToolUse_Agent")
+        pre = evento_real("PreToolUse_Agent")
         pre["tool_use_id"] = "toolu_sem_id"
         pre["tool_input"]["subagent_type"] = "refute"
         self.tratar_evento(pre)
-        pos = evento_p0_4("PostToolUse_Agent")
+        pos = evento_real("PostToolUse_Agent")
         pos["tool_use_id"] = "toolu_sem_id"
         pos["tool_response"] = {"isAsync": True, "status": "async_launched"}
         self.assertEqual(self.tratar_evento(pos), {})
@@ -527,7 +512,7 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
 
     def test_stop_nao_bloqueia_enquanto_subagente_roda_em_segundo_plano(self):
         self.iniciar()
-        parado = evento_p0_4("Stop")
+        parado = evento_real("Stop")
         parado["background_tasks"] = [{"id": AGENTE, "type": "subagent", "status": "running",
                                        "description": "Papel test", "agent_type": "test"}]
         self.assertEqual(self.tratar_evento(parado), {})
@@ -535,7 +520,7 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertEqual(self.tratar_evento(parado)["decision"], "block")
 
     def test_session_start_orienta_o_comando_de_prova_com_a_sessao(self):
-        contexto = self.tratar_evento(evento_p0_4("SessionStart"))["hookSpecificOutput"]["additionalContext"]
+        contexto = self.tratar_evento(evento_real("SessionStart"))["hookSpecificOutput"]["additionalContext"]
         self.assertIn("adaptadores/prova.py --sessao " + SESSAO, contexto)
         self.assertNotIn("--runtime cursor", contexto)
 

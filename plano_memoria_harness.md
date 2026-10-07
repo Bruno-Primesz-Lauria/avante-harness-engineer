@@ -1,6 +1,6 @@
 # Plano de implementação da memória compartilhada do harness
 
-Data: 2026-10-03. Estado: proposta revisada, não iniciada. Reconferida em 2026-10-05 contra a branch `feat/engenheiro-bruno-lauria` (commit `a0a5604`), depois de A1–A5, C1–C3 e P0.5 do plano de agentes.
+Estado: proposta revisada, não iniciada. Estado e histórico: painel do [plano de agentes](PLANO-AGENTES-TRILHAS.md#painel).
 
 ## Intenção
 
@@ -39,11 +39,11 @@ A primeira entrega cobre a memória do harness. A memória específica do produt
 | Destilação | `trilhas/destilar.md` limita a superfície a skills e referências do adaptador. Desde o A5, prevê `docs` com `distill` no passo 2, inspeção do coordenador e `refute`, quando a trilha estiver em `agentes_obrigatorios`. | Incluir notas como destino e ajustar o aceite, sem mexer na sequência de papéis. Notas `.md` já cabem na superfície documental do `docs`. |
 | Acervo | `distill` (skill) e `docs-distill` (hook que "sinaliza candidato; não exige pergunta nem destilação") são candidatos em `acervo/README.md`. | Reusar essas peças para destilar e sinalizar notas. Não criar peça paralela. |
 | Schema de eventos | Schema 3.2 adotado (C1–C3): `contrato`, `guarda`, `brief`, `teste`, `ataque`, `triagem`, `inspecao` e `chamada`. `destilar` continua candidata. | Notas têm metadados próprios e não são apresentadas como eventos adotados. |
-| Fecho técnico | O núcleo já aceita critério `inspecao_documental` sem comando (`Provas.inspecionar`, forma `inspecao`), mas `adaptadores/prova.py` ainda não expõe a inspeção: só `iniciar`, `estado` e `fechar`. | A Fase 1 mantém o comando `validar`, que fecha como critério `teste` em qualquer runtime com coleta. A inspeção documental cobre o que o comando não exercita quando houver caminho de CLI para ela. |
-| Prova por runtime | Só o Cursor coleta prova. No Claude Code `fechar` recusa `DONE`, porque não há sessão nem coleta (BL2 do plano de agentes). | Fatia estruturada fecha `DONE` só no Cursor; no Claude Code fecha com impedimento declarado (DM-2). |
+| Fecho técnico | O núcleo aceita critério `inspecao_documental` sem comando (`Provas.inspecionar`, forma `inspecao`), exposto em `adaptadores/prova.py inspecionar`. | A Fase 1 mantém o comando `validar`, que fecha como critério `teste` em qualquer runtime com coleta. A inspeção documental cobre o que o comando não exercita quando houver caminho de CLI para ela. |
+| Prova por runtime | Cursor e Claude Code coletam prova, observada em sessão real nos dois. No Claude Code, `fechar` só comprova `DONE` depois da ativação do runtime (E0 do plano de agentes). | Fatia estruturada fecha `DONE` no Cursor; no Claude Code, até o E0, fecha com impedimento declarado (DM-2). |
 | Retrato da prova | O controle do manifesto inclui `implementacao/`, `adaptadores/`, `configuracao/`, `formas/catalogo.yaml` e `agentes/roteamento.yaml` (`CONTROLE` em `implementacao/provas.py`). `memoria/` fica fora. | Editar nota não invalida a prova de outra fatia, salvo se o contrato declarar o caminho. Código da memória nessas pastas passa a integrar o retrato de toda fatia. |
 | Git e revisão | Branch de referência `main` (`origin/HEAD`). Não há `.github/`, CODEOWNERS nem CI no repositório. | Revisor é decisão do time (DM-1). A validação roda localmente antes do PR, como as suítes. |
-| Plano de agentes | P0.6, A5 e C1–C3 concluídos; o texto do A5 já está em `AGENTS.md`, núcleo, trilhas, acervo e adaptadores. A próxima onda (B1, E0a, D-CC, D-CU) mexe em `adaptadores/` e `testes/`. Define a sequência de `destilar`: docs com distill → inspeção documental → refute. | Partir do texto do A5, sequenciar as entregas (DM-3) e manter `trilhas/destilar.md` compatível com essa sequência. |
+| Plano de agentes | Estado no [painel](PLANO-AGENTES-TRILHAS.md#painel). Mexe em `adaptadores/` e `testes/`. Define a sequência de `destilar`: docs com distill → inspeção documental → refute. | Partir do texto do A5, sequenciar as entregas (DM-3) e manter `trilhas/destilar.md` compatível com essa sequência. |
 | Memória nativa dos runtimes | Runtimes podem manter memória própria fora do repositório (por exemplo, a auto memory do Claude Code em `~/.claude/projects/`). | Ela é pessoal e não substitui nem alimenta esta memória. Conhecimento para o time entra em `memoria/` por PR. |
 | Fronteira de repositórios | O produto tem Git próprio e está ignorado pelo Git do harness. | Conhecimento do produto acompanha o repositório do produto. |
 
@@ -299,6 +299,6 @@ Busca semântica, serviço central, integração MCP ou uso da CLI do Obsidian s
 |---|---|---|
 | DM-1 | Quem aprova PRs que tocam `memoria/`. | O mesmo revisor dos PRs do harness, registrado em `memoria/README.md`. CODEOWNERS é opcional. |
 | DM-2 | Runtime da fatia da Fase 1. | Cursor, para fechar `DONE` com prova do `validar` e das suítes. No Claude Code, fechar `BLOCKED` com o motivo (sem coleta) e pedir revisão do PR. |
-| DM-3 | Ordem em relação ao plano de agentes. | A proposta original (antes de A1/A5) ficou superada: A1–A5 foram concluídos em 2026-10-05. Nova proposta: a parte documental da Entrega 1 pode correr em paralelo com a onda B1/E0a/D-CC/D-CU, porque os arquivos são disjuntos, exceto `README.md` e o HTML; `memoria.py` e seus testes entram depois do G1, para não alterar o controle do manifesto durante a onda. Commits separados, com o ID `MEM-1`. |
+| DM-3 | Ordem em relação ao plano de agentes. | A1–A5 estão concluídos. Proposta: a parte documental da Entrega 1 pode correr em paralelo com a onda B1/E0a/D-CC/D-CU, porque os arquivos são disjuntos, exceto `README.md` e o HTML; `memoria.py` e seus testes entram depois do G1, para não alterar o controle do manifesto durante a onda. Commits separados, com o ID `MEM-1`. |
 
 Referências externas consultadas para o desenho: [armazenamento de dados do Obsidian](https://obsidian.md/help/Files+and+folders/How+Obsidian+stores+data), [propriedades das notas](https://obsidian.md/help/properties) e [CLI do Obsidian](https://obsidian.md/help/cli). Revalidar requisitos de versão e instalação ao implementar uma integração opcional.

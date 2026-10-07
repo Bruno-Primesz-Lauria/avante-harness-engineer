@@ -20,7 +20,7 @@ compatibilidade:
   registro_3_2:
     novas_formas_adotadas: [ataque, triagem, inspecao, chamada, diagnostico, sandbox, paridade]
     habilitadas: true
-    nota: "C2 validou a escrita e leitura das formas; a ativacao de cada runtime depende de G2. Na forma teste, agente_id e exit_code_origem sao opcionais e aditivos (decisao P0.3). diagnostico, sandbox e paridade (C6) sao aditivas: a fatia so ganha as chaves de estado ao registrar uma delas."
+    nota: "A ativacao de cada runtime depende de G2. Na forma teste, agente_id e exit_code_origem sao opcionais e aditivos (decisao P0.3). diagnostico, sandbox e paridade (C6) sao aditivas: a fatia so ganha as chaves de estado ao registrar uma delas."
 produtores_permitidos:
   - coordenador
   - hook

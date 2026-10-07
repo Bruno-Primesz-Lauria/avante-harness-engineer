@@ -34,7 +34,7 @@ FERRAMENTAS_CLAUDE = {
     "docs": ("Read", "Grep", "Glob", "Edit", "Write"),
     "dab": ("Read", "Grep", "Glob", "Bash"),
 }
-# No Cursor o ID do subagente só aparece no Shell que ele roda na própria janela (sondagem P0.5).
+# No Cursor o ID do subagente só aparece no Shell que ele roda na própria janela.
 # Test e dab já rodam Shell; o refute, só leitura, precisa de um inofensivo.
 VINCULO_CURSOR = {
     "refute": (

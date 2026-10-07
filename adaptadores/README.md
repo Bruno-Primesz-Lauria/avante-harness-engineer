@@ -20,7 +20,7 @@ Estado atual dos arquivos de configuração: Cursor, Claude Code e OpenCode inst
 | Runtime | Versão |
 |---|---|
 | Cursor | 3.17.8, 3.19.19 |
-| Claude Code | 2.1.289 |
+| Claude Code | 2.1.283, 2.1.289, 2.1.292 |
 | Codex CLI | 0.158.0 |
 | OpenCode | 1.18.15 |
 
@@ -32,7 +32,7 @@ Um hook de um produto não vale como o de outro. Guarda obrigatória indisponív
 |---|---|---|
 | Instruções | `CLAUDE.md`. Confira o que carrega. | `AGENTS.md`. Confira o que carrega. |
 | Pergunta | Cartão, se existir. Senão, texto. | Ferramenta de pergunta ou texto. |
-| Agentes do fluxo | Sete papéis em `.claude/agents/`, gerados de [`agentes/`](../agentes/), ainda não observados em sessão real. Obrigatórios nas trilhas de `agentes_obrigatorios.claude_code`, hoje vazia. | Cursor: sete papéis em `.cursor/agents/`, observados em sessão real. Obrigatórios nas trilhas de `agentes_obrigatorios.cursor`, hoje só `manutencao`; passe `--runtime cursor` ao `prova.py`. Codex e OpenCode ficam fora da chave: agente único, com delegação opcional; passe `--runtime codex` ou `--runtime opencode` ao `prova.py` para selecionar o runtime. Essa seleção não adiciona esses runtimes à política e não habilita coleta de provas de shell. |
+| Agentes do fluxo | Sete papéis em `.claude/agents/`, gerados de [`agentes/`](../agentes/), observados em sessão real. Obrigatórios nas trilhas de `agentes_obrigatorios.claude_code`, hoje vazia. | Cursor: sete papéis em `.cursor/agents/`, observados em sessão real. Obrigatórios nas trilhas de `agentes_obrigatorios.cursor`, hoje só `manutencao`; passe `--runtime cursor` ao `prova.py`. Codex e OpenCode ficam fora da chave: agente único, com delegação opcional; passe `--runtime codex` ou `--runtime opencode` ao `prova.py` para selecionar o runtime. Essa seleção não adiciona esses runtimes à política e não habilita coleta de provas de shell. |
 | Persistência | Árvore de [`evidencia/layout.md`](../evidencia/layout.md), sob a raiz configurada. | Idem. |
 
 Subagentes: definição neutra em [`agentes/`](../agentes/); as versões nativas ficam em `.cursor/agents/` e `.claude/agents/`. Não inclua trilha em `agentes_obrigatorios` de um runtime antes de seus agentes estarem instalados e observados (G2). Instalação e observação por runtime ficam nos metadados de [`agentes/roteamento.yaml`](../agentes/roteamento.yaml); gates e histórico, no painel do [plano](../PLANO-AGENTES-TRILHAS.md#painel). Skills do projeto: não implementadas.

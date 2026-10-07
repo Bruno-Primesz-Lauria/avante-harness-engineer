@@ -1,4 +1,4 @@
-"""Traducao das chamadas Task e provas Shell observadas na sondagem P0.5."""
+"""Traducao das chamadas Task e provas Shell observadas no Cursor."""
 import copy
 import json
 from pathlib import Path
@@ -13,8 +13,7 @@ from provas import Provas, ler
 from cursor.prova import tratar
 
 
-# Campos usados diretamente dos eventos P0.5; a sonda gravou o envelope em
-# .execucoes/sondagens/brutos/cursor/2026-10-05_cursor-3.17.8/hooks/.
+# Campos copiados de eventos reais do Cursor.
 COORDENADOR = "ece83f0c-f593-46f9-ae43-46fb59ac7df6"
 AGENTE = "f34232ff-59ad-4ef1-ae06-e87c5a9d280d"
 TASK_ID = ("call-c30c3638-76a2-4188-9202-0e3412b631b0-3\n"
