@@ -5,11 +5,11 @@ nota: >
   Contrato de campos. Exemplos com exemplo:true ficam em testes/teste_formas.py e
   o consumidor operacional os rejeita. As formas contrato, guarda, brief,
   teste, ataque, triagem, inspecao, chamada, diagnostico, sandbox e paridade
-  estao adotadas; C2 validou os payloads 3.2 e C6 adotou as tres ultimas
-  (aprovadas em 2026-10-05). As demais candidatas nao serao adotadas
+  estao adotadas; C2 validou os payloads 3.2 e C6 adotou as tres ultimas.
+  As demais candidatas nao serao adotadas
   (PLANO-AGENTES-TRILHAS.md, secao 3.3). Registros 3.1 continuam legiveis. A adocao do schema nao
-  significa que os eventos dos runtimes foram observados: P0.4 (Claude Code)
-  e P0.5 (Cursor) foram observadas; a ativacao depende de G2.
+  significa que os eventos dos runtimes foram observados; a ativacao de cada
+  runtime depende de G2 (painel do plano).
   Baseline, manifesto e estado estao descritos em evidencia/uso.md.
 compatibilidade:
   registro_3_1:
@@ -20,7 +20,7 @@ compatibilidade:
   registro_3_2:
     novas_formas_adotadas: [ataque, triagem, inspecao, chamada, diagnostico, sandbox, paridade]
     habilitadas: true
-    nota: "C2 validou a escrita e leitura das formas; a ativacao de cada runtime depende de G2. Na forma teste, agente_id e exit_code_origem sao opcionais e aditivos (decisao P0.3 de 2026-10-05). diagnostico, sandbox e paridade (C6) sao aditivas: a fatia so ganha as chaves de estado ao registrar uma delas."
+    nota: "C2 validou a escrita e leitura das formas; a ativacao de cada runtime depende de G2. Na forma teste, agente_id e exit_code_origem sao opcionais e aditivos (decisao P0.3). diagnostico, sandbox e paridade (C6) sao aditivas: a fatia so ganha as chaves de estado ao registrar uma delas."
 produtores_permitidos:
   - coordenador
   - hook

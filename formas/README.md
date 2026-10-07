@@ -7,7 +7,7 @@
 
 Uma forma é adotada quando o fecho depende dela para aceitar ou recusar DONE. Relato do autor não é prova.
 
-`diagnostico`, `sandbox` (ambiente) e `paridade` foram aprovadas em 2026-10-05 e adotadas no pacote C6; em 3.1 o validador as recusa. `intencao`, `mapa`, `config`, `implement`, `docs`, `destilar` e `resposta` não serão adotadas; o motivo de cada uma está na seção 3.3 do [plano](../PLANO-AGENTES-TRILHAS.md).
+`diagnostico`, `sandbox` (ambiente) e `paridade` são adotadas no schema 3.2; em 3.1 o validador as recusa. `intencao`, `mapa`, `config`, `implement`, `docs`, `destilar` e `resposta` não serão adotadas; o motivo de cada uma está na seção 3.3 do [plano](../PLANO-AGENTES-TRILHAS.md).
 
 Os exemplos usam `exemplo: true`. Servem de ilustração, e o validador rejeita esse registro.
 

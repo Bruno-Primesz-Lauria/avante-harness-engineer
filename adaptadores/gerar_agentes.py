@@ -122,7 +122,7 @@ def _yaml_string(valor):
 
 
 def _yaml_simples(valor):
-    """Escalar sem aspas: o Cursor 3.17.8 guarda as aspas no nome do subagente (O-CU, 2026-10-05)."""
+    """Escalar sem aspas: o Cursor guarda as aspas no nome do subagente."""
     valor = str(valor)
     seguro = (valor == valor.strip() and not re.match(r"[-?:,\[\]{}#&*!|>'\"%@`]", valor) and
               ": " not in valor and " #" not in valor)
