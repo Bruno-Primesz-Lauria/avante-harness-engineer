@@ -78,6 +78,13 @@ class AdaptadoresTestes(unittest.TestCase):
         for runtime in RUNTIMES:
             self.assertEqual(self.executar(runtime, []).returncode, 2)
 
+    def test_claude_subagentstop_com_erro_avisa_sem_prender_o_subagente(self):
+        # Exit 2 no SubagentStop faria o subagente continuar; o erro vira aviso com exit 0.
+        resposta = self.executar("claude_code", {"hook_event_name": "SubagentStop", "agent_id": "a1",
+                                                 "agent_type": "test"})
+        self.assertEqual(resposta.returncode, 0, resposta.stderr)
+        self.assertIn("session_id ausente", json.loads(resposta.stdout)["systemMessage"])
+
     def test_cursor_aceita_utf8_bom(self):
         resposta = self.executar("cursor", self.evento("cursor", self.raiz), bom=True)
         self.assertEqual(resposta.returncode, 0)

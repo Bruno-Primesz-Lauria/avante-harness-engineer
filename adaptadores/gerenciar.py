@@ -49,6 +49,7 @@ def gerar(runtime, plataforma=None):
             "PostToolUse": [{"matcher": "^(Bash|PowerShell|Agent)$", "hooks": [handler]}],
             "PostToolUseFailure": [{"matcher": "^(Bash|PowerShell)$", "hooks": [handler]}],
             "Stop": [{"hooks": [handler]}],
+            "SubagentStop": [{"hooks": [handler]}],
         }}
     if runtime == "codex":
         handler = {"type": "command", "command": comando(runtime, plataforma), "timeout": 10}

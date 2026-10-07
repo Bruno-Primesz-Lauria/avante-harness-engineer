@@ -21,7 +21,8 @@ TRILHAS_CC = ["manutencao", "docs"]
 REMOVER = (".cursor", ".codex", ".opencode", "prj-avante-analytics-adb")
 # O coordenador nao deve achar o roteiro na copia; o humano (ou o agente que conduz) le no clone.
 KITS = ("avaliacao/observacao-claude-code/", "avaliacao/observacao-cursor/")
-# Eventos so capturados na copia: o adaptador devolve {} para eles.
+# Eventos que a copia precisa capturar. SubagentStart e UserPromptSubmit sao so capturados (o adaptador
+# devolve {}); SubagentStop ja vem do gerador, porque registra a chamada de Agent em segundo plano.
 EVENTOS_EXTRAS = ("SubagentStart", "SubagentStop", "UserPromptSubmit")
 # Skill, leitura e escrita: o payload traz agent_id e o caminho, o que atribui cada edicao a um subagente.
 CAPTURA_FERRAMENTAS = "^(Skill|Read|Edit|Write)$"
@@ -250,8 +251,9 @@ def verificar_head():
         if mostrar(f".claude/agents/{papel}.md") is None:
             faltas.append(f".claude/agents/{papel}.md ausente do HEAD (B2-CC)")
     config = mostrar(".claude/settings.json") or ""
-    if not all(n in config for n in ('"PostToolUse"', '"PostToolUseFailure"', '"Stop"', "Agent")):
-        faltas.append(".claude/settings.json do HEAD sem PostToolUse, PostToolUseFailure, Stop e matcher Agent (D-CC)")
+    if not all(n in config for n in ('"PostToolUse"', '"PostToolUseFailure"', '"Stop"', '"SubagentStop"', "Agent")):
+        faltas.append(".claude/settings.json do HEAD sem PostToolUse, PostToolUseFailure, Stop, SubagentStop "
+                      "e matcher Agent (D-CC)")
     prova = mostrar("adaptadores/prova.py") or ""
     if not all(n in prova for n in ("inspecionar", "revisar", "triar")):
         faltas.append("adaptadores/prova.py do HEAD sem inspecionar/revisar/triar (C4)")
@@ -259,6 +261,8 @@ def verificar_head():
         faltas.append("implementacao/provas.py do HEAD sem o vinculo do ataque ao refute (C4)")
     if "agente_id=" not in (mostrar("adaptadores/claude_code/prova.py") or ""):
         faltas.append("adaptadores/claude_code/prova.py do HEAD nao devolve o agente_id ao coordenador (D-CC)")
+    if "async_launched" not in (mostrar("adaptadores/claude_code/prova.py") or ""):
+        faltas.append("adaptadores/claude_code/prova.py do HEAD nao registra Agent em segundo plano (O-CC 2.1.292)")
     rota = mostrar("agentes/roteamento.yaml") or ""
     if len(re.findall(r"claude_code: \{[^}]*instalado: true", rota)) != len(PAPEIS):
         faltas.append("agentes/roteamento.yaml do HEAD sem instalado: true no claude_code para os sete papeis (B2-CC)")
@@ -311,7 +315,7 @@ def adaptar(destino):
                 trocados += 1
     molde = config["hooks"]["SessionStart"][0]["hooks"]
     for evento in EVENTOS_EXTRAS:
-        config["hooks"][evento] = [{"hooks": copy.deepcopy(molde)}]
+        config["hooks"].setdefault(evento, [{"hooks": copy.deepcopy(molde)}])
     for evento in ("PreToolUse", "PostToolUse"):
         config["hooks"][evento].append({"matcher": CAPTURA_FERRAMENTAS, "hooks": copy.deepcopy(molde)})
     ajustes.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")

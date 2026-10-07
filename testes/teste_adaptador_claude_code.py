@@ -428,6 +428,112 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertIn("superficie_inconclusiva:toolu_a", self.pendencias())
         self.assertIn("superficie_inconclusiva:toolu_b", self.pendencias())
 
+    def lancar_async(self, papel, agente_id, tool_use_id):
+        """CLI 2.1.292 (O-CC): o Agent volta async_launched, sem agentType; o fim chega no SubagentStop."""
+        pre = evento_p0_4("PreToolUse_Agent")
+        pre["tool_use_id"] = tool_use_id
+        pre["tool_input"]["subagent_type"] = papel
+        del pre["tool_input"]["run_in_background"]
+        self.assertEqual(self.tratar_evento(pre), {})
+        pos = evento_p0_4("PostToolUse_Agent")
+        pos["tool_use_id"] = tool_use_id
+        pos["tool_input"] = dict(pre["tool_input"])
+        pos["tool_response"] = {"isAsync": True, "status": "async_launched", "agentId": agente_id,
+                                "description": "Papel " + papel, "resolvedModel": "claude-sonnet-5-5",
+                                "prompt": "Faca o seu papel"}
+        return self.tratar_evento(pos)
+
+    def parar_subagente(self, papel, agente_id):
+        return self.tratar_evento({
+            "hook_event_name": "SubagentStop", "session_id": SESSAO, "agent_id": agente_id,
+            "agent_type": papel, "stop_hook_active": False, "permission_mode": "auto",
+            "background_tasks": [{"id": agente_id, "type": "subagent", "status": "running",
+                                  "description": "Papel " + papel, "agent_type": papel}]})
+
+    def test_agent_async_devolve_o_id_no_lancamento_e_registra_no_subagentstop(self):
+        self.iniciar(ativada=True)
+        contexto = self.lancar_async("test", AGENTE, "toolu_async")["hookSpecificOutput"]
+        self.assertEqual(contexto["hookEventName"], "PostToolUse")
+        self.assertIn("agente_id=" + AGENTE, contexto["additionalContext"])
+        self.assertEqual(self.p.estado(self.p.pasta())["chamadas_observadas"], [])
+        for base in ("PreToolUse_Bash_subagent", "PostToolUse_Bash_subagent"):
+            shell = evento_p0_4(base)
+            shell.update(agent_id=AGENTE, agent_type="test")
+            shell["tool_input"]["command"] = self.comando("echo sonda-sucesso")
+            self.tratar_evento(shell)
+        self.assertEqual(self.parar_subagente("test", AGENTE), {})
+        estado = self.p.estado(self.p.pasta())
+        self.assertEqual([(c["papel"], c["chamada_id"]) for c in estado["chamadas_observadas"]],
+                         [("test", "toolu_async")])
+        self.assertNotIn("teste_fora_do_test:c1", self.pendencias())
+        # O SubagentStop repetido nao registra de novo.
+        self.assertEqual(self.parar_subagente("test", AGENTE), {})
+        self.assertEqual(len(self.p.estado(self.p.pasta())["chamadas_observadas"]), 1)
+
+    def test_janela_async_fica_aberta_ate_o_subagentstop_e_atribui_a_edicao(self):
+        self.iniciar_manutencao(dict(
+            id="c1", tipo="teste", obrigatorio=True, esperado="Teste verde",
+            verificacao=dict(comando=self.comando("echo ok"), cwd=".", caminhos=["src"])))
+        papeis = [c["papel"] for c in self.p.estado(self.p.pasta())["chamadas_previstas"]]
+        self.assertEqual(papeis[:2], ["test", "implement"])
+        self.lancar_async("test", "agente-prep", "toolu_prep")
+        self.parar_subagente("test", "agente-prep")
+        self.lancar_async("implement", "agente-impl", "toolu_impl")
+        self.assertIn("toolu_impl", self.p.estado(self.p.pasta())["vigilancia_superficie"]["abertas"])
+        (self.raiz / "src/a.py").write_text("# editado pelo implement em segundo plano\n", encoding="utf-8")
+        self.parar_subagente("implement", "agente-impl")
+        faltam = self.pendencias()
+        self.assertFalse([p for p in faltam if p.startswith(("edicao_fora_do_papel", "superficie_",
+                                                              "chamada_aberta"))], faltam)
+        observadas = self.p.estado(self.p.pasta())["chamadas_observadas"]
+        self.assertEqual([c["papel"] for c in observadas], ["test", "implement"])
+
+    def test_async_de_papel_fora_do_plano_ou_sem_agentid_nao_fica_pendente(self):
+        self.iniciar(ativada=True)
+        self.assertEqual(self.lancar_async("implement", "agente-fora", "toolu_fora"), {})
+        self.assertEqual(self.parar_subagente("implement", "agente-fora"), {})
+        pre = evento_p0_4("PreToolUse_Agent")
+        pre["tool_use_id"] = "toolu_sem_id"
+        pre["tool_input"]["subagent_type"] = "refute"
+        self.tratar_evento(pre)
+        pos = evento_p0_4("PostToolUse_Agent")
+        pos["tool_use_id"] = "toolu_sem_id"
+        pos["tool_response"] = {"isAsync": True, "status": "async_launched"}
+        self.assertEqual(self.tratar_evento(pos), {})
+        self.assertEqual(self.p.estado(self.p.pasta())["chamadas_observadas"], [])
+        self.assertNotIn("chamada_aberta", " ".join(self.pendencias()))
+
+    def test_subagentstop_interno_ou_sem_lancamento_e_ignorado(self):
+        self.iniciar(ativada=True)
+        # Agentes internos do Claude Code chegam com agent_type vazio.
+        self.assertEqual(self.parar_subagente("", "adb67f4d050996297"), {})
+        self.assertEqual(self.parar_subagente("test", "agente-desconhecido"), {})
+        self.assertEqual(self.parar_subagente("map", "agente-map"), {})
+        self.assertEqual(self.p.estado(self.p.pasta())["chamadas_observadas"], [])
+
+    def test_subagentstop_sem_fatia_ativa_nao_derruba_o_hook(self):
+        self.assertEqual(self.parar_subagente("test", AGENTE), {})
+
+    def test_subagentstop_fora_da_ordem_avisa_sem_bloquear_e_fecha_a_janela(self):
+        self.iniciar_manutencao(dict(
+            id="c1", tipo="teste", obrigatorio=True, esperado="Teste verde",
+            verificacao=dict(comando=self.comando("echo ok"), cwd=".", caminhos=["src"])))
+        self.lancar_async("refute", "agente-refute", "toolu_refute")
+        resposta = self.parar_subagente("refute", "agente-refute")
+        self.assertIn("refute", resposta["systemMessage"])
+        self.assertNotIn("decision", resposta)
+        self.assertEqual(self.p.estado(self.p.pasta())["chamadas_observadas"], [])
+        self.assertNotIn("chamada_aberta", " ".join(self.pendencias()))
+
+    def test_stop_nao_bloqueia_enquanto_subagente_roda_em_segundo_plano(self):
+        self.iniciar()
+        parado = evento_p0_4("Stop")
+        parado["background_tasks"] = [{"id": AGENTE, "type": "subagent", "status": "running",
+                                       "description": "Papel test", "agent_type": "test"}]
+        self.assertEqual(self.tratar_evento(parado), {})
+        parado["background_tasks"][0]["status"] = "completed"
+        self.assertEqual(self.tratar_evento(parado)["decision"], "block")
+
     def test_session_start_orienta_o_comando_de_prova_com_a_sessao(self):
         contexto = self.tratar_evento(evento_p0_4("SessionStart"))["hookSpecificOutput"]["additionalContext"]
         self.assertIn("adaptadores/prova.py --sessao " + SESSAO, contexto)
@@ -440,6 +546,7 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertIn("PostToolUse", claude)
         self.assertIn("PostToolUseFailure", claude)
         self.assertIn("Stop", claude)
+        self.assertEqual(claude["SubagentStop"], [{"hooks": claude["Stop"][0]["hooks"]}])
         self.assertEqual(claude["PreToolUse"][0]["matcher"], "^(Bash|PowerShell|Agent)$")
         self.assertEqual(codex, {"PreToolUse": [{"matcher": "^Bash$", "hooks": [
             {"type": "command", "command": "py -3 adaptadores/entrada.py codex", "timeout": 10}

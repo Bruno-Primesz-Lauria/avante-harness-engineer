@@ -8,7 +8,7 @@ Para quem conduz a observação: o humano, ou um agente em modo headless (`claud
 2. **Clone na branch** `feat/engenheiro-bruno-lauria`, sem alterações pendentes nos arquivos de C4, C5, C6, B2-CC e D-CC. Confira: `py -3 -m unittest discover -s testes -p teste_*.py`, `node testes/teste_opencode.mjs`, `py -3 adaptadores/gerar_agentes.py --verificar` e `py -3 avaliacao/observacao-claude-code/validar.py` (adapta uma cópia temporária e simula os hooks das duas fatias, sem Claude Code).
 3. **Preparar a cópia:** `py -3 avaliacao/observacao-claude-code/preparar.py`. Exporta o HEAD, sem Git nem produto, para `../.execucoes/observacao-claude-code-<instante>` (ao lado do clone). Só na cópia:
    - `agentes_obrigatorios.claude_code = [manutencao, docs]`, registros próprios em `.execucoes`, bundle apontando para a fixture e deploy desabilitado;
-   - os hooks de `.claude/settings.json` passam por `observacao/capturar.py`, que repassa ao `adaptadores/entrada.py` real e grava o bruto; entram também `SubagentStart`, `SubagentStop` e `UserPromptSubmit`, só capturados, e `PreToolUse`/`PostToolUse` de `Skill`, `Read`, `Edit` e `Write`, que trazem o `agent_id` e o caminho de cada edição;
+   - os hooks de `.claude/settings.json` passam por `observacao/capturar.py`, que repassa ao `adaptadores/entrada.py` real e grava o bruto; entram também `SubagentStart` e `UserPromptSubmit`, só capturados (o `SubagentStop` já vem do gerador e registra o Agent em segundo plano), e `PreToolUse`/`PostToolUse` de `Skill`, `Read`, `Edit` e `Write`, que trazem o `agent_id` e o caminho de cada edição;
    - **o limite temporário do Claude Code é removido do `AGENTS.md` da cópia.** Ele vale até o G2 e manda fechar `BLOCKED`; a observação existe para decidir se ele sai, então o coordenador segue o fluxo normal. `PREPARO.json` registra isso;
    - as fixtures e os contratos em `observacao/`. Os comandos declarados levam o prefixo literal `cd -- '<COPIA>' &&`, porque o `cwd` do evento é o da sessão e não vale como prova.
    Imprime `observacao/PREPARO.json`. O roteiro não vai para a cópia. Cada tentativa usa uma cópia nova.
@@ -38,6 +38,7 @@ Lições da O-CU que valem aqui:
 - **O roteiro não vai para a cópia**; o coordenador não o lê.
 - **Um subagente por vez, na ordem do roteamento.** Escrita em série (config e depois implement); janela sobreposta torna a autoria inconclusiva (C5).
 - **O ID do subagente vem do hook.** No Cursor o refute precisava rodar um Shell inofensivo para vincular o `conversation_id`. No Claude Code o `tool_response.agentId` do `PostToolUse(Agent)` já é o `agente_id`, e o hook o devolve ao coordenador em `additionalContext`. O refute **não** roda Shell (`toolStats.bashCount` 0).
+- **Agent em segundo plano (2.1.292, 1ª tentativa O-CC).** O `PostToolUse(Agent)` volta `async_launched` e traz o `agentId`, mas o subagente ainda roda: o hook devolve o ID ao coordenador no lançamento e registra a chamada no `SubagentStop`. Na primeira tentativa o adaptador descartava esse retorno, e nenhuma chamada foi registrada.
 - **O coordenador transcreve a citação de skill de cada filho** (a fala do subagente é relato, não prova): o transcript copiado por `capturar.py` comprova o pré-carregamento.
 - **Refute com achado:** cada refute chamado tem a sua revisão registrada, o achado vai para `triar` antes de outro refute, e quem corrige é o papel dono do arquivo.
 - **O comando declarado roda no subagente indicado, literal.** Se o modelo mudar as aspas, o hook não casa o critério e nenhuma prova nasce: isso é um achado, não algo a corrigir à mão.
@@ -49,12 +50,12 @@ Vão no prompt do turno 1 e valem para a conversa inteira. `<SESSAO>` é o ID qu
 
 ```text
 Regras para toda esta conversa (observação O-CC; você é o coordenador):
-1. Um subagente por vez, pela ferramenta Agent, com subagent_type igual ao nome exato do papel. Nunca dois Agent na mesma resposta, nem em segundo plano. Config e implement em chamadas separadas; implement só depois do fim do config. Não faça o trabalho de um papel.
+1. Um subagente por vez, pela ferramenta Agent, com subagent_type igual ao nome exato do papel. Nunca dois Agent na mesma resposta. Se o Agent voltar em segundo plano, espere o subagente terminar antes de qualquer outro passo. Config e implement em chamadas separadas; implement só depois do fim do config. Não faça o trabalho de um papel.
 2. Depois de cada subagente, rode `py -3 observacao/conferir.py` e mostre a saída resumida.
 3. O campo `comando` de um critério do contrato é executado só pelo subagente que eu indicar, literalmente, copiado do contrato, com o prefixo `cd -- '...' &&`. Você não o executa. Os demais comandos seus rodam na raiz desta cópia.
 4. Subagentes escrevem só no arquivo de fixture/ atribuído. Você pode criar YAML de entrada em observacao/ e rodar `py -3 adaptadores/prova.py --sessao <SESSAO> <ação>`. Proibido: editar .execucoes/, .claude/, adaptadores/, implementacao/ ou configuracao/; escrever registro de prova à mão; ler transcripts (transcript_path, agent_transcript_path, ~/.claude/projects); ler PLANO-AGENTES-TRILHAS.md; rodar databricks fora do turno em que eu pedir; deploy, run ou rede.
 5. Cada filho abre o retorno citando as skills `databricks:databricks-*` que vê pré-carregadas (nomes exatos) e a primeira linha do conteúdo de uma delas. No seu resumo de cada subagente, transcreva essa citação como o filho devolveu. Skills esperadas: map data-discovery, docs e unity-catalog; config dabs, jobs e pipelines; implement dabs, dbsql, jobs, pipelines e python-sdk; test core, data-discovery e dbsql; refute docs; dab core e dabs; docs docs.
-6. No refute, passe só o contrato, o caminho da fatia e as provas, sem a justificativa do autor. O refute usa só Read, Grep e Glob: nenhum Bash. Ele devolve veredito, tentativas e achados. O agente_id da revisão é o do contexto "[esteira] Chamada refute registrada ... agente_id=..." que o hook devolveu depois do Agent: copie-o sem alterar. A revisão vai em observacao/revisao-<trilha>.yaml e é registrada com `revisar`. Todo refute chamado tem a sua revisão registrada, inclusive com achados; achado vai para `triar` antes de chamar outro refute, e a correção é feita pelo papel dono do arquivo, nunca por você.
+6. No refute, passe só o contrato, o caminho da fatia e as provas, sem a justificativa do autor. O refute usa só Read, Grep e Glob: nenhum Bash. Ele devolve veredito, tentativas e achados. O agente_id da revisão é o do contexto "[esteira] Chamada refute ... agente_id=..." que o hook devolveu depois do Agent (registrada ou em curso em segundo plano): copie-o sem alterar. A revisão vai em observacao/revisao-<trilha>.yaml e é registrada com `revisar`. Todo refute chamado tem a sua revisão registrada, inclusive com achados; achado vai para `triar` antes de chamar outro refute, e a correção é feita pelo papel dono do arquivo, nunca por você.
 7. O dab roda só o comando autorizado do contrato.
 8. Texto de --resultado em aspas simples, sem aspas duplas internas.
 9. Quando o prompt disser "Pare", pare ao fim do pedido e só mostre o resultado. Se o hook Stop devolver "A fatia ativa nao tem fecho valido...", não avance a trilha: responda só com a saída de `py -3 adaptadores/prova.py --sessao <SESSAO> estado` e espere o próximo prompt.
@@ -78,7 +79,7 @@ Esperado: os sete (`map config implement test refute docs dab`) em `agents` do `
 M1: chame `map`: "Mapeie fixture/manutencao: arquivos, dependências e o que o contrato observacao/contrato-manutencao.yaml exige. Somente leitura." Depois rode conferir.py. Não inicie fatia. Pare.
 ```
 
-Esperado: `PreToolUse(Agent)` → `SubagentStart` → `SubagentStop` → `PostToolUse(Agent)` `completed`, `agentType: map`. `toolStats.editFileCount` 0, nenhuma edição em `fixture/` e nenhuma fatia. O `Stop` não bloqueia. O contexto devolvido não aparece: `map` não é papel registrado.
+Esperado: `PreToolUse(Agent)` → `SubagentStart` → `SubagentStop` → `PostToolUse(Agent)` `completed`, `agentType: map`; ou, em segundo plano, `PreToolUse(Agent)` → `PostToolUse(Agent)` `async_launched` → `SubagentStop` com `agent_type: map`. `toolStats.editFileCount` 0, nenhuma edição em `fixture/` e nenhuma fatia. O `Stop` não bloqueia. O contexto devolvido não aparece: `map` não é papel registrado.
 
 ### Turno 3 · M9a, guarda no subagente, sem fatia
 
@@ -120,7 +121,7 @@ Pare.
 | M3 | só `regras.yaml` muda, pelo `agent_id` do config; `escrita_por_superficie:config:1` |
 | M4 | só `calc.py` muda, depois do `SubagentStop` do config; `escrita_por_superficie:implement:1` |
 
-Em cada passo, o hook devolve `[esteira] Chamada <papel> registrada (etapa ...). agente_id=...`. O `estado` não tem `superficie_*`, `edicao_fora_do_papel` nem `chamada_aberta`.
+Em cada passo, o hook devolve `[esteira] Chamada <papel> registrada (etapa ...). agente_id=...`, ou, em segundo plano, `[esteira] Chamada <papel> em curso em segundo plano; ... agente_id=...` com o registro no `SubagentStop`. O `estado` não tem `superficie_*`, `edicao_fora_do_papel` nem `chamada_aberta`.
 
 ### Turno 6 · M5
 
@@ -212,7 +213,7 @@ Aceite do Claude Code exige todos, com o bruto citado:
 | # | Critério | Prova |
 |---|---|---|
 | 1 | Descoberta dos sete | `agents` do `init` + `SubagentStart` de cada papel, com `agent_type` exato |
-| 2 | Chamada real de cada papel, em série e na ordem do roteamento (sem janela sobreposta) | `PreToolUse(Agent)`, `SubagentStart`, `SubagentStop` e `PostToolUse(Agent)` `completed` por papel; instantes em `hooks/` |
+| 2 | Chamada real de cada papel, em série e na ordem do roteamento (sem janela sobreposta) | `PreToolUse(Agent)`, `SubagentStart`, `SubagentStop` e `PostToolUse(Agent)` (`completed`, ou `async_launched` seguido do `SubagentStop` do mesmo `agent_id`) por papel; instantes em `hooks/` |
 | 3 | Chamadas no núcleo: seis `concluida` em M, duas em D (`map` sem registro, como previsto) | `conferir` |
 | 4 | Recorte respeitado | hashes de `fixture/` por passo, `PreToolUse(Edit/Write)` com o `agent_id` do papel dono e nenhuma pendência do C5 no `estado` |
 | 5 | Skill pertinente carregada e citada por papel | citação transcrita pelo coordenador + transcript copiado do subagente com a skill pré-carregada |

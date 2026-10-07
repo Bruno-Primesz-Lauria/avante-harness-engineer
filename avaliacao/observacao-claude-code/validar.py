@@ -39,21 +39,33 @@ def hook(copia, evento):
     return json.loads(r.stdout.decode("utf-8") or "{}")
 
 
-def agente(copia, papel, agente_id, uso, comando=None):
-    """Agent pre, shell do subagente (com agent_id) e Agent pos; devolve o contexto do pos."""
+def agente(copia, papel, agente_id, uso, comando=None, segundo_plano=False):
+    """Agent pre, shell do subagente (com agent_id) e Agent pos; devolve o contexto do pos.
+
+    Em segundo plano (CLI 2.1.292), o pos volta async_launched antes do shell e o fim chega no SubagentStop.
+    """
     base = dict(session_id=SESSAO, tool_use_id=uso)
     hook(copia, dict(base, hook_event_name="PreToolUse", tool_name="Agent",
                      tool_input=dict(subagent_type=papel, description="O-CC", prompt="validar")))
+    if segundo_plano:
+        resposta = hook(copia, dict(base, hook_event_name="PostToolUse", tool_name="Agent",
+                                    tool_input=dict(subagent_type=papel),
+                                    tool_response=dict(isAsync=True, status="async_launched", agentId=agente_id)))
     if comando is not None:
         shell = dict(session_id=SESSAO, agent_id=agente_id, agent_type=papel, tool_name="Bash",
                      tool_use_id=uso + "-sh", tool_input=dict(command=comando))
-        resposta = hook(copia, dict(shell, hook_event_name="PreToolUse"))
-        assert "permissionDecision" not in resposta.get("hookSpecificOutput", {}), (papel, resposta)
+        resposta_shell = hook(copia, dict(shell, hook_event_name="PreToolUse"))
+        assert "permissionDecision" not in resposta_shell.get("hookSpecificOutput", {}), (papel, resposta_shell)
         hook(copia, dict(shell, hook_event_name="PostToolUse", tool_response=dict(
             stdout="ok", stderr="", interrupted=False, isImage=False, noOutputExpected=False)))
-    resposta = hook(copia, dict(base, hook_event_name="PostToolUse", tool_name="Agent",
-                                tool_input=dict(subagent_type=papel),
-                                tool_response=dict(status="completed", agentId=agente_id, agentType=papel)))
+    if segundo_plano:
+        parada = hook(copia, dict(session_id=SESSAO, hook_event_name="SubagentStop", agent_id=agente_id,
+                                  agent_type=papel, stop_hook_active=False))
+        assert parada == {}, (papel, parada)
+    else:
+        resposta = hook(copia, dict(base, hook_event_name="PostToolUse", tool_name="Agent",
+                                    tool_input=dict(subagent_type=papel),
+                                    tool_response=dict(status="completed", agentId=agente_id, agentType=papel)))
     contexto = resposta["hookSpecificOutput"]["additionalContext"]
     assert "agente_id=" + agente_id in contexto, contexto
     return contexto
@@ -104,12 +116,12 @@ with TemporaryDirectory(prefix="validar-occ-", dir=raiz / ".execucoes") as pasta
         assert "chamada:dab" in str(erro), erro
     else:
         raise AssertionError("o falso DONE deveria ser recusado")
-    agente(copia, "test", "a-prep", "uso-prep")
-    agente(copia, "config", "a-config", "uso-config")
-    agente(copia, "implement", "a-impl", "uso-impl")
-    agente(copia, "test", "a-test", "uso-test", comando_teste)
-    contexto = agente(copia, "refute", "a-refute", "uso-refute")
-    agente(copia, "dab", "a-dab", "uso-dab", comando_local)
+    agente(copia, "test", "a-prep", "uso-prep", segundo_plano=True)
+    agente(copia, "config", "a-config", "uso-config", segundo_plano=True)
+    agente(copia, "implement", "a-impl", "uso-impl", segundo_plano=True)
+    agente(copia, "test", "a-test", "uso-test", comando_teste, segundo_plano=True)
+    contexto = agente(copia, "refute", "a-refute", "uso-refute", segundo_plano=True)
+    agente(copia, "dab", "a-dab", "uso-dab", comando_local, segundo_plano=True)
     estado = m.estado(m.pasta())
     assert estado["provas"].keys() == {"teste", "ambiente_local"}, estado["provas"].keys()
     agentes = {k: ler(m.pasta() / v["ref"])["dados"]["agente_id"] for k, v in estado["provas"].items()}
@@ -132,7 +144,8 @@ with TemporaryDirectory(prefix="validar-occ-", dir=raiz / ".execucoes") as pasta
 
     brutos = copia / ".execucoes/sondagens/brutos/claude_code/observacao_occ/hooks"
     nomes = sorted(p.name.split("_")[1] for p in brutos.glob("*.json"))
-    assert len(nomes) == 22 and nomes.count("SessionStart") == 1, nomes  # 1 + guarda + 8 Agent x2 + 2 shells x2
+    # 1 + guarda + 8 Agent x2 + 6 SubagentStop (M em segundo plano) + 2 shells x2
+    assert len(nomes) == 28 and nomes.count("SessionStart") == 1 and nomes.count("SubagentStop") == 6, nomes
     saida = subprocess.run([sys.executable, str(copia / "observacao/conferir.py")], capture_output=True, cwd=copia)
     assert saida.returncode == 0, saida.stderr.decode("utf-8", "replace")
     conferido = json.loads(saida.stdout.decode("utf-8"))

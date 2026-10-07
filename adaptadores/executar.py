@@ -53,6 +53,9 @@ def principal(runtime, caminho=None):
                     }}
                 elif isinstance(evento, dict) and evento.get("hook_event_name") == "Stop":
                     resposta = {"decision": "block", "reason": "Registro de prova invalido: " + str(erro)}
+                elif isinstance(evento, dict) and evento.get("hook_event_name") == "SubagentStop":
+                    # Exit 2 no SubagentStop faria o subagente continuar: so avisa.
+                    resposta = {"systemMessage": "[prova] Chamada do subagente nao registrada: " + str(erro)}
                 else:
                     raise
             print(json.dumps(resposta, ensure_ascii=True))
