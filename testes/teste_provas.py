@@ -1086,6 +1086,18 @@ class ProvasTestes(unittest.TestCase):
         self.assertEqual(codigo, 0, erro)
         self.assertEqual(json.loads(saida)["status"], "DONE")
 
+    def test_cli_estado_mostra_o_agente_id_de_cada_chamada_observada(self):
+        # Sem isso o coordenador do Cursor não tem de onde tirar o ID que revisar exige.
+        self.ativar("manutencao")
+        self.passagem_completa_de_manutencao()
+        codigo, saida, erro = self.chamar_adaptador_prova(["--runtime", "cursor", "--sessao", "sessao-a", "estado"])
+        self.assertEqual(codigo, 0, erro)
+        chamadas = json.loads(saida)["chamadas"]
+        self.assertEqual([(c["papel"], c["agente_id"]) for c in chamadas],
+                         [("test", "call-prep"), ("implement", "call-implement"),
+                          ("test", "call-test"), ("refute", "call-refute")])
+        self.assertTrue(all(c["status"] == "concluida" for c in chamadas))
+
     def test_cli_ataque_sem_chamada_refute_observada_continua_pendente(self):
         self.ativar("manutencao")
         self.contrato["trilha"] = "manutencao"

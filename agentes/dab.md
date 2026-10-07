@@ -36,7 +36,7 @@ Referência a guarda não é autorização e nenhuma capacidade concede permiss�
 
 ## Saída
 
-Operação e parâmetros efetivamente usados, autorização e guarda conferidas, resultado observado, IDs, logs e destinos; informar também tentativa, papel, execução, fatia, estado e limites quando disponíveis. Não declarar sucesso sem observação verificável.
+Operação e parâmetros efetivamente usados, autorização e guarda conferidas, resultado observado, IDs, logs e destinos; informar também tentativa, papel, execução, fatia, estado e limites quando disponíveis. Não declarar sucesso sem observação verificável. Em comando `databricks bundle`, devolva para o registro `sandbox` o recibo de plan (`plan_ref`), a identidade, os destinos resolvidos e a coordenação, com `nao_verificado` no que não observou ([uso](../evidencia/uso.md#diagnóstico-ambiente-e-paridade)). Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

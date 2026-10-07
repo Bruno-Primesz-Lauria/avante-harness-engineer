@@ -1,4 +1,4 @@
-"""Prepara a copia temporaria da observacao O-CU (PLANO-AGENTES-TRILHAS 10.3).
+"""Prepara a copia temporaria da observacao O-CU (PLANO-AGENTES-TRILHAS, painel).
 
 Uso, com o HEAD commitado: py -3 avaliacao/observacao-cursor/preparar.py
 A copia fica em ../.execucoes/observacao-cursor-<instante>, ao lado do clone.

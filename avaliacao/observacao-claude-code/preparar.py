@@ -1,4 +1,4 @@
-"""Prepara a copia temporaria da observacao O-CC (PLANO-AGENTES-TRILHAS 10.3).
+"""Prepara a copia temporaria da observacao O-CC (PLANO-AGENTES-TRILHAS 4.3).
 
 Uso, com o HEAD commitado: py -3 avaliacao/observacao-claude-code/preparar.py
 A copia fica em ../.execucoes/observacao-claude-code-<instante>, ao lado do clone.

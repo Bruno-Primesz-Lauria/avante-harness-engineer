@@ -36,7 +36,7 @@ Capacidade orientativa ausente não bloqueia por si só; registrar quando limita
 
 ## Saída
 
-Arquivos alterados, manifesto conciso das mudanças, vínculo com requisitos e critérios a verificar, validações locais e limitações. Incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis; não alegar prova ainda não coletada.
+Arquivos alterados, manifesto conciso das mudanças, vínculo com requisitos e critérios a verificar, validações locais e limitações. Incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis; não alegar prova ainda não coletada. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

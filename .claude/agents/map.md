@@ -8,7 +8,7 @@ skills:
   - "databricks:databricks-docs"
   - "databricks:databricks-unity-catalog"
 ---
-<!-- esteira-agentes source=2b874ff3201aea67d5be9a70dae07fe847cc059fa428e8d0d151efa73f3738a8 payload=4f06fd4e7e78192915ff2e9e4a7af51d6a408a9d652563c0e9aee7ea788668fa -->
+<!-- esteira-agentes source=a65e3f5bc7163b9686561ab436d9f4fb26b4ff4583e2080be1b58fbbbe2baaca payload=92fdc829601fe7dd6b57e27c0b1f4872177dc5dbaed155b9012f954adfff865e -->
 # map
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -43,7 +43,7 @@ Selecionar apenas as pertinentes ao gatilho: `data-discovery`, `unity-catalog` e
 
 ## Saída
 
-Mapa verificável de fontes e referências, dependências, recorte sugerido e incertezas; incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir fatos de inferências e não afirmar que uma chamada foi comprovada: essa observação cabe ao adaptador.
+Mapa verificável de fontes e referências, dependências, recorte sugerido e incertezas; incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir fatos de inferências e não afirmar que uma chamada foi comprovada: essa observação cabe ao adaptador. Em `correcao`, devolva sintoma, hipótese de causa, base (`direct`, `derived` ou `reported`) e evidência, para o coordenador registrar com `diagnosticar`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

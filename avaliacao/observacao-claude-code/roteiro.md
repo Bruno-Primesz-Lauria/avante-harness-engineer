@@ -1,6 +1,6 @@
 # Roteiro O-CC — observação do Claude Code em cópia temporária
 
-Para quem conduz a observação: o humano, ou um agente em modo headless (`claude -p`), como na P0.4. Nada aqui declara `observado`: isso só existe depois do aceite de G2, que é do humano. Fonte: `PLANO-AGENTES-TRILHAS.md` §4, §5 e §10.3 (O-CC). O kit foi montado com as lições das seis tentativas da O-CU (`avaliacao/observacao-cursor/roteiro.md`) e **ainda não foi executado**.
+Para quem conduz a observação: o humano, ou um agente em modo headless (`claude -p`), como na P0.4. Nada aqui declara `observado`: isso só existe depois do aceite de G2, que é do humano. Fonte: `PLANO-AGENTES-TRILHAS.md` §2, §3 e §4.3 (O-CC). O kit foi montado com as lições das seis tentativas da O-CU (`avaliacao/observacao-cursor/roteiro.md`) e **ainda não foi executado**.
 
 ## 0. Antes
 

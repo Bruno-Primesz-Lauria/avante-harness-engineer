@@ -3,7 +3,7 @@ name: test
 description: Executar o esperado contratado; pode preparar casos apenas no escopo roteado e não corrige produto.
 model: inherit
 ---
-<!-- esteira-agentes source=046032926025c0dc6bd134e8a09df898c2f398359b32139afbbf53ca85f2f459 payload=8ee822902f2a1870567b21f8e1b899ec9c4d5552cb3a8888b1b91dcc9e16b249 -->
+<!-- esteira-agentes source=96a7402ef94d8865919993974c0b6ae8a96d71cc8da2b5565faed17f8404ee83 payload=4512b82e284d59b1fe041ca08601034fe2945db81401cdac678e3fcf91c793f2 -->
 # test
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -39,7 +39,7 @@ Carregar apenas as skills pertinentes entre `dbsql`, `data-discovery` e `core`. 
 
 ## Saída
 
-Para cada critério: comando/operação realmente executado, log ou resultado observado, esperado versus obtido, cobertura, manifesto do estado avaliado e limitações. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Nunca fabricar log, resultado ou prova.
+Para cada critério: comando/operação realmente executado, log ou resultado observado, esperado versus obtido, cobertura, manifesto do estado avaliado e limitações. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Nunca fabricar log, resultado ou prova. No critério `paridade`, devolva recorte, insumos, contas e divergências nos campos da forma `paridade` ([uso](../evidencia/uso.md#diagnóstico-ambiente-e-paridade)), para o coordenador registrar com `registrar-paridade`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

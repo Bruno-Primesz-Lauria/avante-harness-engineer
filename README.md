@@ -34,7 +34,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 
 ## Estado
 
-O que existe hoje. Gates, pendências e histórico: [painel do plano](PLANO-AGENTES-TRILHAS.md#73-painel).
+O que existe hoje. Gates, pendências e histórico: [painel do plano](PLANO-AGENTES-TRILHAS.md#painel).
 
 **Imposto por código** (vale para o shell do chat, quando o hook dispara):
 
@@ -75,7 +75,8 @@ py -3 -m venv .venv
 - Requisitos: Python 3.12+ com PyYAML (`requirements.txt`) e Node para o teste do OpenCode. O hook usa o Python do `.venv` quando ele existe.
 - Os hooks de Cursor, Claude Code e OpenCode já vêm no clone, no formato Windows (`py -3`). Em Linux/macOS, gere de novo com `python3 adaptadores/gerenciar.py <runtime> --instalar`.
 - Sem o clone do produto, a guarda nega toda chamada `databricks bundle`. Ela não procura outro checkout.
-- O `AGENTS.md` e o `CLAUDE.md` do produto não são versionados; um clone novo não os traz.
+- O produto não tem instruções de agente próprias: as regras ficam todas neste harness.
+- No Windows, se o checkout do produto falhar com `Filename too long`, rode `git -C prj-avante-analytics-adb config core.longpaths true` e `git -C prj-avante-analytics-adb restore .`.
 - Versione mudanças de produto no repositório dele (`git -C prj-avante-analytics-adb ...`).
 
 ## Primeiro teste no Cursor
@@ -113,13 +114,13 @@ Em todos: nunca peça `deploy` ou `run` sem autorização explícita, e não con
 
 ## Precedência
 
-No escopo do produto, o `AGENTS.md` dele prevalece. Sobre o comportamento da esteira, valem o código e o `AGENTS.md` do produto. Sobre o harness, valem estes arquivos e o código; o HTML é o desenho.
+As regras do harness valem também no produto, que não tem instruções de agente próprias. Sobre o comportamento da esteira, valem o código do produto e a documentação do bundle (`README.md`, `GUIA-DESENVOLVIMENTO.md`, `PLANO-DE-EXECUCAO.md`) como fonte de fato. Sobre o harness, valem estes arquivos e o código; o HTML é o desenho.
 
 ## Manter README e HTML consistentes
 
-O HTML reúne o desenho proposto e seções sobre o estado atual. Ao mudar a implementação, atualize as afirmações de estado atual no README e no HTML. Funcionalidades ainda propostas devem continuar identificadas como propostas.
+O HTML reúne o desenho e as seções de estado ("Estado" e o roteiro). Ao mudar a implementação, atualize as afirmações de estado no README, no HTML e no painel do plano. Funcionalidades ainda propostas continuam identificadas como propostas.
 
-O layout implementado está em [`evidencia/layout.md`](evidencia/layout.md) e na seção “Layout implementado” do HTML. A árvore genérica e os exemplos de formas no desenho são ilustrativos. A tabela “Estrutura” do HTML detalha código e configuração dos runtimes; a estrutura completa está neste README.
+O layout dos registros está em [`evidencia/layout.md`](evidencia/layout.md). Os exemplos de formas no HTML são ilustrativos. A seção "Estrutura de pastas" do HTML resume a árvore; a estrutura completa está neste README.
 
 ## Verificar mudanças no harness
 

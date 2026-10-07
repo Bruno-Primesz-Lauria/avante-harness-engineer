@@ -7,7 +7,7 @@ Contexto do projeto Avante (vocabulário, etapas, papéis): `nucleo/contexto-ava
 
 - Busque o fato no repositório antes de perguntar. Pergunte só o que muda escopo, resultado ou autorização.
 - Faça a menor mudança que resolve o pedido. Preserve alterações que já existiam.
-- O produto fica em `prj-avante-analytics-adb/`, com Git próprio. Leia o `AGENTS.md` dele antes de trabalhar ali; ele prevalece nesse escopo.
+- O produto fica em `prj-avante-analytics-adb/`, com Git próprio e sem instruções de agente próprias: as regras para trabalhar nele são as deste harness. A documentação do bundle (`README.md`, `GUIA-DESENVOLVIMENTO.md`, `PLANO-DE-EXECUCAO.md`) é fonte de fato, não de regra.
 - Registros do harness ficam em `.execucoes/`, nunca nos arquivos do produto.
 - Leia `nucleo/contexto-avante.md` quando o pedido ou a fonte citar Mock, SIT, UAT, etapas do objeto, módulos SAP ou papéis (PO, Key User, etc.).
 
@@ -19,7 +19,7 @@ Contexto do projeto Avante (vocabulário, etapas, papéis): `nucleo/contexto-ava
   Rode as verificações pelo chat, consulte com `estado` e feche com `fechar`.
   Só escreva `DONE` se `fechar` aceitar. Se recusar, verifique de novo ou feche com `BLOCKED`, `FAILED` ou `DECIDE` (`evidencia/fecho.md`).
 - **Agentes obrigatórios**: se a trilha estiver em `agentes_obrigatorios` do seu runtime (`configuracao/politica.json`), você coordena e delega aos papéis de `agentes/` na ordem de [`trilhas/README.md`](trilhas/README.md#agentes). Não faça em silêncio o trabalho de um papel obrigatório: papel indisponível fecha `BLOCKED`. Fora da chave, um único agente executa a trilha.
-- **Limite temporário no Claude Code**: até o pacote D-CC passar pelo gate G2, o adaptador não coleta provas de shell nessa sessão; portanto, `fechar` não comprova `DONE`. Feche a fatia como `BLOCKED`, registrando o motivo e a condição de retomada, ou execute a fatia no Cursor. Relato de agente não substitui prova.
+- **Limite temporário no Claude Code**: até o gate G2 do Claude Code, a coleta de provas desse runtime não foi observada em sessão real; portanto, `fechar` não comprova `DONE`. Feche a fatia como `BLOCKED`, registrando o motivo e a condição de retomada, ou execute a fatia no Cursor. Relato de agente não substitui prova.
 
 ## Databricks
 

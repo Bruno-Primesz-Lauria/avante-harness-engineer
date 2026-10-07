@@ -3,7 +3,7 @@ name: docs
 description: Escrever ou destilar somente os documentos atribuídos, com fontes verificáveis.
 model: inherit
 ---
-<!-- esteira-agentes source=db04f141f51001ca46c0ee305c2fe8f600a600324abb3ba5aab1dd4e9e5883cb payload=1781387c8549db37de3aadefd4fa65d2ec04e9754f3c816da51545652749a21c -->
+<!-- esteira-agentes source=c9f8375debcd30261f4ea4b2ee3241c7388748a5b2d5e7f045f7fabbaef15030 payload=fcfbc54ca947efdcff688adab29d351339a59c316f7e604eea3f45548e668489 -->
 # docs
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -39,7 +39,7 @@ Carregar `docs` (referência Databricks `databricks-docs`) quando pertinente à 
 
 ## Saída
 
-Documento ou instrução final nos arquivos atribuídos, referências verificáveis para afirmações e decisões editoriais necessárias. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis; declarar limitações e separar fatos de inferências.
+Documento ou instrução final nos arquivos atribuídos, referências verificáveis para afirmações e decisões editoriais necessárias. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis; declarar limitações e separar fatos de inferências. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

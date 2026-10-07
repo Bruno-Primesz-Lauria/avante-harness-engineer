@@ -5,7 +5,8 @@ from pathlib import Path
 import re
 
 from formas import exigir
-from guarda_cwd import Operacao, avaliar_operacao
+from guarda_cwd import Operacao, _extrair_prefixo_cwd, avaliar_operacao
+from guarda_efeito import observar_resultado_plan
 from protocolo import mensagem, traduzir
 from provas import Provas, gravar, ler
 
@@ -168,7 +169,7 @@ def _tratar_shell(evento, provas, politica, raiz):
     return _resposta_pre(decisao) if decisao.decisao != "nao_aplica" else {}
 
 
-def _tratar_resultado(evento, provas):
+def _tratar_resultado(evento, provas, politica):
     entrada = evento.get("tool_input")
     exigir(isinstance(entrada, dict), "tool_input invalido")
     comando = entrada.get("command")
@@ -188,7 +189,12 @@ def _tratar_resultado(evento, provas):
         saida = evento.get("error") if isinstance(evento.get("error"), str) else ""
         if codigo is None:
             saida = "Execucao inconclusiva: formato de error sem Exit code N na primeira linha.\n" + saida
-    return provas.depois(chamada_id, comando, codigo, saida, origem)
+    resultado = provas.depois(chamada_id, comando, codigo, saida, origem)
+    if resultado is not None and resultado["resultado"] == "pass" and "databricks" in comando.casefold():
+        # Como no Cursor: o recibo de plan e pre-condicao do deploy, nunca autorizacao.
+        teste = ler(Path(resultado["pasta"]) / resultado["evidencia_ref"])
+        observar_resultado_plan(politica, cwd=teste["dados"]["cwd"], comando=_extrair_prefixo_cwd(comando)[1])
+    return resultado
 
 
 def tratar(evento, politica, raiz):
@@ -236,5 +242,5 @@ def tratar(evento, politica, raiz):
     if nome == "PreToolUse":
         return _tratar_shell(evento, provas, politica, raiz)
     if nome in {"PostToolUse", "PostToolUseFailure"}:
-        _tratar_resultado(evento, provas)
+        _tratar_resultado(evento, provas, politica)
     return {}

@@ -8,7 +8,7 @@ skills:
   - "databricks:databricks-jobs"
   - "databricks:databricks-pipelines"
 ---
-<!-- esteira-agentes source=d905c73216f8cd08564dec11762048b92924e4e5715ba1b90dbeabf49e2dfc11 payload=fba239de8196080603b99297d268de303d612b06cd139cd23858385d9ff2fcd6 -->
+<!-- esteira-agentes source=d35268eebb9294214c3ac45760196f39a461fa560928cee8aac9187c8bb73745 payload=b5fd4d1fafc12cbd3888814cde143b2be708c2daddda7212217b2e5519d17662 -->
 # config
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -47,7 +47,7 @@ Capacidade orientativa ausente não bloqueia por si só; registrar quando limita
 
 ## Saída
 
-Lista dos arquivos alterados, vínculo de cada alteração com os requisitos, validações locais executadas e estado/limitações. Incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis; não inventar provas ou resultados.
+Lista dos arquivos alterados, vínculo de cada alteração com os requisitos, validações locais executadas e estado/limitações. Incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis; não inventar provas ou resultados. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

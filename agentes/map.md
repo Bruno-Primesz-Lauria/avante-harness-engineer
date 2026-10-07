@@ -32,7 +32,7 @@ Selecionar apenas as pertinentes ao gatilho: `data-discovery`, `unity-catalog` e
 
 ## Saída
 
-Mapa verificável de fontes e referências, dependências, recorte sugerido e incertezas; incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir fatos de inferências e não afirmar que uma chamada foi comprovada: essa observação cabe ao adaptador.
+Mapa verificável de fontes e referências, dependências, recorte sugerido e incertezas; incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir fatos de inferências e não afirmar que uma chamada foi comprovada: essa observação cabe ao adaptador. Em `correcao`, devolva sintoma, hipótese de causa, base (`direct`, `derived` ou `reported`) e evidência, para o coordenador registrar com `diagnosticar`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

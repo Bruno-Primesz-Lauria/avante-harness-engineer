@@ -230,6 +230,34 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.assertIn("cd --", resposta["hookSpecificOutput"]["permissionDecisionReason"])
         self.assertIsNone(self.p.estado(self.p.pasta())["pendente"])
 
+    def test_plan_com_prefixo_gera_recibo_so_depois_do_sucesso(self):
+        bundle = self.raiz / "bundle"
+        bundle.mkdir()
+        (bundle / "databricks.yml").write_text("bundle: {name: fixture}\n", encoding="utf-8")
+        corpo = "databricks bundle plan -t sandbox -p teste --select etapa"
+        comando = f"Set-Location -LiteralPath '{bundle}' -ErrorAction Stop; {corpo}"
+        self.p.iniciar(dict(objetivo="Registrar plan", termino_fatia="Recibo gravado", trilha="validacao",
+                            superficie=["src/a.py"], artefatos_raiz=".execucoes/provas", fora=[],
+                            fontes=["src/a.py"], prazo=None,
+                            aceite=[dict(id="c1", tipo="teste", obrigatorio=True, esperado="Plan verde",
+                                         verificacao=dict(comando=comando, cwd="bundle", caminhos=["src"]))],
+                            orcamento={"ciclos_correcao_max": 3}, responsaveis={"coordenador": "agente"}))
+        recibos = Path(self.politica["registros_raiz"]) / "plans"
+        antes = evento_p0_4("PreToolUse_Bash_principal")
+        antes["tool_input"]["command"] = comando
+        self.assertNotEqual(self.tratar_evento(antes).get("hookSpecificOutput", {}).get("permissionDecision"),
+                            "deny")
+        self.assertFalse(recibos.exists())
+        depois = evento_p0_4("PostToolUse_Bash_principal")
+        depois["tool_input"]["command"] = comando
+        self.tratar_evento(depois)
+        self.assertEqual(len(list(recibos.glob("*.json"))), 1)
+        deploy = evento_p0_4("PreToolUse_Bash_principal")
+        deploy["tool_use_id"] = "toolu_deploy"
+        deploy["tool_input"]["command"] = comando.replace("plan", "deploy")
+        motivo = self.tratar_evento(deploy)["hookSpecificOutput"]["permissionDecisionReason"]
+        self.assertIn("identidade_destinos_pendentes", motivo)
+
     def test_posttoolusefailure_le_exit_code_da_primeira_linha(self):
         self.iniciar("exit 3")
         antes = evento_p0_4("PreToolUse_Bash_failure")

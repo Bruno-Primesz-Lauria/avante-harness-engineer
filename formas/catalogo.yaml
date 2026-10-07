@@ -7,7 +7,7 @@ nota: >
   teste, ataque, triagem, inspecao, chamada, diagnostico, sandbox e paridade
   estao adotadas; C2 validou os payloads 3.2 e C6 adotou as tres ultimas.
   As demais candidatas nao serao adotadas
-  (PLANO-AGENTES-TRILHAS.md, secao 3.3). Registros 3.1 continuam legiveis. A adocao do schema nao
+  (PLANO-AGENTES-TRILHAS.md, secao 3.1). Registros 3.1 continuam legiveis. A adocao do schema nao
   significa que os eventos dos runtimes foram observados; a ativacao de cada
   runtime depende de G2 (painel do plano).
   Baseline, manifesto e estado estao descritos em evidencia/uso.md.

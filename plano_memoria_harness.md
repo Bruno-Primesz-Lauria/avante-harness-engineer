@@ -287,7 +287,7 @@ O piloto manual pode começar após a entrega 1 e ser repetido depois da entrega
 
 ## 8. Adoção no produto e evolução posterior
 
-Depois do piloto, ler o `AGENTS.md` e os documentos vigentes do produto, escolher uma pasta compatível com sua organização e adotar o mesmo protocolo de notas. Como o README do harness informa que as instruções do produto não vêm no clone, conferir como distribuir essa orientação aos engenheiros antes de prometer descoberta automática ali.
+Depois do piloto, ler os documentos vigentes do produto, escolher uma pasta compatível com sua organização e adotar o mesmo protocolo de notas. O produto não tem instruções de agente próprias: a orientação aos agentes continua no harness, que é aberto como raiz também para trabalhar no produto.
 
 Conhecimento específico de negócio acompanha o produto. Conhecimento de ferramentas e processo permanece no harness. Referências entre repositórios identificam o projeto e a revisão; o índice aponta para a fonte canônica, evitando cópias divergentes.
 

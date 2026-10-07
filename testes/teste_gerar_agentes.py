@@ -71,6 +71,14 @@ class GerarAgentesTestes(unittest.TestCase):
         for skill in ("core", "dabs", "jobs", "pipelines"):
             self.assertIn(f".agents/skills/databricks-{skill}/SKILL.md", dab_cursor)
 
+    def test_so_o_refute_do_cursor_roda_shell_para_vincular_o_id(self):
+        # O-CC espera o refute do Claude Code sem Bash: lá o ID vem do hook.
+        cursor = gerar_agentes.gerar(self.raiz, "cursor")
+        claude = gerar_agentes.gerar(self.raiz, "claude_code")
+        self.assertIn("Write-Output refute-janela", cursor[".cursor/agents/refute.md"])
+        self.assertEqual([c for c, t in {**cursor, **claude}.items() if "refute-janela" in t],
+                         [".cursor/agents/refute.md"])
+
     def test_nome_e_descricao_sem_aspas_porque_o_cursor_as_mantem_no_nome(self):
         for runtime in ("claude_code", "cursor"):
             for caminho, texto in gerar_agentes.gerar(self.raiz, runtime).items():

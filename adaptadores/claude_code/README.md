@@ -1,6 +1,6 @@
 # Claude Code
 
-Visão geral e tabela: [adaptadores](../README.md). Estado dos gates e histórico: painel do [plano](../../PLANO-AGENTES-TRILHAS.md#73-painel).
+Visão geral e tabela: [adaptadores](../README.md). Estado dos gates e histórico: painel do [plano](../../PLANO-AGENTES-TRILHAS.md#painel).
 
 - Instruções: `CLAUDE.md` importa `@AGENTS.md`. Confira a carga numa sessão nova.
 - Configuração: `.claude/settings.json`, gerada com `py -3 adaptadores/gerenciar.py claude_code --instalar`. Mescla com o que já existe (permissões e outros hooks ficam). Agentes em `.claude/agents/`, gerados por `py -3 adaptadores/gerar_agentes.py --instalar claude_code`.
@@ -9,6 +9,7 @@ Visão geral e tabela: [adaptadores](../README.md). Estado dos gates e históric
 - Quando registra a chamada de um papel, o `PostToolUse(Agent)` devolve ao coordenador, em `additionalContext`, o `agente_id` observado (`tool_response.agentId`). É o ID que a revisão do refute, o `sandbox` do dab e a paridade do test citam. Tipo fora dos sete papéis, papel fora do plano, status diferente de `completed` ou retorno sem `agentId` não devolvem contexto nem registram a chamada.
 - O shell do subagente chega com o `session_id` do principal e mais `agent_id`, que vira o `agente_id` da prova; não depende de janela única. As janelas de `Agent` alimentam a vigilância de superfície (C5): sobreposição torna a autoria inconclusiva.
 - O `cwd` do envelope é da sessão e não vale como prova. A guarda interpreta somente `Set-Location -LiteralPath '...' -ErrorAction Stop;` (PowerShell) ou `cd -- '...' &&` (Bash). Uma verificação declarada sem esse prefixo é negada com orientação para informar o diretório.
+- Um `plan` literal declarado no contrato e concluído com sucesso grava o recibo de plan, como no Cursor; o prefixo de diretório é retirado antes de interpretar o comando.
 - `Stop` confere a fatia e bloqueia uma saída sem fecho válido. Quando `stop_hook_active` é `true`, não bloqueia de novo.
 - **Limite vigente:** o adaptador foi exercitado só sobre fixtures. Até o G2 do Claude Code, o `fechar` não comprova `DONE` nesse runtime (regra do `AGENTS.md`): feche a fatia como `BLOCKED`, com motivo e condição de retomada, ou execute-a no Cursor. Relato de agente não substitui prova observada.
 - Observação (O-CC): kit em [`avaliacao/observacao-claude-code/`](../../avaliacao/observacao-claude-code/roteiro.md).

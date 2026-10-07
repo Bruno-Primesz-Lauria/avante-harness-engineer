@@ -8,7 +8,7 @@ skills:
   - "databricks:databricks-data-discovery"
   - "databricks:databricks-dbsql"
 ---
-<!-- esteira-agentes source=4b75ac3691bd1bcd64c8ffda7754cc76b6513aeaf1cec69535250a59bf9a4a40 payload=e6d07626623c471ae30aa7b97a9a0f5768e41f776a2e791601e30a9fb2acd74d -->
+<!-- esteira-agentes source=0be377c3205ca4de41c2ddee31afba842bcbad8f35350a61443e9da4689c1e03 payload=77a444575c3b2f5c0d7538d66683b7569b0fde277faa2d5566da6c22acb94794 -->
 # test
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -44,7 +44,7 @@ Carregar apenas as skills pertinentes entre `dbsql`, `data-discovery` e `core`. 
 
 ## Saída
 
-Para cada critério: comando/operação realmente executado, log ou resultado observado, esperado versus obtido, cobertura, manifesto do estado avaliado e limitações. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Nunca fabricar log, resultado ou prova.
+Para cada critério: comando/operação realmente executado, log ou resultado observado, esperado versus obtido, cobertura, manifesto do estado avaliado e limitações. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Nunca fabricar log, resultado ou prova. No critério `paridade`, devolva recorte, insumos, contas e divergências nos campos da forma `paridade` ([uso](../evidencia/uso.md#diagnóstico-ambiente-e-paridade)), para o coordenador registrar com `registrar-paridade`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

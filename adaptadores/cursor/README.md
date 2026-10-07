@@ -1,6 +1,6 @@
 # Cursor
 
-Adaptador principal. Visão geral e tabela: [adaptadores](../README.md). Estado dos gates e histórico: painel do [plano](../../PLANO-AGENTES-TRILHAS.md#73-painel).
+Adaptador principal. Visão geral e tabela: [adaptadores](../README.md). Estado dos gates e histórico: painel do [plano](../../PLANO-AGENTES-TRILHAS.md#painel).
 
 - Configuração: `.cursor/hooks.json`, gerada com `py -3 adaptadores/gerenciar.py cursor --instalar` (`--plataforma posix` no POSIX). Agentes em `.cursor/agents/`, gerados por `py -3 adaptadores/gerar_agentes.py --instalar cursor`.
 - `beforeShellExecution` e `preToolUse` (matcher `Shell|Task`) têm `failClosed: true`. A guarda usa o `cwd` do evento de shell.
@@ -19,7 +19,7 @@ Uso da prova: [evidencia/uso.md](../../evidencia/uso.md).
 - O shell do subagente só se associa à fatia do coordenador dentro de uma janela única. A prova usa o `conversation_id` do shell como `agente_id`, também incluído nos IDs observados da chamada. Fora da janela, com janelas sobrepostas ou papel desconhecido, nenhum sucesso é registrado. Por isso os papéis rodam um de cada vez.
 - O ID bruto da chamada fica nos IDs observados; `chamada_id` recebe um identificador estável derivado, porque o Schema 3.2 não aceita a quebra de linha que o Cursor inclui no ID bruto. O papel opcional `map` não é gravado como chamada obrigatória.
 - Papel sem shell (config, implement, docs) só é ligado à chamada pela janela; a autoria das edições vem da vigilância de superfície (C5).
-- O refute e o dab precisam rodar ao menos um shell para que o `agente_id` deles seja observado; a revisão e o `ambiente_local` usam esse ID.
+- O refute e o dab precisam rodar ao menos um shell para que o `agente_id` deles seja observado; a revisão e o `ambiente_local` usam esse ID. O refute gerado para o Cursor traz essa instrução (um único `Write-Output refute-janela`), e o coordenador lê o ID em `chamadas` do `prova.py estado`.
 
 ## Comportamento observado do runtime
 

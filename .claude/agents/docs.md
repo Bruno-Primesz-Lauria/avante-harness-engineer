@@ -6,7 +6,7 @@ model: inherit
 skills:
   - "databricks:databricks-docs"
 ---
-<!-- esteira-agentes source=1d4052ed9845e1ae8d22ed7f57df278bd6f5063db97d20db5827052d6b07e4f1 payload=557c13aac8656727a363fcb2a47e1e468a2d3f382254b28d0359ca79b17d1836 -->
+<!-- esteira-agentes source=e56d36c531a118afa81a9b3c77cfe2e8588824a63e2c04b204036d8a7a286a01 payload=1aee414f0ceacdadf180eb325efcdea57fc176d0ac7e1cac793c5657f3e3ec85 -->
 # docs
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -42,7 +42,7 @@ Carregar `docs` (referência Databricks `databricks-docs`) quando pertinente à 
 
 ## Saída
 
-Documento ou instrução final nos arquivos atribuídos, referências verificáveis para afirmações e decisões editoriais necessárias. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis; declarar limitações e separar fatos de inferências.
+Documento ou instrução final nos arquivos atribuídos, referências verificáveis para afirmações e decisões editoriais necessárias. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis; declarar limitações e separar fatos de inferências. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

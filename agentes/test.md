@@ -33,7 +33,7 @@ Carregar apenas as skills pertinentes entre `dbsql`, `data-discovery` e `core`. 
 
 ## Saída
 
-Para cada critério: comando/operação realmente executado, log ou resultado observado, esperado versus obtido, cobertura, manifesto do estado avaliado e limitações. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Nunca fabricar log, resultado ou prova.
+Para cada critério: comando/operação realmente executado, log ou resultado observado, esperado versus obtido, cobertura, manifesto do estado avaliado e limitações. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Nunca fabricar log, resultado ou prova. No critério `paridade`, devolva recorte, insumos, contas e divergências nos campos da forma `paridade` ([uso](../evidencia/uso.md#diagnóstico-ambiente-e-paridade)), para o coordenador registrar com `registrar-paridade`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

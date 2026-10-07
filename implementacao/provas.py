@@ -970,5 +970,11 @@ class Provas:
             ref = dentro(pasta, estado["fecho"]["ref"])
             exigir(hash_arquivo(ref) == estado["fecho"]["sha256"], "Fecho alterado")
             status = validar(ler(ref), pasta, estado["execucao_id"], "principal")["dados"]["status"]
+        # O coordenador cita o agente_id observado em revisar, registrar-sandbox e registrar-paridade.
+        chamadas = [dict(id=registro["id"], papel=registro["papel"], status=registro["status"],
+                         agente_id=next((i["valor"] for i in e["dados"]["ids_observados"]
+                                         if i["nome"] == "agente_id"), None))
+                    for registro, e in self.chamadas_validas(pasta, estado)]
         return dict(ativa=True, execucao_id=estado["execucao_id"], revisao=estado["revisao"],
-                    status=status, pendencias=faltam, fecho_valido=status is not None and (status not in ("DONE", "REVIEW") or not faltam))
+                    status=status, pendencias=faltam, chamadas=chamadas,
+                    fecho_valido=status is not None and (status not in ("DONE", "REVIEW") or not faltam))

@@ -3,7 +3,7 @@ name: dab
 description: Executar somente operação de ambiente explicitamente contratada e autorizada; registrar resultado, IDs, logs e destinos observados.
 model: inherit
 ---
-<!-- esteira-agentes source=37afc81d12760cb081186ff71d4179b15f4f0f299a9938440c74cf25b745dd33 payload=f72f0b00abc11236bf42ba6f1a5f3ccb42b11446902b705c2875bffc70d217e1 -->
+<!-- esteira-agentes source=6e426709daa70f5654528c078015d563353f0a3aae1f3b8a384b48d2ca434c2d payload=9696aa35195d0f787691b3748ad47229982b53c174795fafb9dd45297a15d6ae -->
 # dab
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -42,7 +42,7 @@ Referência a guarda não é autorização e nenhuma capacidade concede permiss�
 
 ## Saída
 
-Operação e parâmetros efetivamente usados, autorização e guarda conferidas, resultado observado, IDs, logs e destinos; informar também tentativa, papel, execução, fatia, estado e limites quando disponíveis. Não declarar sucesso sem observação verificável.
+Operação e parâmetros efetivamente usados, autorização e guarda conferidas, resultado observado, IDs, logs e destinos; informar também tentativa, papel, execução, fatia, estado e limites quando disponíveis. Não declarar sucesso sem observação verificável. Em comando `databricks bundle`, devolva para o registro `sandbox` o recibo de plan (`plan_ref`), a identidade, os destinos resolvidos e a coordenação, com `nao_verificado` no que não observou ([uso](../evidencia/uso.md#diagnóstico-ambiente-e-paridade)). Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

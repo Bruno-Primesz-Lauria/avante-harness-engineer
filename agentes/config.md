@@ -36,7 +36,7 @@ Capacidade orientativa ausente não bloqueia por si só; registrar quando limita
 
 ## Saída
 
-Lista dos arquivos alterados, vínculo de cada alteração com os requisitos, validações locais executadas e estado/limitações. Incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis; não inventar provas ou resultados.
+Lista dos arquivos alterados, vínculo de cada alteração com os requisitos, validações locais executadas e estado/limitações. Incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis; não inventar provas ou resultados. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

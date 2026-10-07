@@ -7,7 +7,7 @@ skills:
   - "databricks:databricks-core"
   - "databricks:databricks-dabs"
 ---
-<!-- esteira-agentes source=0d0cfba977363f1da174ce8579f26a0f8d152e489968c9899b7f042333dadcea payload=64f30bb3879286eee4fbdfa936cf0a3ad097544700fb88346e2b0aa31672e829 -->
+<!-- esteira-agentes source=f14cb9273a99d375293cb9224932fcbebc3efc088cee6402dd4d842beda8e0cb payload=8eb9d779447ffbd00ca578fbe868049e1fbe7bb45c4d7b4f372b020e6c0088cb -->
 # dab
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -46,7 +46,7 @@ Referência a guarda não é autorização e nenhuma capacidade concede permiss�
 
 ## Saída
 
-Operação e parâmetros efetivamente usados, autorização e guarda conferidas, resultado observado, IDs, logs e destinos; informar também tentativa, papel, execução, fatia, estado e limites quando disponíveis. Não declarar sucesso sem observação verificável.
+Operação e parâmetros efetivamente usados, autorização e guarda conferidas, resultado observado, IDs, logs e destinos; informar também tentativa, papel, execução, fatia, estado e limites quando disponíveis. Não declarar sucesso sem observação verificável. Em comando `databricks bundle`, devolva para o registro `sandbox` o recibo de plan (`plan_ref`), a identidade, os destinos resolvidos e a coordenação, com `nao_verificado` no que não observou ([uso](../evidencia/uso.md#diagnóstico-ambiente-e-paridade)). Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

@@ -6,7 +6,7 @@ model: inherit
 skills:
   - "databricks:databricks-docs"
 ---
-<!-- esteira-agentes source=f923c866aac3f7962149ab8ebea20d9b7cfcedd6397761fb562a32f2ba339832 payload=602d506b3735c71f0179b26572732d51506fc316187b64b8723935337625299c -->
+<!-- esteira-agentes source=a6040dd1e46cef9dc63ed962e8ed61a517b82774d8fd14ea7a674d8caa2296ed payload=0f866ce49bec02a2e552c4c4072389324b5f03b6931ad7318164846b37739cbc -->
 # refute
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -41,7 +41,7 @@ Sem capacidade obrigatória própria. A seleção de skills depende do artefato 
 
 ## Saída
 
-Veredito, tentativas de refutação, achados com severidade e localização, evidências e limites; incluir achados `simplificacao` quando houver versão realmente mais simples que preserve o comportamento e o aceite. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir achado confirmado de hipótese.
+Veredito, tentativas de refutação, achados com severidade e localização, evidências e limites; incluir achados `simplificacao` quando houver versão realmente mais simples que preserve o comportamento e o aceite. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir achado confirmado de hipótese. Use os campos da forma `ataque` (veredito, tentativas, achados, cobertura), para o coordenador registrar com `revisar`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

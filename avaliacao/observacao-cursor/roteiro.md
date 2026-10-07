@@ -1,6 +1,6 @@
 # Roteiro O-CU — observação do Cursor em sessão nova
 
-Para o humano executar no Cursor. Nada aqui declara `observado`: isso só existe depois do aceite de G2. Fonte: `PLANO-AGENTES-TRILHAS.md` §4, §5 e §10.3 (O-CU).
+Para o humano executar no Cursor. Nada aqui declara `observado`: isso só existe depois do aceite de G2. Fonte: `PLANO-AGENTES-TRILHAS.md` §2 e §3; resultado no painel (O-CU).
 
 ## 0. Antes (humano)
 

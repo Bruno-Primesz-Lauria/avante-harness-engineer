@@ -32,7 +32,7 @@ Sem capacidade obrigatória própria. A seleção de skills depende do artefato 
 
 ## Saída
 
-Veredito, tentativas de refutação, achados com severidade e localização, evidências e limites; incluir achados `simplificacao` quando houver versão realmente mais simples que preserve o comportamento e o aceite. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir achado confirmado de hipótese.
+Veredito, tentativas de refutação, achados com severidade e localização, evidências e limites; incluir achados `simplificacao` quando houver versão realmente mais simples que preserve o comportamento e o aceite. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir achado confirmado de hipótese. Use os campos da forma `ataque` (veredito, tentativas, achados, cobertura), para o coordenador registrar com `revisar`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 
