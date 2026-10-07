@@ -717,7 +717,7 @@ td.m, th.m { text-align: center; }
 <div class="pills" id="tabs-trilha" role="group" aria-label="Trilha"></div>
 <p class="note-uso" id="uso"></p><p class="note-papeis" id="papeis"></p>
 <div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny,back"></div><figure class="flow-map"><div id="g-trilha"></div><figcaption>Selecione um nó para ver entradas e saídas. Fecho sem DONE: DECIDE, BLOCKED ou FAILED.</figcaption></figure></div>
-<div class="callout">As definições dos papéis estão em <code>agentes/</code>. <span id="estacao-cursor" class="chip ok">Cursor: observado</span> em <code>.cursor/agents/</code>; obrigatórios na trilha <code>manutencao</code>. <span id="estacao-claude" class="chip ok">Claude Code: observado</span> em <code>.claude/agents/</code>; obrigatórios na trilha <code>manutencao</code>. Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
+<div class="callout">As definições dos papéis estão em <code>agentes/</code>. <span id="estacao-cursor" class="chip ok">Cursor: observado</span> em <code>.cursor/agents/</code>; obrigatórios nas trilhas <code>manutencao</code>, <code>correcao</code>, <code>novo</code>, <code>docs</code> e <code>review</code>. <span id="estacao-claude" class="chip ok">Claude Code: observado</span> em <code>.claude/agents/</code>; obrigatórios nas trilhas <code>manutencao</code>, <code>correcao</code>, <code>novo</code>, <code>docs</code> e <code>review</code>. Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
 </section>
 
 <section id="guardas">
@@ -784,7 +784,7 @@ td.m, th.m { text-align: center; }
 <tr><td>Prova e fecho no Cursor (hooks e <code>prova.py</code>)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
 <tr><td>Prova e fecho no Claude Code (sessão, coleta, recibo de plan, <code>Stop</code>)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
 <tr><td>Roteamento, definições neutras e agentes nativos</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
-<tr><td>Agentes obrigatórios por trilha (<code>agentes_obrigatorios</code>)</td><td class="m"><span class="chip ok">manutenção nos dois</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor</span></td></tr>
+<tr><td>Agentes obrigatórios por trilha (<code>agentes_obrigatorios</code>)</td><td class="m"><span class="chip ok">manutenção, correção, novo, docs e review nos dois</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor</span></td></tr>
 <tr><td>Superfície por papel (C5) e revisão por refute observado</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
 <tr><td>Formas 3.2: onze adotadas</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">oito no Cursor e no Claude Code; C6 ainda não</span></td></tr>
 <tr><td>Diagnóstico, ambiente e paridade (C6)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
@@ -796,7 +796,7 @@ td.m, th.m { text-align: center; }
 <div class="tiles fixed">
 <div class="tile"><div class="v sm">G1</div><div class="k">aprovado; suíte, consistência e geração estáveis</div></div>
 <div class="tile"><div class="v sm">G2</div><div class="k">aceito no Cursor e no Claude Code</div></div>
-<div class="tile cur"><div class="v sm">E0 / E1</div><div class="k">manutenção ativa no Cursor e no Claude Code; onda 1 (manutenção e correção) em tarefa real</div></div>
+<div class="tile cur"><div class="v sm">E0 / E1</div><div class="k">manutenção, correção, novo, docs e review ativas no Cursor e no Claude Code; onda 1 (manutenção e correção) em tarefa real</div></div>
 <div class="tile"><div class="v sm">E2</div><div class="k">segunda onda, trilha a trilha</div></div>
 <div class="tile"><div class="v sm">G4</div><div class="k">medição e aceite final</div></div>
 </div>
@@ -1252,7 +1252,7 @@ const ARQ = {
   subagentes: { tipo: "Agentes · ativação parcial", chip: "warn", t: "Subagentes · 7 papéis", onde: "agentes/*.md",
     oque: "map, config, implement, test, refute, docs e dab: cada um com escopo estreito.",
     serve: "Separar quem escreve de quem verifica e revisa. Cada papel altera só a superfície atribuída.",
-    importa: "Revisão independente pega o que o autor não vê. Hoje são obrigatórios só na manutenção, no Cursor e no Claude Code; as demais trilhas entram trilha a trilha (E1, E2).",
+    importa: "Revisão independente pega o que o autor não vê. Hoje são obrigatórios em manutenção, correção, novo, docs e review, no Cursor e no Claude Code; validação e destilar entram depois, e entendimento não tem papéis.",
     liga: ["coordenador", "roteamento", "nativos"] },
   runtimes: { tipo: "Runtimes", chip: "info", t: "Cursor · Claude Code · Codex · OpenCode", onde: "",
     oque: "Os quatro ambientes suportados. Todos leem o mesmo AGENTS.md.",

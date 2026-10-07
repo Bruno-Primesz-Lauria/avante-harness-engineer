@@ -412,6 +412,11 @@ class ProvasTestes(unittest.TestCase):
         clone = self.raiz / "clone com espacos"
         for pasta in ("implementacao", "adaptadores", "formas", "configuracao", "agentes"):
             shutil.copytree(RAIZ / pasta, clone / pasta, ignore=shutil.ignore_patterns("__pycache__"))
+        # O caso e caminho com espacos, nao agentes: a chave real ativaria a trilha do contrato.
+        politica_clone = clone / "configuracao/politica.json"
+        politica = ler(politica_clone)
+        politica["agentes_obrigatorios"] = {"claude_code": [], "cursor": []}
+        politica_clone.write_text(json.dumps(politica), encoding="utf-8")
         (clone / "src").mkdir()
         (clone / "src/a.py").write_text("# arquivo", encoding="utf-8")
         contrato = clone / "contrato.json"
@@ -538,9 +543,10 @@ class ProvasTestes(unittest.TestCase):
         self.executar()
         self.assertEqual(self.p.fechar("DONE", "Rollback para chave vazia")["status"], "DONE")
 
-    def test_e0_chave_real_ativa_manutencao_nos_dois_runtimes_e_esvaziar_restaura(self):
+    def test_e0_chave_real_ativa_as_mesmas_trilhas_nos_dois_runtimes_e_esvaziar_restaura(self):
         real = ler(RAIZ / "configuracao/politica.json")["agentes_obrigatorios"]
-        self.assertEqual(real, {"claude_code": ["manutencao"], "cursor": ["manutencao"]})
+        ativas = ["manutencao", "correcao", "novo", "docs", "review"]
+        self.assertEqual(real, {"claude_code": ativas, "cursor": ativas})
         self.politica["agentes_obrigatorios"] = real
         (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
         self.contrato["trilha"] = "manutencao"
@@ -549,9 +555,11 @@ class ProvasTestes(unittest.TestCase):
             self.iniciar()
         self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-claude", runtime="claude_code")
         self.assertTrue(self.p.ativada("manutencao", "claude_code"))
-        self.assertFalse(self.p.ativada("correcao", "claude_code"))
+        self.assertTrue(self.p.ativada("correcao", "claude_code"))
+        self.assertFalse(self.p.ativada("validacao", "claude_code"))
         self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-cursor", runtime="cursor")
-        self.assertFalse(self.p.ativada("correcao", "cursor"))
+        self.assertTrue(self.p.ativada("correcao", "cursor"))
+        self.assertFalse(self.p.ativada("destilar", "cursor"))
         self.iniciar()
         self.executar()
         with self.assertRaisesRegex(ValueError, "chamada:"):

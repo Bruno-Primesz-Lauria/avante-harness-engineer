@@ -12,7 +12,7 @@ Visão geral e tabela: [adaptadores](../README.md). Estado dos gates e históric
 - O `cwd` do envelope é da sessão e não vale como prova. A guarda interpreta somente `Set-Location -LiteralPath '...' -ErrorAction Stop;` (PowerShell) ou `cd -- '...' &&` (Bash). Uma verificação declarada sem esse prefixo é negada com orientação para informar o diretório.
 - Um `plan` literal declarado no contrato e concluído com sucesso grava o recibo de plan, como no Cursor; o prefixo de diretório é retirado antes de interpretar o comando.
 - `Stop` confere a fatia e bloqueia uma saída sem fecho válido. Quando `stop_hook_active` é `true`, ou quando `background_tasks` traz um subagente `running`, não bloqueia.
-- Papéis obrigatórios nas trilhas de `agentes_obrigatorios.claude_code` (hoje `manutencao`). Relato de agente não substitui prova observada.
+- Papéis obrigatórios nas trilhas de `agentes_obrigatorios.claude_code` (hoje `manutencao`, `correcao`, `novo`, `docs` e `review`). Relato de agente não substitui prova observada.
 - Observação (O-CC): kit em [`avaliacao/observacao-claude-code/`](../../avaliacao/observacao-claude-code/roteiro.md).
 - Confira: `/hooks` e `/agents`.
 

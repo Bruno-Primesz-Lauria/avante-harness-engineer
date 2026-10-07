@@ -6,8 +6,8 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 
 | Runtime | Instruções | Guarda antes do shell | Prova da fatia | Papéis (`agentes/`) |
 |---|---|---|---|---|
-| Cursor (principal) | `AGENTS.md` | `.cursor/hooks.json` | Sim, observada em sessão real | `.cursor/agents/`, obrigatórios em `manutencao` |
-| Claude Code | `CLAUDE.md` → `@AGENTS.md` | `.claude/settings.json` | Sim, observada em sessão real | `.claude/agents/`, obrigatórios em `manutencao` |
+| Cursor (principal) | `AGENTS.md` | `.cursor/hooks.json` | Sim, observada em sessão real | `.cursor/agents/`, obrigatórios em `manutencao`, `correcao`, `novo`, `docs` e `review` |
+| Claude Code | `CLAUDE.md` → `@AGENTS.md` | `.claude/settings.json` | Sim, observada em sessão real | `.claude/agents/`, obrigatórios em `manutencao`, `correcao`, `novo`, `docs` e `review` |
 | Codex | `AGENTS.md` | Só após `gerenciar.py codex --instalar` | Não | Agente único |
 | OpenCode | `AGENTS.md` | `.opencode/plugins/esteira.js` | Não | Agente único |
 
@@ -43,7 +43,7 @@ O que existe hoje. Gates, pendências e histórico: [painel do plano](PLANO-AGEN
 - Target `dev` só passa com autorização registrada na política. Hoje não há nenhuma.
 - SQL ad hoc pela CLI só lê; escrita é negada.
 - No Cursor e no Claude Code, `prova.py fechar` recusa `DONE` sem prova atual; o `stop` pede correção (no Cursor até duas vezes; no Claude Code uma vez por turno, e não enquanto um subagente roda).
-- Na trilha `manutencao` no Cursor e no Claude Code (`agentes_obrigatorios`), `fechar` também exige as chamadas previstas dos papéis observadas, a revisão do refute e cada papel escrevendo só na sua superfície.
+- Nas trilhas `manutencao`, `correcao`, `novo`, `docs` e `review`, no Cursor e no Claude Code (`agentes_obrigatorios`), `fechar` também exige as chamadas previstas dos papéis observadas, a revisão do refute e cada papel escrevendo só na sua superfície.
 
 **Só instrução** (depende do modelo): escolher o caminho e a trilha, iniciar a fatia antes de editar, perguntar pouco, preservar trabalho prévio, coordenar dados do sandbox, respeitar a fronteira do produto.
 

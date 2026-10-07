@@ -265,9 +265,7 @@ def verificar_head():
     if len(re.findall(r"claude_code: \{[^}]*instalado: true", rota)) != len(PAPEIS):
         faltas.append("agentes/roteamento.yaml do HEAD sem instalado: true no claude_code para os sete papeis (B2-CC)")
     try:
-        politica = json.loads(mostrar("configuracao/politica.json"))
-        if not set(politica["agentes_obrigatorios"].get("claude_code", [])) <= set(TRILHAS_CC):
-            faltas.append("agentes_obrigatorios.claude_code do HEAD tem trilha fora da observacao")
+        json.loads(mostrar("configuracao/politica.json"))["agentes_obrigatorios"]
     except (TypeError, ValueError, KeyError):
         faltas.append("configuracao/politica.json do HEAD ilegivel")
     return faltas

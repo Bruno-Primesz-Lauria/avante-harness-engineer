@@ -106,6 +106,8 @@ Adotadas: `contrato`, `guarda`, `teste`, `brief`, `ataque`, `triagem`, `inspecao
 | B2-CU, D-CU, O-CU | Sete agentes no Cursor, janelas de subagente e vínculo do shell; seis sessões de observação. | `b4669f0`, `0457571`; **G2 do Cursor aceito em 2026-10-06** (Cursor 3.19.19) |
 | E0 Cursor | `agentes_obrigatorios.cursor = [manutencao]`; esvaziar a chave restaura o comportamento anterior. | `a152529` (2026-10-06) |
 | E0 Claude Code | `agentes_obrigatorios.claude_code = [manutencao]`; limite temporário removido do `AGENTS.md`, dos READMEs, do HTML e do kit O-CC; uso pelo time no README; teste da chave real nos dois runtimes. Esvaziar a chave restaura o comportamento anterior. | 2026-10-07 |
+| E0 correção | `correcao` em `agentes_obrigatorios` do Cursor e do Claude Code, por decisão humana, sem observação prévia da trilha: diagnóstico (`diagnosticar`) e reprodução com falha esperada ainda não rodaram em sessão real, e o primeiro uso real conta como essa observação. Esvaziar a entrada restaura o agente único. | 2026-10-07 |
+| E0 novo, docs e review | As três trilhas em `agentes_obrigatorios` do Cursor e do Claude Code, por decisão humana, antes do G3a. Base: `docs` observada nos dois runtimes (fatia D da O-CU e da O-CC); `novo` e `review` usam só papéis já observados; o primeiro uso real de cada uma conta como observação da trilha. Ficam fora `validacao` (registros do C6 não observados; deploy depende da ID-DEP), `destilar` (capacidade `distill` sem implementação) e `entendimento` (sem papéis). | 2026-10-07 |
 | RT | `--runtime codex` e `--runtime opencode` no `prova.py`, fora da chave e sem coleta de provas de shell. | `f0fe0e9` (2026-10-06) |
 | B2-CC, D-CC, O-CC | Sete agentes no Claude Code; sessão, coleta de prova, chamada observada com o `agente_id` devolvido ao coordenador e `Stop`; Agent em segundo plano registrado no `SubagentStop`; duas sessões de observação. | `6bb45d4`, `dbce6b9`, `f01ee05` (2026-10-06), `d6292d0` (2026-10-07); **G2 do Claude Code aceito em 2026-10-07** (CLI 2.1.292) |
 | Higienização | Brutos das sondagens, da O-CU e registros antigos arquivados em `../arquivo-harness/2026-10-06_execucoes.zip`, fora do clone; estado e histórico só neste plano. | `9b802d2` (2026-10-06) |
@@ -139,17 +141,17 @@ Ressalvas aceitas no G2: o coordenador não transcreveu a citação de skill de 
 
 | ID | O que falta | Quem | Depende de |
 |---|---|---|---|
-| E0 correção | Incluir `correcao` na chave dos runtimes. Formas e instruções do C6 já estão prontas | Decisão humana; aplicação pelo agente | — |
 | E1 | Onda 1: tarefas reais de manutenção e correção (seção 5). Candidata: lista de tarefas, na branch `feat/lista_tarefas` do produto | Humano escolhe e autoriza; agente coordena | E0 da trilha |
 | G3a | Gate da onda 1 | Humano | E1 |
-| E2 e G3b | Onda 2, por trilha: novo e validação (dab só em sandbox), docs e destilar, review, entendimento. Cada trilha entra na chave só depois de passar | Humano e agente | G3a; ID-DEP para deploy |
+| E2 e G3b | Onda 2, por trilha: uso real de novo, docs e review, já na chave; validação (dab só em sandbox) e destilar entram na chave depois de passar; entendimento segue sem papéis | Humano e agente | G3a; ID-DEP para deploy |
 | M1, M2, G4 | Métricas por trilha e runtime; publicar observado × pendente no README, HTML e adaptadores; aceite final | Agente; humano no G4 | G3b |
 
 ```mermaid
 flowchart LR
   E0CU["E0 Cursor: manutenção ✓"] --> E1["E1 · onda 1"]
   E0CC["E0 Claude Code: manutenção ✓"] --> E1
-  DEC(["correção na chave"]) --> E1
+  E0CO["E0 correção ✓"] --> E1
+  E0O2["E0 novo, docs, review ✓"] --> E2
   E1 --> G3a{{"G3a"}} --> E2["E2 · por trilha"] --> G3b{{"G3b"}} --> M["M1 → M2"] --> G4{{"G4"}}
   IDDEP(["ID-DEP · identidade e destinos"]) -.->|deploy em novo e validação| E2
 ```
