@@ -88,7 +88,6 @@ with TemporaryDirectory(prefix="validar-occ-", dir=raiz / ".execucoes") as pasta
     comandos = [g["command"] for grupos in config["hooks"].values() for grupo in grupos for g in grupo["hooks"]]
     assert comandos and all("observacao/capturar.py" in c and "entrada.py" not in c for c in comandos), comandos
     assert {"SessionStart", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop", *kit["EVENTOS_EXTRAS"]} <= set(config["hooks"])
-    assert not kit["LIMITE_TEMPORARIO"].search((copia / "AGENTS.md").read_text(encoding="utf-8"))
     assert ajustes["agentes_obrigatorios_copia"]["claude_code"] == ["manutencao", "docs"]
 
     contratos = {nome: yaml.safe_load(texto) for nome, texto in kit["contratos"](copia).items()}

@@ -54,7 +54,7 @@ A raiz é o checkout `user-harness-esteira/`. Abra sempre essa pasta, não a pas
 - Só shell. `bundle run`, `destroy` e `sync` são negados; MCP, SDK, REST, edição de arquivo e terminal manual não passam pela guarda.
 - Deploy só passa em `sandbox`, com plan vigente e `deploy_sandbox_autorizado` na política. Identidade autenticada e destinos resolvidos não são conferidos.
 - Os mecanismos diferem em crash e timeout. Não presuma equivalência.
-- Só o Cursor coleta prova e retoma o fecho.
+- Só o Cursor e o Claude Code coletam prova e retomam o fecho.
 - Fecho em prosa não é interceptado.
 
 ## Fontes dos protocolos

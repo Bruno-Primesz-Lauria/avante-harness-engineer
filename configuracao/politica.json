@@ -4,7 +4,7 @@
   "registros_raiz": "../.execucoes",
   "deploy_sandbox_autorizado": true,
   "agentes_obrigatorios": {
-    "claude_code": [],
+    "claude_code": ["manutencao"],
     "cursor": ["manutencao"]
   }
 }

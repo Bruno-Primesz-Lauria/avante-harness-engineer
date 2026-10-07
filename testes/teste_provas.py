@@ -538,9 +538,9 @@ class ProvasTestes(unittest.TestCase):
         self.executar()
         self.assertEqual(self.p.fechar("DONE", "Rollback para chave vazia")["status"], "DONE")
 
-    def test_e0_chave_real_ativa_so_manutencao_no_cursor_e_esvaziar_restaura(self):
+    def test_e0_chave_real_ativa_manutencao_nos_dois_runtimes_e_esvaziar_restaura(self):
         real = ler(RAIZ / "configuracao/politica.json")["agentes_obrigatorios"]
-        self.assertEqual(real, {"claude_code": [], "cursor": ["manutencao"]})
+        self.assertEqual(real, {"claude_code": ["manutencao"], "cursor": ["manutencao"]})
         self.politica["agentes_obrigatorios"] = real
         (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
         self.contrato["trilha"] = "manutencao"
@@ -548,7 +548,8 @@ class ProvasTestes(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Runtime explicito"):
             self.iniciar()
         self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-claude", runtime="claude_code")
-        self.assertFalse(self.p.ativada("manutencao", "claude_code"))
+        self.assertTrue(self.p.ativada("manutencao", "claude_code"))
+        self.assertFalse(self.p.ativada("correcao", "claude_code"))
         self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-cursor", runtime="cursor")
         self.assertFalse(self.p.ativada("correcao", "cursor"))
         self.iniciar()

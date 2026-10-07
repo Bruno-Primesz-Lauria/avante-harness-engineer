@@ -5,7 +5,7 @@ O núcleo define a política ([guardas](../guardas/README.md)). Cada runtime tra
 | Runtime | Evento | O que guarda | Prova coletada | Instalar e conferir |
 |---|---|---|---|---|
 | [Cursor](cursor/README.md) | `beforeShellExecution` (falha fecha) | Shell: cwd, target, plan e deploy | `sessionStart`, `preToolUse`, `postToolUse`, `postToolUseFailure` e `stop` | `gerenciar.py cursor --instalar`. Customize, Hooks e canal Hooks. |
-| [Claude Code](claude_code/README.md) | `PreToolUse` em `Bash` e `PowerShell` | Idem | `SessionStart`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure` e `Stop`, ainda sem valor de DONE (limite no README) | `gerenciar.py claude_code --instalar`. `/hooks`. |
+| [Claude Code](claude_code/README.md) | `PreToolUse` em `Bash` e `PowerShell` | Idem | `SessionStart`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `Stop` e `SubagentStop` | `gerenciar.py claude_code --instalar`. `/hooks`. |
 | [Codex](codex/README.md) | `PreToolUse` em `Bash` | Idem | Nenhuma | `gerenciar.py codex --instalar`. Revisar e confiar em `/hooks`. |
 | [OpenCode](opencode/README.md) | `tool.execute.before` em `bash` | Idem | Nenhuma | `gerenciar.py opencode --instalar`. Nova sessão. |
 
@@ -32,7 +32,7 @@ Um hook de um produto não vale como o de outro. Guarda obrigatória indisponív
 |---|---|---|
 | Instruções | `CLAUDE.md`. Confira o que carrega. | `AGENTS.md`. Confira o que carrega. |
 | Pergunta | Cartão, se existir. Senão, texto. | Ferramenta de pergunta ou texto. |
-| Agentes do fluxo | Sete papéis em `.claude/agents/`, gerados de [`agentes/`](../agentes/), observados em sessão real. Obrigatórios nas trilhas de `agentes_obrigatorios.claude_code`, hoje vazia. | Cursor: sete papéis em `.cursor/agents/`, observados em sessão real. Obrigatórios nas trilhas de `agentes_obrigatorios.cursor`, hoje só `manutencao`; passe `--runtime cursor` ao `prova.py`. Codex e OpenCode ficam fora da chave: agente único, com delegação opcional; passe `--runtime codex` ou `--runtime opencode` ao `prova.py` para selecionar o runtime. Essa seleção não adiciona esses runtimes à política e não habilita coleta de provas de shell. |
+| Agentes do fluxo | Sete papéis em `.claude/agents/`, gerados de [`agentes/`](../agentes/), observados em sessão real. Obrigatórios nas trilhas de `agentes_obrigatorios.claude_code`, hoje só `manutencao`; o runtime vem de `CLAUDE_CODE_SESSION_ID`. | Cursor: sete papéis em `.cursor/agents/`, observados em sessão real. Obrigatórios nas trilhas de `agentes_obrigatorios.cursor`, hoje só `manutencao`; passe `--runtime cursor` ao `prova.py`. Codex e OpenCode ficam fora da chave: agente único, com delegação opcional; passe `--runtime codex` ou `--runtime opencode` ao `prova.py` para selecionar o runtime. Essa seleção não adiciona esses runtimes à política e não habilita coleta de provas de shell. |
 | Persistência | Árvore de [`evidencia/layout.md`](../evidencia/layout.md), sob a raiz configurada. | Idem. |
 
 Subagentes: definição neutra em [`agentes/`](../agentes/); as versões nativas ficam em `.cursor/agents/` e `.claude/agents/`. Não inclua trilha em `agentes_obrigatorios` de um runtime antes de seus agentes estarem instalados e observados (G2). Instalação e observação por runtime ficam nos metadados de [`agentes/roteamento.yaml`](../agentes/roteamento.yaml); gates e histórico, no painel do [plano](../PLANO-AGENTES-TRILHAS.md#painel). Skills do projeto: não implementadas.

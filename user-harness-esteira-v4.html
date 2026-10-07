@@ -544,7 +544,7 @@ td.m, th.m { text-align: center; }
 <rect x="174" y="606" width="102" height="30" rx="15"/><text x="225" y="626">OpenCode</text>
 </g>
 <text class="note" x="170" y="676">mesmo AGENTS.md nos quatro;</text>
-<text class="note" x="170" y="694">prova observada só no Cursor</text>
+<text class="note" x="170" y="694">prova no Cursor e no Claude Code</text>
 <g class="grp" data-grp="g_hooks"><rect x="365" y="310" width="240" height="480" rx="14"/></g>
 <g class="hd arq-hit" data-arq="g_hooks" tabindex="0" role="button" aria-pressed="false" aria-label="HOOKS DO RUNTIME"><rect class="hdr" x="373" y="320" width="190" height="24" rx="12"/><text class="gl" x="381" y="336">HOOKS DO RUNTIME</text><circle class="ii" cx="547" cy="332" r="8.5"/><text class="iit" x="547" y="336">i</text></g>
 <g class="ab  arq-hit" data-arq="h_cursor" tabindex="0" role="button" aria-pressed="false" aria-label="Cursor — shell · pre/postToolUse, stop · subagentStart/Stop"><rect x="381" y="340" width="208" height="84" rx="12"/>
@@ -698,7 +698,6 @@ td.m, th.m { text-align: center; }
 <tr><td><span class="chip warn">BLOCKED</span></td><td>acesso, capacidade ou estado externo impede</td></tr>
 <tr><td><span class="chip bad">FAILED</span></td><td>a verificação rodou e reprovou</td></tr>
 </tbody></table></div></div>
-<div class="callout warn">Limite atual: no Claude Code a coleta de prova foi observada em sessão real, mas, até a ativação do runtime (E0), <code>fechar</code> não comprova DONE nele: use <code>BLOCKED</code> com a condição de retomada, ou execute no Cursor.</div>
 </section>
 
 <section id="trilhas">
@@ -718,7 +717,7 @@ td.m, th.m { text-align: center; }
 <div class="pills" id="tabs-trilha" role="group" aria-label="Trilha"></div>
 <p class="note-uso" id="uso"></p><p class="note-papeis" id="papeis"></p>
 <div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny,back"></div><figure class="flow-map"><div id="g-trilha"></div><figcaption>Selecione um nó para ver entradas e saídas. Fecho sem DONE: DECIDE, BLOCKED ou FAILED.</figcaption></figure></div>
-<div class="callout">As definições dos papéis estão em <code>agentes/</code>. <span id="estacao-cursor" class="chip ok">Cursor: observado</span> em <code>.cursor/agents/</code>; obrigatórios na trilha <code>manutencao</code>. <span id="estacao-claude" class="chip ok">Claude Code: observado</span> em <code>.claude/agents/</code>; ainda não obrigatórios (E0). Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
+<div class="callout">As definições dos papéis estão em <code>agentes/</code>. <span id="estacao-cursor" class="chip ok">Cursor: observado</span> em <code>.cursor/agents/</code>; obrigatórios na trilha <code>manutencao</code>. <span id="estacao-claude" class="chip ok">Claude Code: observado</span> em <code>.claude/agents/</code>; obrigatórios na trilha <code>manutencao</code>. Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
 </section>
 
 <section id="guardas">
@@ -783,9 +782,9 @@ td.m, th.m { text-align: center; }
 <thead><tr><th scope="col">Capacidade</th><th scope="col" class="m">Implementado</th><th scope="col" class="m">Testado</th><th scope="col" class="m">Observado</th></tr></thead><tbody>
 <tr><td>Guarda de shell Databricks e SQL só leitura</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
 <tr><td>Prova e fecho no Cursor (hooks e <code>prova.py</code>)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
-<tr><td>Prova e fecho no Claude Code (sessão, coleta, recibo de plan, <code>Stop</code>)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">sim; DONE só após o E0</span></td></tr>
+<tr><td>Prova e fecho no Claude Code (sessão, coleta, recibo de plan, <code>Stop</code>)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
 <tr><td>Roteamento, definições neutras e agentes nativos</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
-<tr><td>Agentes obrigatórios por trilha (<code>agentes_obrigatorios</code>)</td><td class="m"><span class="chip ok">Cursor: manutenção</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor</span></td></tr>
+<tr><td>Agentes obrigatórios por trilha (<code>agentes_obrigatorios</code>)</td><td class="m"><span class="chip ok">manutenção nos dois</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor</span></td></tr>
 <tr><td>Superfície por papel (C5) e revisão por refute observado</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
 <tr><td>Formas 3.2: onze adotadas</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">oito no Cursor e no Claude Code; C6 ainda não</span></td></tr>
 <tr><td>Diagnóstico, ambiente e paridade (C6)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
@@ -797,7 +796,7 @@ td.m, th.m { text-align: center; }
 <div class="tiles fixed">
 <div class="tile"><div class="v sm">G1</div><div class="k">aprovado; suíte, consistência e geração estáveis</div></div>
 <div class="tile"><div class="v sm">G2</div><div class="k">aceito no Cursor e no Claude Code</div></div>
-<div class="tile cur"><div class="v sm">E0 / E1</div><div class="k">manutenção ativa no Cursor; Claude Code a ativar; onda 1 (manutenção e correção) em tarefa real</div></div>
+<div class="tile cur"><div class="v sm">E0 / E1</div><div class="k">manutenção ativa no Cursor e no Claude Code; onda 1 (manutenção e correção) em tarefa real</div></div>
 <div class="tile"><div class="v sm">E2</div><div class="k">segunda onda, trilha a trilha</div></div>
 <div class="tile"><div class="v sm">G4</div><div class="k">medição e aceite final</div></div>
 </div>
@@ -1253,12 +1252,12 @@ const ARQ = {
   subagentes: { tipo: "Agentes · ativação parcial", chip: "warn", t: "Subagentes · 7 papéis", onde: "agentes/*.md",
     oque: "map, config, implement, test, refute, docs e dab: cada um com escopo estreito.",
     serve: "Separar quem escreve de quem verifica e revisa. Cada papel altera só a superfície atribuída.",
-    importa: "Revisão independente pega o que o autor não vê. Hoje são obrigatórios só na manutenção, no Cursor; as demais trilhas e o Claude Code entram trilha a trilha (E0, E1, E2).",
+    importa: "Revisão independente pega o que o autor não vê. Hoje são obrigatórios só na manutenção, no Cursor e no Claude Code; as demais trilhas entram trilha a trilha (E1, E2).",
     liga: ["coordenador", "roteamento", "nativos"] },
   runtimes: { tipo: "Runtimes", chip: "info", t: "Cursor · Claude Code · Codex · OpenCode", onde: "",
     oque: "Os quatro ambientes suportados. Todos leem o mesmo AGENTS.md.",
     serve: "Deixar o time usar a ferramenta que preferir sem mudar as regras.",
-    importa: "Prova observada em sessão real no Cursor e no Claude Code; no Claude Code, até a ativação (E0), o fechar não comprova DONE. Codex e OpenCode têm só a guarda.",
+    importa: "Prova observada em sessão real no Cursor e no Claude Code. Codex e OpenCode têm só a guarda.",
     liga: ["h_cursor", "h_cc", "h_codex", "h_opencode"] },
 
   g_hooks: { tipo: "Grupo", chip: "info", t: "Hooks do runtime", onde: "configuração de cada runtime",
@@ -1303,7 +1302,7 @@ const ARQ = {
   ad_cc: { tipo: "Coleta de prova · observada", chip: "ok", t: "claude_code/prova.py", onde: "adaptadores/claude_code/prova.py",
     oque: "Sessão, coleta de prova, recibo de plan, chamadas de subagente com o agente_id devolvido ao coordenador e Stop.",
     serve: "Permitir DONE comprovado também no Claude Code.",
-    importa: "Observado em sessão real. Até a ativação do Claude Code (E0), feche a fatia estruturada como BLOCKED com a condição de retomada, ou execute no Cursor.",
+    importa: "Observado em sessão real; o fechar comprova DONE como no Cursor.",
     liga: ["provas", "h_cc", "prova_cli"] },
   prova_cli: { tipo: "CLI", chip: "neutral", t: "prova.py (CLI)", onde: "adaptadores/prova.py",
     oque: "iniciar, estado e fechar da fatia, e os registros inspecionar, revisar, triar, diagnosticar, registrar-sandbox e registrar-paridade.",

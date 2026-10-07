@@ -7,7 +7,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 | Runtime | Instruções | Guarda antes do shell | Prova da fatia | Papéis (`agentes/`) |
 |---|---|---|---|---|
 | Cursor (principal) | `AGENTS.md` | `.cursor/hooks.json` | Sim, observada em sessão real | `.cursor/agents/`, obrigatórios em `manutencao` |
-| Claude Code | `CLAUDE.md` → `@AGENTS.md` | `.claude/settings.json` | Coletada, mas ainda não comprova `DONE` (limite no `AGENTS.md`) | `.claude/agents/`, opcionais |
+| Claude Code | `CLAUDE.md` → `@AGENTS.md` | `.claude/settings.json` | Sim, observada em sessão real | `.claude/agents/`, obrigatórios em `manutencao` |
 | Codex | `AGENTS.md` | Só após `gerenciar.py codex --instalar` | Não | Agente único |
 | OpenCode | `AGENTS.md` | `.opencode/plugins/esteira.js` | Não | Agente único |
 
@@ -42,8 +42,8 @@ O que existe hoje. Gates, pendências e histórico: [painel do plano](PLANO-AGEN
 - `validate` e `plan` passam em `sandbox` (e em `dev` só com autorização na política). `deploy` passa só em `sandbox`, com plan vigente, `-p` e `--select`; identidade e destinos não são conferidos. `run`, `destroy` e `sync` são negados.
 - Target `dev` só passa com autorização registrada na política. Hoje não há nenhuma.
 - SQL ad hoc pela CLI só lê; escrita é negada.
-- No Cursor, `prova.py fechar` recusa `DONE` sem prova atual; o `stop` pede correção até duas vezes.
-- Na trilha `manutencao` no Cursor (`agentes_obrigatorios.cursor`), `fechar` também exige as chamadas previstas dos papéis observadas, a revisão do refute e cada papel escrevendo só na sua superfície.
+- No Cursor e no Claude Code, `prova.py fechar` recusa `DONE` sem prova atual; o `stop` pede correção (no Cursor até duas vezes; no Claude Code uma vez por turno, e não enquanto um subagente roda).
+- Na trilha `manutencao` no Cursor e no Claude Code (`agentes_obrigatorios`), `fechar` também exige as chamadas previstas dos papéis observadas, a revisão do refute e cada papel escrevendo só na sua superfície.
 
 **Só instrução** (depende do modelo): escolher o caminho e a trilha, iniciar a fatia antes de editar, perguntar pouco, preservar trabalho prévio, coordenar dados do sandbox, respeitar a fronteira do produto.
 
@@ -51,7 +51,7 @@ O que existe hoje. Gates, pendências e histórico: [painel do plano](PLANO-AGEN
 
 **Skills Databricks**: as 10 de `.agents/skills/` valem para Cursor, Codex e OpenCode. O Claude Code recebe as `databricks:databricks-*` pelo plugin `databricks` do projeto, inclusive no subagente.
 
-**Observado em sessão real**: no Cursor e no Claude Code, os sete papéis em série, guarda negando no subagente e fatias de manutenção e docs fechando `DONE` com prova. No Claude Code, o `DONE` segue limitado pela regra do `AGENTS.md` até a ativação do runtime.
+**Observado em sessão real**: no Cursor e no Claude Code, os sete papéis em série, guarda negando no subagente e fatias de manutenção e docs fechando `DONE` com prova.
 
 **Não implementado**: skills do projeto, conferência de identidade e destinos no deploy, coordenação de dados e `docs-distill`.
 
@@ -102,11 +102,13 @@ Prepare o clone (acima) uma vez. Depois:
 4. Na trilha `manutencao`, o agente coordena e delega aos papéis (test, config, implement, refute, dab) um de cada vez. Se o chat mostrar `[esteira] A fatia ativa nao tem fecho valido...`, é o hook pedindo para terminar a trilha.
 5. Só conta como pronto o `DONE` aceito pelo `fechar`. Recusa vira nova verificação ou fecho `BLOCKED`, `FAILED` ou `DECIDE`, com motivo.
 
-**Claude Code** (guarda completa, prova ainda sem valor de `DONE`)
+**Claude Code** (runtime completo)
 
-1. Rode `claude` na raiz do clone. Confira `/hooks` e `/agents` (sete papéis).
-2. Use para perguntas, mudanças pequenas e trabalho em que a guarda do bundle importa.
-3. Em trabalho estruturado, siga o limite do `AGENTS.md`: feche como `BLOCKED` com motivo, ou leve a fatia para o Cursor.
+1. Rode `claude` na raiz do clone e confie nos hooks. Confira `/hooks` (inclui `SubagentStop`) e `/agents` (sete papéis).
+2. Cada tarefa começa em sessão nova (`/clear` ou `claude` de novo). O contexto inicial traz `Sessao Claude Code para a esteira: <ID>`. Sem essa linha, os hooks não estão ativos: pare e confira.
+3. Pergunta ou mudança pequena: peça direto. Trabalho de várias etapas: o agente escreve o contrato ([modelo](evidencia/uso.md)), roda `py -3 adaptadores/prova.py --sessao <ID> iniciar <contrato.yaml>` antes de editar e fecha com `fechar`. O runtime vem de `CLAUDE_CODE_SESSION_ID`.
+4. Na trilha `manutencao`, o agente coordena e delega aos papéis um de cada vez. O subagente pode rodar em segundo plano: o hook devolve `[esteira] Chamada <papel> ... agente_id=...` e registra a chamada quando ele termina, então o coordenador espera o fim antes do passo seguinte.
+5. Só conta como pronto o `DONE` aceito pelo `fechar`. Recusa vira nova verificação ou fecho `BLOCKED`, `FAILED` ou `DECIDE`, com motivo.
 
 **Codex e OpenCode**: guarda do shell apenas; agente único e sem prova de fatia.
 

@@ -26,8 +26,6 @@ KITS = ("avaliacao/observacao-claude-code/", "avaliacao/observacao-cursor/")
 EVENTOS_EXTRAS = ("SubagentStart", "SubagentStop", "UserPromptSubmit")
 # Skill, leitura e escrita: o payload traz agent_id e o caminho, o que atribui cada edicao a um subagente.
 CAPTURA_FERRAMENTAS = "^(Skill|Read|Edit|Write)$"
-# O limite vale ate o G2; a observacao e o que decide se ele sai. Na copia, o coordenador segue o fluxo normal.
-LIMITE_TEMPORARIO = re.compile(r"^- \*\*Limite temporário no Claude Code\*\*.*\n", re.MULTILINE)
 
 FIXTURE = {
     "fixture/manutencao/regras.yaml": "desconto_percentual: 0\n",
@@ -266,8 +264,6 @@ def verificar_head():
     rota = mostrar("agentes/roteamento.yaml") or ""
     if len(re.findall(r"claude_code: \{[^}]*instalado: true", rota)) != len(PAPEIS):
         faltas.append("agentes/roteamento.yaml do HEAD sem instalado: true no claude_code para os sete papeis (B2-CC)")
-    if not LIMITE_TEMPORARIO.search(mostrar("AGENTS.md") or ""):
-        faltas.append("AGENTS.md do HEAD sem o limite temporario do Claude Code: confira o kit antes de preparar")
     try:
         politica = json.loads(mostrar("configuracao/politica.json"))
         if not set(politica["agentes_obrigatorios"].get("claude_code", [])) <= set(TRILHAS_CC):
@@ -288,7 +284,7 @@ def extrair(destino):
 
 
 def adaptar(destino):
-    """Aplica as mudancas so da copia: chave, hooks de captura, limite temporario, fixtures e contratos."""
+    """Aplica as mudancas so da copia: chave, hooks de captura, fixtures e contratos."""
     destino = Path(destino)
     for kit in KITS:
         if (destino / kit).exists():
@@ -320,13 +316,6 @@ def adaptar(destino):
         config["hooks"][evento].append({"matcher": CAPTURA_FERRAMENTAS, "hooks": copy.deepcopy(molde)})
     ajustes.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
-    instrucoes = destino / "AGENTS.md"
-    texto = instrucoes.read_text(encoding="utf-8", newline="")
-    texto, removidos = LIMITE_TEMPORARIO.subn("", texto)
-    if removidos != 1:
-        raise RuntimeError("AGENTS.md sem o limite temporario do Claude Code")
-    instrucoes.write_text(texto, encoding="utf-8", newline="")
-
     (destino / "observacao").mkdir()
     (destino / "observacao/capturar.py").write_text(CAPTURAR, encoding="utf-8")
     (destino / "observacao/conferir.py").write_text(CONFERIR, encoding="utf-8")
@@ -334,7 +323,7 @@ def adaptar(destino):
         (destino / ref).parent.mkdir(parents=True, exist_ok=True)
         (destino / ref).write_text(conteudo, encoding="utf-8", newline="\n")
     return dict(hooks_trocados=trocados, eventos_extras=list(EVENTOS_EXTRAS), captura_ferramentas=CAPTURA_FERRAMENTAS,
-                agentes_obrigatorios_copia=politica["agentes_obrigatorios"], limite_temporario_removido_da_copia=True)
+                agentes_obrigatorios_copia=politica["agentes_obrigatorios"])
 
 
 def versao_claude():
