@@ -7,4 +7,5 @@ Visão geral e tabela: [adaptadores](../README.md).
 - A ponte chama `adaptadores/entrada.py` sem shell, com timeout de 10 s. Lança erro e impede a chamada quando a guarda nega, falha, responde algo inválido ou demora demais.
 - O cwd vem de `args.workdir`, ou do prefixo literal. A ponte não altera argumentos.
 - Não coleta prova nem retoma fecho.
+- Em fatias estruturadas, informe `--runtime opencode` em cada comando `adaptadores/prova.py`; OpenCode não é detectado automaticamente nem pode ser incluído em `agentes_obrigatorios`.
 - Confira: inicie uma sessão nova para carregar o plugin. Teste da ponte: `node testes/teste_opencode.mjs`.

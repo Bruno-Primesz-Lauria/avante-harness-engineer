@@ -5,8 +5,8 @@ import shlex
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
 import unittest
+from uuid import uuid4
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(RAIZ / "implementacao"), str(RAIZ / "adaptadores")]
@@ -18,11 +18,11 @@ from executar import carregar_politica
 
 class AdaptadoresTestes(unittest.TestCase):
     def setUp(self):
-        temporarios = RAIZ / ".execucoes/testes"
-        temporarios.mkdir(parents=True, exist_ok=True)
-        self.temp = tempfile.TemporaryDirectory(prefix="harness_adaptadores_", dir=temporarios)
-        self.addCleanup(self.temp.cleanup)
-        self.raiz = Path(self.temp.name).resolve()
+        self.fixture_id = uuid4().hex
+        self.raiz = RAIZ / "testes/.fixtures/provas" / self.fixture_id
+        self.raiz.parent.mkdir(parents=True, exist_ok=True)
+        self.raiz.mkdir()
+        self.addCleanup(self.limpar_fixture)
         self.local = self.raiz / "local"
         self.local.mkdir()
         (self.local / "databricks.yml").write_text("bundle: {name: saneamento_migracao}", encoding="utf-8")
@@ -30,6 +30,13 @@ class AdaptadoresTestes(unittest.TestCase):
                          "registros_raiz": str(self.raiz / "registros")}
         self.config = self.raiz / "politica.json"
         self.config.write_text(json.dumps(self.politica), encoding="utf-8")
+
+    def limpar_fixture(self):
+        raiz_fixtures = (RAIZ / "testes/.fixtures/provas").resolve()
+        destino = self.raiz.resolve()
+        if destino.parent != raiz_fixtures or destino.name != self.fixture_id:
+            raise RuntimeError("Fixture fora da raiz temporaria esperada")
+        shutil.rmtree(destino)
 
     def evento(self, runtime, cwd):
         comando = "databricks bundle validate -t sandbox -p teste"
@@ -71,6 +78,13 @@ class AdaptadoresTestes(unittest.TestCase):
         for runtime in RUNTIMES:
             self.assertEqual(self.executar(runtime, []).returncode, 2)
 
+    def test_claude_subagentstop_com_erro_avisa_sem_prender_o_subagente(self):
+        # Exit 2 no SubagentStop faria o subagente continuar; o erro vira aviso com exit 0.
+        resposta = self.executar("claude_code", {"hook_event_name": "SubagentStop", "agent_id": "a1",
+                                                 "agent_type": "test"})
+        self.assertEqual(resposta.returncode, 0, resposta.stderr)
+        self.assertIn("session_id ausente", json.loads(resposta.stdout)["systemMessage"])
+
     def test_cursor_aceita_utf8_bom(self):
         resposta = self.executar("cursor", self.evento("cursor", self.raiz), bom=True)
         self.assertEqual(resposta.returncode, 0)
@@ -105,7 +119,8 @@ class AdaptadoresTestes(unittest.TestCase):
         atual = {"permissions": {"allow": ["Read"]}, "hooks": {"Stop": [{"hooks": []}]}}
         resultado = mesclar(atual, gerar("claude_code"))
         self.assertEqual(resultado["permissions"], atual["permissions"])
-        self.assertEqual(resultado["hooks"]["Stop"], atual["hooks"]["Stop"])
+        self.assertIn(atual["hooks"]["Stop"][0], resultado["hooks"]["Stop"])
+        self.assertIn(gerar("claude_code")["hooks"]["Stop"][0], resultado["hooks"]["Stop"])
 
     def test_cursor_preserva_outros_handlers(self):
         atual = {"version": 1, "hooks": {"beforeShellExecution": [{"command": "outra_guarda"}]}}

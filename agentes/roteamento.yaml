@@ -1,0 +1,274 @@
+schema_versao: "1.0"
+status: aprovado
+fonte: ../PLANO-AGENTES-TRILHAS.md
+
+decisoes:
+  dec_1:
+    estado: aprovada
+    regra: "Em correção, atribuir YAML de negócio, ingestão ou recurso a config; notebook, Python ou SQL a implement."
+  dec_2:
+    estado: aprovada
+    regra: "Em manutenção, test prepara um caso somente se os casos existentes não decidirem o comportamento contratado."
+  dec_3:
+    estado: aprovada
+    regra: "Dab é acionado por critério ambiente com autorização registrada, nas trilhas novo, manutenção, correção e validação."
+  p0_2:
+    estado: aprovado
+    regra: "Aplicar as classes obrigatória/orientativa e as referências a guardas definidas nas capacidades abaixo."
+
+runtimes:
+  claude_code:
+    skill_ref: "databricks:databricks-<nome>"
+    instalacao_agentes: .claude/agents/
+    observacao_habilidades_em_subagente: observada
+  cursor:
+    skill_ref: ".agents/skills/databricks-<nome>/SKILL.md"
+    instalacao_agentes: .cursor/agents/
+    observacao_habilidades_em_subagente: observada
+
+regras:
+  carregamento_skills: "Carregar apenas a skill pertinente ao gatilho; registrar a referência usada; não presumir que a skill do coordenador foi carregada no subagente."
+  skill_ausente: "Registrar limitação visível e bloquear somente o trabalho que depende da skill."
+  capacidade_obrigatoria_ausente: "BLOCKED para o trabalho dependente."
+  papel_obrigatorio_indisponivel: "BLOCKED; trabalho independente pode continuar."
+  autorizacao_humana_ausente: DECIDE
+  restricoes: "Permissões do runtime, guardas e AGENTS.md prevalecem; nenhum papel autoriza deploy ou run."
+  resultado_de_validacao_reprovado: FAILED
+  alteracao_relevante_apos_prova: "Invalidar teste, inspeção e revisão afetados pela alteração."
+  retornos:
+    escrita:
+      teste_reprovado: "Voltar ao responsável pela superfície; depois da edição, executar novamente teste e refute."
+      refute_achado_procedente: "Voltar ao responsável pela superfície; invalidar provas afetadas e repetir teste e refute."
+    docs:
+      refute_achado_procedente: "Voltar a docs; depois da edição, repetir inspeção documental quando acionada e refute."
+    destilar:
+      refute_achado_procedente: "Voltar a docs; depois da edição, repetir inspeção documental quando acionada e refute."
+    correcao:
+      revalidacao_reprovada: "Voltar ao responsável pela superfície; repetir o mesmo critério de teste e refute depois da edição."
+    validacao:
+      teste_reprovado: FAILED
+      refute_achado_procedente: FAILED
+    ambiente:
+      operacao_reprovada: FAILED
+
+gatilhos:
+  investigacao_ampla:
+    sinal: "O escopo exige localizar fontes, dependências ou incertezas além do recorte já conhecido."
+    papel: map
+    opcional: true
+  config:
+    superficies: [yaml_negocio, ingestao, recurso]
+    trilhas: [novo, manutencao, correcao]
+  implement:
+    superficies: [notebook, python, sql]
+    trilhas: [novo, manutencao, correcao]
+  docs:
+    superficies: [documentacao]
+    trilhas: [docs, destilar]
+  test:
+    criterios: [teste, validacao_dados, paridade]
+    trilhas: [novo, manutencao, correcao, validacao]
+  dab:
+    criterio: ambiente
+    exige_autorizacao_registrada: true
+    trilhas: [novo, manutencao, correcao, validacao]
+  inspecao_coordenador:
+    criterios: [inspecao_documental, analise_codigo]
+    trilhas: [docs, destilar, review]
+  refute:
+    condicao: "Trilha estruturada diferente de entendimento."
+    trilhas: [novo, manutencao, correcao, docs, destilar, review, validacao]
+
+papel_coordenador:
+  natureza: principal
+  responsabilidade: "Selecionar trilha e recorte, definir aceite, calcular e acompanhar chamadas, tratar retornos e emitir o fecho único."
+  capacidades:
+    - id: diagnostico
+      classe: obrigatoria
+      quando: correcao
+      apoio: "Map pode investigar; o coordenador mantém a responsabilidade pelo diagnóstico."
+    - id: inspecao_documental
+      classe: obrigatoria_quando_acionada
+      quando: "Critério inspecao_documental ou analise_codigo nas trilhas docs, destilar ou review."
+  metadados_por_runtime: "Não se aplica: coordenador é o agente principal, não um subagente instalado."
+
+agentes:
+  map:
+    responsabilidade: "Investigar fontes e dependências sem editar produto."
+    skills_databricks: [data-discovery, unity-catalog, docs]
+    capacidades:
+      - id: diagnostico
+        classe: obrigatoria
+        quando: "Correção, em colaboração com o coordenador."
+    metadados:
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+
+  config:
+    responsabilidade: "Alterar somente a superfície YAML atribuída pelo contrato."
+    skills_databricks: [dabs, pipelines, jobs]
+    capacidades:
+      - {id: regras, classe: orientativa}
+      - {id: ingestao, classe: orientativa}
+    metadados:
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+
+  implement:
+    responsabilidade: "Alterar somente a superfície de notebook, Python ou SQL atribuída; não mudar o aceite unilateralmente."
+    skills_databricks: [pipelines, jobs, dbsql, python-sdk, dabs]
+    capacidades:
+      - {id: novo-objeto, classe: orientativa}
+      - {id: esteira, classe: orientativa}
+    metadados:
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+
+  test:
+    responsabilidade: "Executar o esperado contratado; pode preparar casos apenas no escopo roteado e não corrige produto."
+    skills_databricks: [dbsql, data-discovery, core]
+    skills_condicionais:
+      - skill: execution-compute
+        quando: "Execução autorizada em cluster ou serverless."
+    capacidades:
+      - id: paridade
+        classe: obrigatoria
+        quando: "O contrato contém critério paridade."
+    metadados:
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+
+  refute:
+    responsabilidade: "Revisar de forma independente e somente leitura; receber intenção e aceite, sem o racional persuasivo do autor."
+    skills_databricks:
+      - selecao: "Skills pertinentes ao artefato revisado, somente leitura."
+      - skill: docs
+    capacidades: []
+    metadados:
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+
+  docs:
+    responsabilidade: "Escrever ou destilar somente os documentos atribuídos, com fontes verificáveis."
+    skills_databricks: [docs]
+    capacidades:
+      - {id: distill, classe: obrigatoria, quando: destilar}
+      - {id: docs-objeto, classe: orientativa}
+    metadados:
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+
+  dab:
+    responsabilidade: "Executar somente operação de ambiente explicitamente contratada e autorizada; registrar resultado, IDs, logs e destinos observados."
+    skills_databricks: [core, dabs]
+    skills_condicionais:
+      - skills: [jobs, pipelines]
+        quando: "Run autorizado e skill pertinente à operação."
+    capacidades:
+      - id: escada-validacao
+        classe: orientativa
+      - id: dab-sandbox
+        classe: referencia_obrigatoria
+        referencias: [../guardas/README.md, ../AGENTS.md]
+    metadados:
+      claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+
+trilhas:
+  novo:
+    fluxo:
+      - {id: map_opcional, responsavel: map, quando: investigacao_ampla, se_nao_aplicavel: coordenacao_inicial, se_indisponivel: coordenacao_inicial, apos_execucao: coordenacao_inicial}
+      - {id: coordenacao_inicial, responsavel: coordenador, quando: sempre, apos_execucao: escrita_por_superficie}
+      - id: escrita_por_superficie
+        modo: serie  # um subagente de escrita por vez; janela sobreposta torna a autoria inconclusiva (C5)
+        membros:
+          - {responsavel: config, quando: gatilhos.config, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
+          - {responsavel: implement, quando: gatilhos.implement, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
+        se_nenhum_membro_aplicavel: teste
+        apos_conclusao: teste
+      - {id: teste, responsavel: test, quando: criterio_tipo_teste_validacao_dados_ou_paridade, se_nao_aplicavel: refute, se_indisponivel: BLOCKED, apos_aprovacao: refute, apos_reprovacao: escrita_por_superficie}
+      - {id: refute, responsavel: refute, quando: sempre, se_indisponivel: BLOCKED, apos_sem_achado_procedente: gate_ambiente, apos_achado_procedente: escrita_por_superficie}
+      - {id: gate_ambiente, responsavel: coordenador, quando: criterio_ambiente, se_nao_aplicavel: coordenacao_final, se_autorizacao_ausente: DECIDE, se_autorizada: dab, se_guarda_negar: BLOCKED}
+      - {id: dab, responsavel: dab, quando: gate_ambiente_autorizado, se_indisponivel: BLOCKED, apos_conclusao: coordenacao_final}
+      - {id: coordenacao_final, responsavel: coordenador, quando: sempre, apos_execucao: fecho}
+
+  manutencao:
+    fluxo:
+      - {id: map_opcional, responsavel: map, quando: investigacao_ampla, se_nao_aplicavel: coordenacao_inicial, se_indisponivel: coordenacao_inicial, apos_execucao: coordenacao_inicial}
+      - {id: coordenacao_inicial, responsavel: coordenador, quando: sempre, apos_execucao: preparar_teste_se_necessario}
+      - {id: preparar_teste_se_necessario, responsavel: test, quando: "O caso existente não decide o comportamento contratado.", se_caso_existente_decide: escrita_por_superficie, se_nao_aplicavel: escrita_por_superficie, se_indisponivel: BLOCKED, apos_preparo: escrita_por_superficie}
+      - id: escrita_por_superficie
+        modo: serie  # um subagente de escrita por vez; janela sobreposta torna a autoria inconclusiva (C5)
+        membros:
+          - {responsavel: config, quando: gatilhos.config, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
+          - {responsavel: implement, quando: gatilhos.implement, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
+        se_nenhum_membro_aplicavel: teste
+        apos_conclusao: teste
+      - {id: teste, responsavel: test, quando: criterio_tipo_teste_validacao_dados_ou_paridade, se_nao_aplicavel: refute, se_indisponivel: BLOCKED, apos_aprovacao: refute, apos_reprovacao: escrita_por_superficie}
+      - {id: refute, responsavel: refute, quando: sempre, se_indisponivel: BLOCKED, apos_sem_achado_procedente: gate_ambiente, apos_achado_procedente: escrita_por_superficie}
+      - {id: gate_ambiente, responsavel: coordenador, quando: criterio_ambiente, se_nao_aplicavel: coordenacao_final, se_autorizacao_ausente: DECIDE, se_autorizada: dab, se_guarda_negar: BLOCKED}
+      - {id: dab, responsavel: dab, quando: gate_ambiente_autorizado, se_indisponivel: BLOCKED, apos_conclusao: coordenacao_final}
+      - {id: coordenacao_final, responsavel: coordenador, quando: sempre, apos_execucao: fecho}
+
+  correcao:
+    fluxo:
+      - {id: map_opcional, responsavel: map, quando: investigacao_ampla, se_nao_aplicavel: diagnostico, se_indisponivel: diagnostico, apos_execucao: diagnostico}
+      - {id: diagnostico, responsavel: coordenador, capacidade: diagnostico, capacidade_obrigatoria: true, quando: sempre, apos_execucao: coordenacao_inicial}
+      - {id: coordenacao_inicial, responsavel: coordenador, quando: sempre, apos_execucao: teste_reproduz}
+      - {id: teste_reproduz, responsavel: test, quando: criterio_de_reproducao_contratado, resultado_esperado: fail, se_criterio_ausente: DECIDE, se_indisponivel: BLOCKED, apos_resultado_esperado: escrita_por_superficie, apos_resultado_inesperado: DECIDE, apos_resultado_inconclusivo: BLOCKED}
+      - id: escrita_por_superficie
+        modo: serie  # um subagente de escrita por vez; janela sobreposta torna a autoria inconclusiva (C5)
+        regra_dec_1: "Selecionar config para YAML de negócio/ingestão/recurso e implement para notebook/Python/SQL."
+        membros:
+          - {responsavel: config, quando: gatilhos.config, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
+          - {responsavel: implement, quando: gatilhos.implement, se_nao_aplicavel: omitir_membro, se_indisponivel: BLOCKED}
+        se_nenhum_membro_aplicavel: DECIDE
+        apos_conclusao: teste_revalidar
+      - {id: teste_revalidar, responsavel: test, quando: mesmo_criterio_de_reproducao, se_criterio_ausente: DECIDE, se_indisponivel: BLOCKED, apos_aprovacao: refute, apos_reprovacao: escrita_por_superficie}
+      - {id: refute, responsavel: refute, quando: sempre, se_indisponivel: BLOCKED, apos_sem_achado_procedente: gate_ambiente, apos_achado_procedente: escrita_por_superficie}
+      - {id: gate_ambiente, responsavel: coordenador, quando: criterio_ambiente, se_nao_aplicavel: coordenacao_final, se_autorizacao_ausente: DECIDE, se_autorizada: dab, se_guarda_negar: BLOCKED}
+      - {id: dab, responsavel: dab, quando: gate_ambiente_autorizado, se_indisponivel: BLOCKED, apos_conclusao: coordenacao_final}
+      - {id: coordenacao_final, responsavel: coordenador, quando: sempre, apos_execucao: fecho}
+
+  docs:
+    fluxo:
+      - {id: map_opcional, responsavel: map, quando: investigacao_ampla, se_nao_aplicavel: coordenacao_inicial, se_indisponivel: coordenacao_inicial, apos_execucao: coordenacao_inicial}
+      - {id: coordenacao_inicial, responsavel: coordenador, quando: sempre, apos_execucao: escrita_docs}
+      - {id: escrita_docs, responsavel: docs, quando: superficie_documental, se_nao_aplicavel: DECIDE, se_indisponivel: BLOCKED, apos_execucao: inspecao_coordenador}
+      - {id: inspecao_coordenador, responsavel: coordenador, capacidade: inspecao_documental, quando: criterio_inspecao_documental, se_nao_aplicavel: refute, se_indisponivel: BLOCKED, apos_execucao: refute}
+      - {id: refute, responsavel: refute, quando: sempre, se_indisponivel: BLOCKED, apos_sem_achado_procedente: coordenacao_final, apos_achado_procedente: escrita_docs}
+      - {id: coordenacao_final, responsavel: coordenador, quando: sempre, apos_execucao: fecho}
+
+  destilar:
+    fluxo:
+      - {id: map_opcional, responsavel: map, quando: investigacao_ampla, se_nao_aplicavel: coordenacao_inicial, se_indisponivel: coordenacao_inicial, apos_execucao: coordenacao_inicial}
+      - {id: coordenacao_inicial, responsavel: coordenador, quando: sempre, apos_execucao: destilar_docs}
+      - {id: destilar_docs, responsavel: docs, capacidade: distill, capacidade_obrigatoria: true, quando: fonte_e_destino_autorizados, se_autorizacao_ausente: DECIDE, se_indisponivel: BLOCKED, apos_execucao: inspecao_coordenador}
+      - {id: inspecao_coordenador, responsavel: coordenador, capacidade: inspecao_documental, quando: criterio_inspecao_documental, se_nao_aplicavel: refute, se_indisponivel: BLOCKED, apos_execucao: refute}
+      - {id: refute, responsavel: refute, quando: sempre, se_indisponivel: BLOCKED, apos_sem_achado_procedente: coordenacao_final, apos_achado_procedente: destilar_docs}
+      - {id: coordenacao_final, responsavel: coordenador, quando: sempre, apos_execucao: fecho}
+
+  validacao:
+    fluxo:
+      - {id: map_opcional, responsavel: map, quando: investigacao_ampla, se_nao_aplicavel: coordenacao_inicial, se_indisponivel: coordenacao_inicial, apos_execucao: coordenacao_inicial}
+      - {id: coordenacao_inicial, responsavel: coordenador, quando: sempre, apos_execucao: teste_inicial}
+      - {id: teste_inicial, responsavel: test, quando: criterio_teste_ou_validacao_dados, se_nao_aplicavel: gate_ambiente, se_indisponivel: BLOCKED, apos_aprovacao: gate_ambiente, apos_reprovacao: FAILED}
+      - {id: gate_ambiente, responsavel: coordenador, quando: criterio_ambiente, se_nao_aplicavel: teste_paridade, se_autorizacao_ausente: DECIDE, se_autorizada: dab, se_guarda_negar: BLOCKED}
+      - {id: dab, responsavel: dab, quando: gate_ambiente_autorizado, se_indisponivel: BLOCKED, apos_conclusao: teste_paridade, apos_reprovacao: FAILED}
+      - {id: teste_paridade, responsavel: test, capacidade: paridade, capacidade_obrigatoria: true, quando: criterio_paridade, se_nao_aplicavel: refute, se_indisponivel: BLOCKED, apos_aprovacao: refute, apos_reprovacao: FAILED}
+      - {id: refute, responsavel: refute, quando: sempre, se_indisponivel: BLOCKED, apos_sem_achado_procedente: coordenacao_final}
+      - {id: coordenacao_final, responsavel: coordenador, quando: sempre, apos_execucao: fecho}
+
+  review:
+    fluxo:
+      - {id: map_opcional, responsavel: map, quando: investigacao_ampla, se_nao_aplicavel: coordenacao_inicial, se_indisponivel: coordenacao_inicial, apos_execucao: coordenacao_inicial}
+      - {id: coordenacao_inicial, responsavel: coordenador, quando: sempre, apos_execucao: inspecao_coordenador}
+      - {id: inspecao_coordenador, responsavel: coordenador, capacidade: analise_codigo, quando: criterio_analise_codigo, se_nao_aplicavel: refute, se_indisponivel: BLOCKED, apos_execucao: refute}
+      - {id: refute, responsavel: refute, quando: sempre, se_indisponivel: BLOCKED, apos_veredito: coordenacao_final}
+      - {id: coordenacao_final, responsavel: coordenador, quando: sempre, apos_execucao: fecho}
+
+  entendimento:
+    fluxo:
+      - {id: map_opcional, responsavel: map, quando: investigacao_ampla, se_nao_aplicavel: coordenador, se_indisponivel: coordenador, apos_execucao: coordenador}
+      - {id: coordenador, responsavel: coordenador, quando: sempre, apos_execucao: resposta_com_fontes_e_inferencias}
+      - {id: resposta_com_fontes_e_inferencias, responsavel: coordenador, quando: sempre, apos_execucao: fecho}

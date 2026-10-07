@@ -1,0 +1,3 @@
+# Agentes gerados: o gerador compara bytes com LF.
+.claude/agents/*.md text eol=lf
+.cursor/agents/*.md text eol=lf

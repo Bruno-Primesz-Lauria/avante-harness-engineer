@@ -2,10 +2,11 @@
 
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
-import tempfile
 import unittest
+from uuid import uuid4
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "implementacao"))
@@ -20,11 +21,11 @@ def avaliar_evento(evento, politica):
 
 class GuardaCwdTestes(unittest.TestCase):
     def setUp(self):
-        temporarios = RAIZ / ".execucoes/testes"
-        temporarios.mkdir(parents=True, exist_ok=True)
-        self.temporario = tempfile.TemporaryDirectory(prefix="harness_cwd_", dir=temporarios)
-        self.addCleanup(self.temporario.cleanup)
-        self.raiz = Path(self.temporario.name).resolve()
+        self.fixture_id = uuid4().hex
+        self.raiz = RAIZ / "testes/.fixtures/provas" / self.fixture_id
+        self.raiz.parent.mkdir(parents=True, exist_ok=True)
+        self.raiz.mkdir()
+        self.addCleanup(self.limpar_fixture)
         self.oficial = self.raiz / "bundles"
         self.local = self.oficial / "src" / "notebooks" / "saneamento_migracao"
         self.local.mkdir(parents=True)
@@ -35,6 +36,13 @@ class GuardaCwdTestes(unittest.TestCase):
         )
         self.politica = {"bundle_local": str(self.local), "bundle_nome": "saneamento_migracao",
                          "registros_raiz": str(self.raiz / "registros")}
+
+    def limpar_fixture(self):
+        raiz_fixtures = (RAIZ / "testes/.fixtures/provas").resolve()
+        destino = self.raiz.resolve()
+        if destino.parent != raiz_fixtures or destino.name != self.fixture_id:
+            raise RuntimeError("Fixture fora da raiz temporaria esperada")
+        shutil.rmtree(destino)
 
     def evento(self, comando="databricks bundle validate -t sandbox -p teste", cwd=None):
         return {"hook_event_name": "PreToolUse", "tool_name": "Bash",
@@ -120,6 +128,23 @@ class GuardaCwdTestes(unittest.TestCase):
         corrigido = self.evento(f"Set-Location -LiteralPath '{self.local}' -ErrorAction Stop; {comando}", self.oficial)
         del corrigido["tool_input"]["workdir"]
         self.assertEqual(avaliar_evento(corrigido, self.politica).decisao, "permitir")
+
+    def test_prefixo_literal_expoe_cwd_em_comando_fora_do_recorte(self):
+        comandos = (
+            f"Set-Location -LiteralPath '{self.local}' -ErrorAction Stop; python -m unittest",
+            f"cd -- '{self.local.as_posix()}' && pytest -q",
+        )
+        for comando in comandos:
+            with self.subTest(comando=comando):
+                resultado = self.avaliar(comando, self.oficial)
+                self.assertEqual(resultado.decisao, "nao_aplica")
+                self.assertEqual(resultado.codigo, "comando_fora_do_recorte")
+                self.assertEqual(Path(resultado.cwd).resolve(), self.local.resolve())
+
+    def test_comando_fora_do_recorte_sem_prefixo_nao_inventa_cwd(self):
+        resultado = self.avaliar("pytest -q", self.local)
+        self.assertEqual(resultado.decisao, "nao_aplica")
+        self.assertIsNone(resultado.cwd)
 
     def test_prefixo_relativo_negado(self):
         self.assertEqual(self.avaliar("Set-Location -LiteralPath '.' -ErrorAction Stop; databricks bundle validate -t sandbox -p teste").decisao, "negar")

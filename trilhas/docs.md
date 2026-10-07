@@ -9,6 +9,8 @@ Usar quando: escrever ou atualizar documento útil ao leitor, com afirmações s
 3. **Inspecionar.** Cheque fato, link, legibilidade e duplicação. Suíte de produto não é obrigatória. Feito quando: o aceite documental está registrado.
 4. **Revisar.** Entre no [laço comum](README.md). Achado procedente volta ao texto, dentro do orçamento. Feito quando: não há achado obrigatório aberto.
 
+Com agentes: `docs` escreve no passo 2; a inspeção do passo 3 é sua; `refute` revisa no 4. Achado procedente volta a `docs` e pede nova inspeção e nova revisão.
+
 ## Aceite
 
 Superfície: os documentos nomeados no contrato.

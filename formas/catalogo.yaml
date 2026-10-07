@@ -1,17 +1,48 @@
-schema_versao: "3.1"
+schema_versao: "3.2"
 status: implementado_parcial
-fonte: ../user-harness-esteira-v3.html
+fonte: ../PLANO-AGENTES-TRILHAS.md
 nota: >
-  Contrato de campos. Exemplos com exemplo:true ficam no HTML de referencia e
-  o consumidor operacional os rejeita. Quatro formas estao adotadas (estado:
-  adotada): contrato, guarda, brief e teste. As demais sao candidatas
-  (estado: candidata) e ainda nao tem validador. O consumidor operacional usa
-  a versao 3.1. Baseline, manifesto e estado estao descritos em
-  evidencia/uso.md.
+  Contrato de campos. Exemplos com exemplo:true ficam em testes/teste_formas.py e
+  o consumidor operacional os rejeita. As formas contrato, guarda, brief,
+  teste, ataque, triagem, inspecao, chamada, diagnostico, sandbox e paridade
+  estao adotadas; C2 validou os payloads 3.2 e C6 adotou as tres ultimas.
+  As demais candidatas nao serao adotadas
+  (PLANO-AGENTES-TRILHAS.md, secao 3.1). Registros 3.1 continuam legiveis. A adocao do schema nao
+  significa que os eventos dos runtimes foram observados; a ativacao de cada
+  runtime depende de G2 (painel do plano).
+  Baseline, manifesto e estado estao descritos em evidencia/uso.md.
+compatibilidade:
+  registro_3_1:
+    legivel: true
+    formas_adotadas: [contrato, guarda, brief, teste]
+    revisao_independente_presumida: false
+    verificacao_contrato_obrigatoria: [comando, cwd, caminhos]
+  registro_3_2:
+    novas_formas_adotadas: [ataque, triagem, inspecao, chamada, diagnostico, sandbox, paridade]
+    habilitadas: true
+    nota: "A ativacao de cada runtime depende de G2. Na forma teste, agente_id e exit_code_origem sao opcionais e aditivos (decisao P0.3). diagnostico, sandbox e paridade (C6) sao aditivas: a fatia so ganha as chaves de estado ao registrar uma delas."
+produtores_permitidos:
+  - coordenador
+  - hook
+  - executor_teste
+  - map
+  - config
+  - implement
+  - test
+  - refute
+  - docs
+  - dab
+  - adaptador
 enums:
   trilha: [novo, manutencao, entendimento, docs, correcao, validacao, review, destilar]
   caminho: [simples, estruturado]
   aceite_tipo: [teste, inspecao_documental, analise_codigo, ambiente, paridade, validacao_dados]
+  papel_agente: [map, config, implement, test, refute, docs, dab]
+  runtime_agente: [claude_code, cursor]
+  status_chamada: [concluida, falhou, bloqueada, cancelada, inconclusiva]
+  decisao_triagem: [procedente, descartado]
+  severidade_achado: [critica, alta, media, baixa]
+  produtor_inspecao: [coordenador, refute]
   status_tarefa: [DONE, REVIEW, DECIDE, BLOCKED, FAILED]
   veredito_revisao: [aceitavel, com_achados, inconclusivo]
   veredito_ataque: [com_achados, nao_quebrei, inconclusivo]
@@ -20,10 +51,13 @@ enums:
   base_prova: [direct, derived, reported]
   decisao_guarda: [permitir, negar, nao_aplica]
   validade: [valida, obsoleta, nao_verificada]
+  origem_exit_code: [campo_resultado, evento_sucesso, texto_falha]
+  operacao_sandbox: [validate, plan, deploy, run]
+  estado_divergencia: [explicada, pendente]
 envelope:
   - campo: schema_versao
     tipo: string
-    regra: "Versionada. O consumidor operacional usa 3.1."
+    regra: "A especificacao 3.2 define novos eventos; registros 3.1 continuam legiveis. Escrita operacional 3.2 depende de C2."
   - campo: tipo
     tipo: enum
     regra: "Uma das formas deste catalogo."
@@ -61,7 +95,24 @@ formas:
     uso: "Critérios tipados; superfície de produto separada de artefatos."
     produtor: coordenador
     consumidor: [executores, verificador]
-    validacao: "Aceite não vazio, IDs únicos, tipo permitido e esperado verificável. Superfície e artefatos separados."
+    validacao: "Aceite não vazio, IDs únicos, tipo permitido e esperado verificável. Superfície e artefatos separados. Em 3.1, verificacao exige comando, cwd e caminhos. Em 3.2, teste, ambiente, validacao_dados e paridade exigem os tres; inspecao_documental e analise_codigo exigem caminhos, checagens e produtor (coordenador ou refute), sem comando. autorizacao_ref é caminho relativo opcional apenas em aceite[].tipo=ambiente 3.2; 3.1 preserva o contrato anterior. A exigencia estatica preserva a leitura 3.1; as regras condicionais descrevem as excecoes 3.2."
+    regras_condicionais:
+      - versao: "3.2"
+        campo: aceite[].tipo
+        valores: [teste, ambiente, validacao_dados, paridade]
+        caminho: aceite[].verificacao
+        exige: [comando, cwd, caminhos]
+      - versao: "3.2"
+        campo: aceite[].tipo
+        valores: [inspecao_documental, analise_codigo]
+        caminho: aceite[].verificacao
+        exige: [caminhos, checagens, produtor]
+        dispensa: [comando, cwd]
+        produtor_em: [coordenador, refute]
+      - versao: "3.2"
+        campo: aceite[].tipo
+        valores: [ambiente]
+        campos_opcionais: [autorizacao_ref]
     dados:
       objetivo: {tipo: string, obrigatorio: true}
       termino_fatia: {tipo: string, obrigatorio: true}
@@ -80,13 +131,21 @@ formas:
           tipo: {tipo: enum, enum: aceite_tipo, obrigatorio: true}
           obrigatorio: {tipo: bool, obrigatorio: true}
           esperado: {tipo: string, obrigatorio: true}
+          autorizacao_ref: {tipo: caminho}
           verificacao:
             tipo: objeto
             obrigatorio: true
             campos:
-              comando: {tipo: string, obrigatorio: true}
-              cwd: {tipo: string, obrigatorio: true}
-              caminhos: {tipo: lista, item: caminho, min: 1, obrigatorio: true}
+              comando: {tipo: string}
+              cwd: {tipo: string}
+              caminhos: {tipo: lista, item: caminho, min: 1}
+              checagens:
+                tipo: lista
+                min: 1
+                item:
+                  id: {tipo: string, obrigatorio: true}
+                  esperado: {tipo: string, obrigatorio: true}
+              produtor: {tipo: enum, enum: produtor_inspecao}
       orcamento:
         tipo: objeto
         obrigatorio: true
@@ -188,7 +247,7 @@ formas:
     titulo: Destilação
     estado: candidata
     uso: "Separar instrução recorrente de fato que deve permanecer na fonte."
-    produtor: distill
+    produtor: docs
     consumidor: [docs, coordenador]
     campos: [fonte, padrao, referencia, destino, adaptador]
 
@@ -198,15 +257,17 @@ formas:
     uso: "Resultado do executor, vinculado ao estado; não basta o agente afirmar pass."
     produtor: executor_teste
     consumidor: coordenador
-    validacao: "Exit code inteiro ou null em execução incompleta; pass/fail casa com o comando e o esperado. Log real e manifesto referenciado existem."
+    validacao: "Exit code inteiro ou null em execução incompleta; pass/fail casa com o comando e o esperado. Log real e manifesto referenciado existem. O produtor é sempre o executor observado pelo hook, também quando o comando roda num subagente; agente_id é o ID desse subagente nos eventos do runtime e, com a trilha ativada, precisa casar com uma chamada observada do papel test. exit_code_origem diz de onde veio o código: campo_resultado (campo numérico do runtime), evento_sucesso (evento de sucesso sem código, vale 0) ou texto_falha (código lido do texto do evento de falha, diferente de 0)."
     dados:
       criterio_id: {tipo: string, obrigatorio: true}
       chamada_id: {tipo: string, obrigatorio: true}
+      agente_id: {tipo: string}
       cwd: {tipo: string, obrigatorio: true}
       comando: {tipo: string, obrigatorio: true}
       inicio: {tipo: timestamp, obrigatorio: true}
       fim: {tipo: timestamp, obrigatorio: true}
       exit_code: {tipo: int, anulavel: true, obrigatorio: true}
+      exit_code_origem: {tipo: enum, enum: origem_exit_code}
       log_ref: {tipo: caminho, obrigatorio: true}
       log_sha256: {tipo: string, obrigatorio: true}
       estado_testado: {tipo: string, obrigatorio: true}
@@ -215,38 +276,127 @@ formas:
 
   - id: ataque
     titulo: Revisão independente
-    estado: candidata
-    uso: "Payload leva intenção, aceite e recorte verificável; sem racional persuasivo."
+    estado: adotada
+    uso: "Payload referencia intenção e aceite, baseline, provas e estado revisado (manifesto); sem racional persuasivo do autor."
     produtor: refute
     consumidor: coordenador
-    validacao: "com_achados exige achados com evidência; nao_quebrei exige tentativas e cobertura. Inconclusivo não aprova critério obrigatório."
-    campos: [entrada, veredito, tentativas, achados, cobertura]
+    validacao: "O manifesto_ref do envelope identifica o estado revisado. com_achados exige achados com evidência; simplificacao é uma categoria válida. nao_quebrei exige tentativas e cobertura. Inconclusivo não aprova critério obrigatório."
+    dados:
+      agente_id: {tipo: string}
+      entrada:
+        tipo: objeto
+        obrigatorio: true
+        campos:
+          intencao_ref: {tipo: caminho, obrigatorio: true}
+          aceite_ref: {tipo: caminho, obrigatorio: true}
+          baseline_ref: {tipo: caminho, obrigatorio: true}
+          provas_refs: {tipo: lista, item: caminho, obrigatorio: true}
+      veredito: {tipo: enum, enum: veredito_ataque, obrigatorio: true}
+      tentativas:
+        tipo: lista
+        obrigatorio: true
+        item:
+          id: {tipo: string, obrigatorio: true}
+          procedimento: {tipo: string, obrigatorio: true}
+          resultado: {tipo: enum, enum: resultado_prova, obrigatorio: true}
+          evidencia_ref: {tipo: caminho}
+      achados:
+        tipo: lista
+        obrigatorio: true
+        item:
+          id: {tipo: string, obrigatorio: true}
+          categoria: {tipo: string, obrigatorio: true}
+          severidade: {tipo: enum, enum: severidade_achado, obrigatorio: true}
+          local: {tipo: string, obrigatorio: true}
+          evidencia_ref: {tipo: caminho, obrigatorio: true}
+      cobertura:
+        tipo: lista
+        obrigatorio: true
+        item:
+          criterio_id: {tipo: string, obrigatorio: true}
+          coberto: {tipo: bool, obrigatorio: true}
+          motivo: {tipo: string}
 
   - id: diagnostico
     titulo: Diagnóstico
-    estado: candidata
-    uso: "Causa sustentada ou hipótese com próximo experimento."
-    produtor: diagnostico
+    estado: adotada
+    pacote: C6
+    uso: "Registro mínimo do diagnóstico na correção: causa sustentada ou hipótese com próximo experimento, ligada ao critério de reprodução."
+    produtor: [coordenador, map]
     consumidor: [executor, coordenador]
-    campos: [sintoma, causa, base, locator, proximo_passo]
+    validacao: "Campos de texto nao vazios. criterio_reproducao identifica um criterio de teste do contrato (conferido pelo nucleo ao registrar). Na correcao ativada, a escrita de config ou implement exige um diagnostico registrado antes da janela do subagente; sem ele o fecho recusa DONE. evidencia_ref fica dentro da fatia (log, baseline ou contrato)."
+    dados:
+      sintoma: {tipo: string, obrigatorio: true}
+      hipotese_causa: {tipo: string, obrigatorio: true}
+      base: {tipo: enum, enum: base_prova, obrigatorio: true}
+      evidencia_ref: {tipo: caminho, obrigatorio: true}
+      criterio_reproducao: {tipo: string, obrigatorio: true}
+      proximo_passo: {tipo: string, obrigatorio: true}
 
   - id: sandbox
     titulo: Ambiente
-    estado: candidata
+    estado: adotada
+    pacote: C6
     uso: "Pré-condições distintas por operação. Nomes são confirmação adicional."
-    produtor: executor_ambiente
+    produtor: dab
     consumidor: coordenador
-    validacao: "Deploy exige plan válido e compatível. Run de ingestão ou espinha exige coordenação verificada para escopo e rodada. Guardas e autorização anteriores ao efeito."
-    campos: [operacao, cwd, bundle, target, identidade, selecao, destinos_resolvidos, autorizacao_ref, plan_ref, plan_estado_compativel, coordenacao, resultado, log_ref]
+    validacao: "Deploy exige plan valido e compativel; run exige tambem coordenacao verificada. Vinculado ao registro teste do comando (teste_ref e hash) e, com a trilha ativada, a uma chamada dab observada (agente_id). Campo sem observacao integrada vale nao_verificado (destinos_resolvidos: lista unica [nao_verificado]); em deploy, identidade e destinos nao_verificado, e em run tambem coordenacao, nao aprovam criterio ambiente obrigatorio. resultado pass em deploy ou run exige plan_ref e plan_estado_compativel verdadeiro. plan_ref e relativo a registros_raiz; autorizacao_ref, a raiz do harness."
+    dados:
+      operacao: {tipo: enum, enum: operacao_sandbox, obrigatorio: true}
+      cwd: {tipo: string, obrigatorio: true}
+      bundle: {tipo: string, obrigatorio: true}
+      target: {tipo: string, obrigatorio: true}
+      perfil: {tipo: string, obrigatorio: true}
+      selecao: {tipo: lista, item: string, obrigatorio: true}
+      plan_ref: {tipo: caminho, anulavel: true, obrigatorio: true}
+      plan_estado_compativel: {tipo: bool, anulavel: true, obrigatorio: true}
+      autorizacao_ref: {tipo: caminho, obrigatorio: true}
+      identidade: {tipo: string, obrigatorio: true}
+      destinos_resolvidos: {tipo: lista, item: string, min: 1, obrigatorio: true}
+      coordenacao: {tipo: string, obrigatorio: true}
+      resultado: {tipo: enum, enum: resultado_prova, obrigatorio: true}
+      teste_ref: {tipo: caminho, obrigatorio: true}
+      agente_id: {tipo: string}
 
   - id: paridade
     titulo: Paridade
-    estado: candidata
+    estado: adotada
+    pacote: C6
     uso: "Mesmo recorte, insumos identificados, cálculo reproduzível e gap tratado."
-    produtor: paridade
+    produtor: test
     consumidor: coordenador
-    validacao: "Diferença deriva dos insumos do mesmo recorte. Gap sem explicação comprovada impede aprovação quando paridade é obrigatória."
-    campos: [criterio_id, recorte, insumos, contas, divergencias, resultado]
+    validacao: "Cada conta traz valores como decimais e diferenca igual a valor_origem menos valor_destino. Diferenca diferente de zero exige ao menos uma divergencia. Divergencia explicada exige explicacao e evidencia_ref; pendente impede pass, mesmo com exit 0. Vinculado ao registro teste do comando de paridade (teste_ref e hash) e ao estado testado: o manifesto_ref do envelope e o do teste. Com a trilha ativada, agente_id precisa casar com uma chamada test concluida."
+    dados:
+      criterio_id: {tipo: string, obrigatorio: true}
+      recorte: {tipo: string, obrigatorio: true}
+      insumos:
+        tipo: lista
+        obrigatorio: true
+        min: 1
+        item:
+          nome: {tipo: string, obrigatorio: true}
+          identificador: {tipo: string, obrigatorio: true}
+      contas:
+        tipo: lista
+        obrigatorio: true
+        min: 1
+        item:
+          id: {tipo: string, obrigatorio: true}
+          descricao: {tipo: string, obrigatorio: true}
+          valor_origem: {tipo: string, obrigatorio: true}
+          valor_destino: {tipo: string, obrigatorio: true}
+          diferenca: {tipo: string, obrigatorio: true}
+      divergencias:
+        tipo: lista
+        obrigatorio: true
+        item:
+          id: {tipo: string, obrigatorio: true}
+          estado: {tipo: enum, enum: estado_divergencia, obrigatorio: true}
+          explicacao: {tipo: string}
+          evidencia_ref: {tipo: caminho}
+      resultado: {tipo: enum, enum: resultado_prova, obrigatorio: true}
+      teste_ref: {tipo: caminho, obrigatorio: true}
+      agente_id: {tipo: string}
 
   - id: resposta
     titulo: Resposta
@@ -255,3 +405,63 @@ formas:
     produtor: coordenador
     consumidor: pessoa
     campos: [texto, fontes, alteracoes_atribuiveis, limites]
+
+  - id: triagem
+    titulo: Triagem de achado
+    estado: adotada
+    uso: "Registra a decisao do coordenador sobre um achado da revisao e sua resolucao ou descarte fundamentado."
+    produtor: coordenador
+    consumidor: [autor, refute, coordenador]
+    validacao: "Procedente exige evidencia da resolucao; descartado exige motivo. A triagem referencia, por revisao_ref, um achado da revisao registrada na fatia."
+    dados:
+      revisao_ref: {tipo: caminho, obrigatorio: true}
+      achado_id: {tipo: string, obrigatorio: true}
+      decisao: {tipo: enum, enum: decisao_triagem, obrigatorio: true}
+      responsavel: {tipo: string, obrigatorio: true}
+      evidencia_resolucao_ref: {tipo: caminho}
+      motivo_descarte: {tipo: string}
+
+  - id: inspecao
+    titulo: Inspecao
+    estado: adotada
+    uso: "Resultado do criterio documental ou analise de codigo, vinculado ao manifesto do estado inspecionado."
+    produtor: [coordenador, refute]
+    consumidor: coordenador
+    validacao: "Cada checagem referencia um criterio e um estado. Mudanca relevante em qualquer caminho invalida a inspecao, como invalida um teste."
+    dados:
+      criterio_id: {tipo: string, obrigatorio: true}
+      caminhos: {tipo: lista, item: caminho, min: 1, obrigatorio: true}
+      manifesto_sha256: {tipo: string, obrigatorio: true}
+      checagens:
+        tipo: lista
+        obrigatorio: true
+        min: 1
+        item:
+          id: {tipo: string, obrigatorio: true}
+          resultado: {tipo: enum, enum: resultado_prova, obrigatorio: true}
+          evidencia_ref: {tipo: caminho}
+          motivo: {tipo: string}
+      resultado: {tipo: enum, enum: resultado_prova, obrigatorio: true}
+      validade: {tipo: enum, enum: validade, obrigatorio: true}
+
+  - id: chamada
+    titulo: Chamada observada
+    estado: adotada
+    uso: "Evidencia observada pelo adaptador de que um papel foi chamado; relato do coordenador nao basta."
+    produtor: adaptador
+    consumidor: coordenador
+    validacao: "IDs devem vir dos eventos observados do runtime. Inicio e fim delimitam a chamada. O produtor adaptador nao pode ser substituido pelo coordenador."
+    dados:
+      chamada_id: {tipo: string, obrigatorio: true}
+      papel: {tipo: enum, enum: papel_agente, obrigatorio: true}
+      runtime: {tipo: enum, enum: runtime_agente, obrigatorio: true}
+      ids_observados:
+        tipo: lista
+        obrigatorio: true
+        min: 1
+        item:
+          nome: {tipo: string, obrigatorio: true}
+          valor: {tipo: string, obrigatorio: true}
+      inicio: {tipo: timestamp, obrigatorio: true}
+      fim: {tipo: timestamp, obrigatorio: true}
+      status: {tipo: enum, enum: status_chamada, obrigatorio: true}

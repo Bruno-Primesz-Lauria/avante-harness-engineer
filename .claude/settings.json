@@ -2,13 +2,75 @@
   "hooks": {
     "PreToolUse": [
       {
+        "matcher": "^(Bash|PowerShell|Agent)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"${CLAUDE_PROJECT_DIR}/adaptadores/entrada.py\" claude_code",
+            "timeout": 10,
+            "shell": "powershell"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"${CLAUDE_PROJECT_DIR}/adaptadores/entrada.py\" claude_code",
+            "timeout": 10,
+            "shell": "powershell"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(Bash|PowerShell|Agent)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"${CLAUDE_PROJECT_DIR}/adaptadores/entrada.py\" claude_code",
+            "timeout": 10,
+            "shell": "powershell"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
         "matcher": "^(Bash|PowerShell)$",
         "hooks": [
           {
             "type": "command",
             "command": "py -3 \"${CLAUDE_PROJECT_DIR}/adaptadores/entrada.py\" claude_code",
-            "shell": "powershell",
-            "timeout": 10
+            "timeout": 10,
+            "shell": "powershell"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"${CLAUDE_PROJECT_DIR}/adaptadores/entrada.py\" claude_code",
+            "timeout": 10,
+            "shell": "powershell"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"${CLAUDE_PROJECT_DIR}/adaptadores/entrada.py\" claude_code",
+            "timeout": 10,
+            "shell": "powershell"
           }
         ]
       }

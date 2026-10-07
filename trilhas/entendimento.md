@@ -8,6 +8,8 @@ Usar quando: responder uma pergunta com fontes verificáveis, sem alterar produt
 2. **Responder.** Separe fato observado, inferência e limite de cobertura. Se falta uma decisão concreta, pergunte só isso e retome a leitura com a resposta. Feito quando: a pergunta foi respondida.
 3. **Conferir estado.** Compare com o baseline, se houver registro estruturado. No caminho simples, confira que você não editou produto. Feito quando: nenhuma alteração de produto é atribuível ao agente.
 
+Com agentes: você responde; `map` é opcional para investigação ampla. Sem `refute` obrigatório.
+
 ## Aceite
 
 Superfície: as fontes consultadas. Nenhum arquivo de produto é alterado.

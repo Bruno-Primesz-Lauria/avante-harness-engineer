@@ -118,6 +118,22 @@ def _tokens(comando: str) -> list[str]:
     return list(leitor)
 
 
+def _extrair_prefixo_cwd(comando: str) -> tuple[str | None, str]:
+    """Extrai somente os prefixos literais de diretório já aceitos pela guarda."""
+    prefixo = re.match(
+        r"^\s*Set-Location\s+-LiteralPath\s+'([^'\r\n]+)'\s+-ErrorAction\s+Stop\s*;\s*(.*)$",
+        comando, flags=re.IGNORECASE | re.DOTALL,
+    )
+    if prefixo:
+        cwd, restante = prefixo.groups()
+        return cwd, restante
+    prefixo_bash = re.match(r"^\s*cd\s+--\s+'([^'\r\n]+)'\s*&&\s*(.*)$", comando, re.DOTALL)
+    if prefixo_bash:
+        cwd, restante = prefixo_bash.groups()
+        return cwd, restante
+    return None, comando
+
+
 # A CLI como palavra de comando, seguida de flags e do subcomando bundle.
 CLI_BUNDLE = re.compile(
     r"(?<![\w.\-])databricks(?:\.exe|\.cmd)?[\"']?\s+(?:-\S+\s+(?:[^-\s]\S*\s+)?)*[\"']?bundle\b",
@@ -174,24 +190,19 @@ def avaliar_operacao(operacao: Operacao, politica: dict) -> Decisao:
     if not isinstance(operacao.comando, str):
         return negar("entrada_invalida", "Comando ausente ou invalido.")
     comando = operacao.comando
+    cwd_prefixo, comando_sem_prefixo = _extrair_prefixo_cwd(comando)
     if CLI_SQL.search(comando) and not CLI_BUNDLE.search(comando):
-        return avaliar_sql(comando)
+        resultado = avaliar_sql(comando)
+        return Decisao(resultado.decisao, resultado.codigo, resultado.motivo, resultado.recuperacao,
+                       cwd=cwd_prefixo, bundle_arquivo=resultado.bundle_arquivo)
     if not CLI_BUNDLE.search(comando):
         return Decisao("nao_aplica", "comando_fora_do_recorte",
-                       "Sem chamada de databricks bundle no comando.")
+                       "Sem chamada de databricks bundle no comando.", cwd=cwd_prefixo)
 
     # O diretorio da sessao nao comprova o cwd da chamada.
-    prefixo = re.match(
-        r"^\s*Set-Location\s+-LiteralPath\s+'([^'\r\n]+)'\s+-ErrorAction\s+Stop\s*;\s*(.*)$",
-        comando, flags=re.IGNORECASE | re.DOTALL,
-    )
     cwd = operacao.cwd if operacao.origem_cwd == "ferramenta" else None
-    if prefixo:
-        cwd, comando = prefixo.groups()
-    else:
-        prefixo_bash = re.match(r"^\s*cd\s+--\s+'([^'\r\n]+)'\s*&&\s*(.*)$", comando, re.DOTALL)
-        if prefixo_bash:
-            cwd, comando = prefixo_bash.groups()
+    if cwd_prefixo is not None:
+        cwd, comando = cwd_prefixo, comando_sem_prefixo
     try:
         tokens = _tokens(comando.strip())
     except ValueError:

@@ -1,22 +1,19 @@
 # Acervo
 
-Vinte e seis peças do desenho: 1 regra, 13 skills, 7 papéis de agente e 5 hooks. [`catalogo.yaml`](catalogo.yaml) lista cada uma, com gatilho, critério, trilhas e `estado`. Nenhum código lê o catálogo, e nenhuma contagem liga peça automaticamente.
+O acervo é inventário das candidatas do desenho; implementar uma delas exige pacote próprio. Os 7 agentes ficam em [`agentes/roteamento.yaml`](../agentes/roteamento.yaml), a fonte única, e as skills `databricks-*` em [`trilhas/README.md`](../trilhas/README.md#skills-databricks).
 
-| `estado` | Peças | Significa |
+| candidata | tipo | situação hoje |
 |---|---|---|
-| `politica` | `modus-operandi` | Há texto de política em [`nucleo/modus-operandi.md`](../nucleo/modus-operandi.md). |
-| `implementado` | `cwd-bundle`, `target-dev`, `yaml-stop` e `stop-untested` (estes dois são a guarda "Fecho") | Há código que aplica a guarda. Política e limites em [`guardas/README.md`](../guardas/README.md). |
-| `coberto` | `tech-guide` | O papel é atendido pelas skills Databricks instaladas. |
-| `candidato` | as outras 12 skills, os 7 papéis, `docs-distill` | Não implementado. Não existe como skill, subagente ou hook. |
-
-A skill pessoal `grilling` não é copiada aqui.
-
-As skills de plataforma `databricks-*` (aitools v0.2.10, em `.agents/skills/`) estão instaladas e ficam fora deste catálogo. Qual usar em cada trilha: [`trilhas/README.md`](../trilhas/README.md#skills-databricks).
-
-## Roteamento
-
-O agente principal escolhe a [trilha](../trilhas/README.md) pelo objetivo e coordena pelo [`modus-operandi`](../nucleo/modus-operandi.md). Carregar uma skill não cria agente, arquivo ou etapa.
-
-Quando a ferramenta não tem a capacidade, declare a limitação. Não invente skill, hook ou revisor como se tivessem rodado.
-
-A avaliação ([`avaliacao/`](../avaliacao/README.md)) mede disparo indevido e instrução duplicada. Funda ou remova peça que custa sem dar benefício.
+| `grilling`, `engineer` | skill | Candidata. |
+| `esteira`, `novo-objeto` | skill | Embutida no agente `implement`. |
+| `distill`, `docs-objeto` | skill | Embutida no agente `docs`. |
+| `regras`, `ingestao` | skill | Embutida no agente `config`. |
+| `paridade` | skill | Embutida no agente `test`. |
+| `diagnostico` | skill | Embutida no `map` e no coordenador. |
+| `escada-validacao`, `dab-sandbox` | skill | Embutida no agente `dab`. |
+| `tech-guide` | skill | Candidata, atendida pelas skills `databricks-*` instaladas. |
+| `modus-operandi` | regra | Existe em [`nucleo/modus-operandi.md`](../nucleo/modus-operandi.md). |
+| `cwd-bundle`, `target-dev` | hook | Implementados como guardas ([`guardas/README.md`](../guardas/README.md)). |
+| `stop-untested` | hook | Coberto pelo fecho com prova ([`evidencia/fecho.md`](../evidencia/fecho.md)). |
+| `yaml-stop` | hook | Candidata. |
+| `docs-distill` | hook | Candidata, prevista no [`plano_memoria_harness.md`](../plano_memoria_harness.md) (segunda atividade do projeto). |

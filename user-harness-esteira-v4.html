@@ -1,0 +1,1506 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Harness da esteira</title>
+<style>
+
+/* ============================================================
+   DB — Color tokens
+   Official brand palette (fixed — do not alter).
+   Source: [DB] MIV.pdf · [Nova DB] MIV - Cores e fontes.pdf
+   ============================================================ */
+:root {
+  /* ---- Brand palette (raw, immutable) ---- */
+  --db-dark-blue:  #221F52; /* primary · text · headers      */
+  --db-pink:       #ED0973; /* highlight · primary actions    */
+  --db-red:        #FF1229; /* error · reproved               */
+  --db-yellow:     #FFB400; /* warning · pending              */
+  --db-green:      #42CE95; /* success · approved · validated */
+  --db-light-blue: #14B6EF; /* info · links · progress        */
+  --db-white:      #FFFFFF;
+
+  /* ---- Tint / shade ramps (derived, for surfaces & states) ---- */
+  --db-dark-blue-90: #38356a;
+  --db-dark-blue-70: #6562a0;
+  --db-dark-blue-12: #e9e9f0;
+  --db-dark-blue-06: #f4f4f8;
+
+  --db-pink-12:  #fde0ee;
+  --db-pink-06:  #fef0f7;
+  --db-red-12:   #ffe1e4;
+  --db-red-06:   #fff0f1;
+  --db-yellow-12:#fff4dc;
+  --db-yellow-06:#fffaef;
+  --db-green-12: #e1f7ee;
+  --db-green-06: #f0fbf6;
+  --db-lblue-12: #def4fd;
+  --db-lblue-06: #eff9fe;
+
+  /* ---- Neutrals (cool grey, tuned toward the dark-blue) ---- */
+  --db-ink:    #221F52;
+  --db-grey-90:#2f2d4d;
+  --db-grey-70:#5b5972;
+  --db-grey-50:#8a8898;
+  --db-grey-40:#a6a4b2;
+  --db-grey-30:#c9c8d2;
+  --db-grey-20:#e3e2e9;
+  --db-grey-12:#ececf1;
+  --db-grey-08:#f3f3f7;
+  --db-grey-04:#f9f9fb;
+
+  /* ---- Semantic aliases ---- */
+  --text-primary:   var(--db-dark-blue);
+  --text-secondary: var(--db-grey-70);
+  --text-muted:     var(--db-grey-50);
+  --text-inverse:   var(--db-white);
+  --text-link:      var(--db-light-blue);
+  --text-accent:    var(--db-pink);
+
+  --surface-page:   var(--db-white);
+  --surface-card:   var(--db-white);
+  --surface-sunken: var(--db-grey-08);
+  --surface-inverse:var(--db-dark-blue);
+  --surface-hover:  var(--db-grey-08);
+
+  --border-subtle:  var(--db-grey-20);
+  --border-default: var(--db-grey-30);
+  --border-strong:  var(--db-grey-40);
+  --border-focus:   var(--db-light-blue);
+
+  --action-primary:        var(--db-pink);
+  --action-primary-hover:  #d2076a;
+  --action-primary-active: #b80659;
+  --action-neutral:        var(--db-dark-blue);
+  --action-neutral-hover:  #1a1840;
+
+  --status-approved:   var(--db-green);
+  --status-approved-bg:var(--db-green-12);
+  --status-pending:    var(--db-yellow);
+  --status-pending-bg: var(--db-yellow-12);
+  --status-reproved:   var(--db-red);
+  --status-reproved-bg:var(--db-red-12);
+  --status-info:       var(--db-light-blue);
+  --status-info-bg:    var(--db-lblue-12);
+  --status-neutral:    var(--db-grey-50);
+  --status-neutral-bg: var(--db-grey-12);
+
+  --ring: 0 0 0 3px color-mix(in srgb, var(--db-light-blue) 35%, transparent);
+}
+/* ============================================================
+   DB — Spacing, radii, shadows, motion, layout (8px base grid)
+   ============================================================ */
+:root {
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --space-6: 32px; --space-7: 40px; --space-8: 48px; --space-9: 64px; --space-10: 80px;
+
+  --radius-xs: 4px; --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-xl: 24px;
+  --radius-pill: 999px; --radius-full: 50%;
+
+  --shadow-xs: 0 1px 2px rgba(34, 31, 82, 0.06);
+  --shadow-sm: 0 1px 3px rgba(34, 31, 82, 0.08), 0 1px 2px rgba(34, 31, 82, 0.04);
+  --shadow-md: 0 4px 12px rgba(34, 31, 82, 0.08), 0 2px 4px rgba(34, 31, 82, 0.04);
+  --shadow-lg: 0 12px 28px rgba(34, 31, 82, 0.12), 0 4px 8px rgba(34, 31, 82, 0.06);
+  --shadow-xl: 0 24px 48px rgba(34, 31, 82, 0.16);
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast:   120ms;
+  --dur-normal: 200ms;
+  --dur-slow:   320ms;
+
+  --container-max: 1280px;
+  --header-h:      64px;
+  --tabs-h:        50px;
+}
+/* ============================================================
+   DB — Typography tokens
+   Brand face: TT Supermolot — substituted with "Saira".
+   ============================================================ */
+:root {
+  --font-brand: "TT Supermolot", "Saira", "Montserrat", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans:  var(--font-brand);
+  --font-mono:  "JetBrains Mono", "SFMono-Regular", ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700; --fw-black: 800;
+
+  --fs-h2: 2.441rem; --fs-h3: 1.953rem; --fs-h4: 1.563rem; --fs-h5: 1.25rem;
+  --fs-lg: 1.125rem; --fs-body: 1rem; --fs-sm: 0.875rem; --fs-xs: 0.75rem; --fs-2xs: 0.6875rem;
+
+  --lh-heading: 1.15; --lh-snug: 1.35; --lh-body: 1.55;
+  --ls-tight: -0.02em; --ls-overline: 0.14em;
+}
+/* ============================================================
+   Base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; font-family: var(--font-brand); font-size: var(--fs-body); line-height: var(--lh-body);
+  font-weight: var(--fw-regular); color: var(--text-primary); background: var(--surface-page);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4, h5, h6 { margin: 0; font-family: var(--font-brand); font-weight: var(--fw-bold); line-height: var(--lh-heading); letter-spacing: var(--ls-tight); color: var(--text-primary); }
+p { margin: 0; }
+a { color: var(--text-link); text-decoration: none; transition: color var(--dur-fast) var(--ease-standard); }
+a:hover { text-decoration: underline; }
+code, pre, kbd, samp, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+button { font-family: inherit; }
+:focus-visible { outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm); }
+::selection { background: var(--db-pink); color: #fff; }
+
+:root { color-scheme: light; }
+:root {
+  --bg: var(--surface-page); --surface: var(--surface-card); --surface-2: var(--surface-sunken);
+  --ink: var(--text-primary); --ink-2: var(--text-secondary); --muted: var(--text-muted);
+  --line: var(--border-subtle); --hair: var(--border-subtle);
+  --accent: var(--db-pink); --accent-deep: var(--db-pink); --accent-tint: var(--db-pink-06);
+  --good: var(--status-approved); --warn: var(--status-pending); --critical: var(--status-reproved);
+  --good-tint: var(--status-approved-bg); --warn-tint: var(--status-pending-bg); --critical-tint: var(--status-reproved-bg);
+  --neutral-tint: var(--status-neutral-bg);
+  --mono: var(--font-mono); --sans: var(--font-brand);
+}
+
+/* ============================================================
+   Brand bar
+   ============================================================ */
+.rx-brand { background: var(--surface-inverse); color: var(--text-inverse); min-height: var(--header-h); }
+.rx-brand-inner {
+  max-width: var(--container-max); margin: 0 auto; padding: 0 clamp(16px, 3vw, 40px);
+  min-height: var(--header-h); display: flex; align-items: center; gap: 16px;
+}
+.rx-brand svg { height: 28px; width: auto; flex: none; }
+.rx-brand-title { font-weight: var(--fw-bold); font-size: var(--fs-sm); letter-spacing: var(--ls-tight); }
+.rx-tagline {
+  margin-left: auto; font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase;
+  color: color-mix(in srgb, var(--db-white) 62%, transparent); font-weight: var(--fw-semibold);
+}
+@media (max-width: 720px) { .rx-tagline { display: none; } }
+.db-overline { font-size: var(--fs-xs); font-weight: var(--fw-bold); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--text-muted); }
+
+/* ============================================================
+   Páginas (abas do documento) — padrão do Raio-X
+   ============================================================ */
+.tabs {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--surface-page) 94%, transparent);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.tabs-inner {
+  max-width: var(--container-max); margin: 0 auto; padding: 0 clamp(16px, 3vw, 40px);
+  display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
+}
+.tabs-inner::-webkit-scrollbar { display: none; }
+.tabs button {
+  appearance: none; background: transparent; border: 0; border-bottom: 2.5px solid transparent; margin-bottom: -1px;
+  padding: 15px 16px 12px; font: var(--fw-semibold) var(--fs-sm) var(--font-brand); color: var(--text-muted);
+  cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 9px;
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+.tabs button .n {
+  font-size: var(--fs-2xs); font-weight: var(--fw-bold); width: 19px; height: 19px; border-radius: var(--radius-full);
+  display: inline-grid; place-items: center; background: var(--db-grey-12); color: var(--text-muted); line-height: 1;
+}
+.tabs button:hover { color: var(--text-primary); }
+.tabs button[aria-selected="true"] { color: var(--db-dark-blue); border-bottom-color: var(--db-pink); font-weight: var(--fw-bold); }
+.tabs button[aria-selected="true"] .n { background: var(--db-pink); color: #fff; }
+.tabs button:focus-visible { box-shadow: var(--ring); border-radius: var(--radius-sm); }
+.tab-panel[hidden] { display: none; }
+
+main { max-width: var(--container-max); margin: 0 auto; padding: 8px clamp(16px, 3vw, 40px) 96px; }
+
+/* ---- cabeçalho de página ---- */
+.eyebrow { font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--text-muted); font-weight: var(--fw-bold); margin: 0 0 6px; }
+h1 { font-size: clamp(28px, 4vw, var(--fs-h2)); line-height: var(--lh-heading); margin: 0 0 12px; font-weight: var(--fw-black); letter-spacing: var(--ls-tight); text-wrap: balance; }
+.lede { color: var(--ink-2); max-width: 78ch; margin: 0 0 8px; font-size: 16.5px; }
+header.page, .page-head { padding: 30px 0 6px; }
+.page-title { font-size: clamp(24px, 3vw, 30px); font-weight: var(--fw-black); letter-spacing: var(--ls-tight); margin: 0 0 6px; text-wrap: balance; }
+.subnav { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
+.subnav a {
+  font-size: 12.5px; font-weight: 600; color: var(--ink-2); border: 1px solid var(--border-subtle);
+  background: var(--surface-card); border-radius: var(--radius-pill); padding: 4px 12px;
+}
+.subnav a:hover { color: var(--accent-deep); border-color: var(--accent); text-decoration: none; }
+
+section { margin: 44px 0; scroll-margin-top: calc(var(--tabs-h) + 16px); }
+h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 4px; text-wrap: balance; }
+.h2-eyebrow { font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--db-pink); font-weight: var(--fw-bold); margin: 0 0 4px; }
+.section-note { color: var(--ink-2); max-width: 74ch; margin: 6px 0 18px; font-size: 14.5px; }
+h3 { font-size: 15.5px; font-weight: 700; margin: 26px 0 8px; }
+
+/* ---- tiles (KPIs clicáveis) ---- */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 22px; }
+.tile {
+  display: block; color: inherit; text-decoration: none;
+  background: var(--surface); border: 1px solid var(--hair); border-radius: var(--radius-lg); padding: 16px 18px 14px; box-shadow: var(--shadow-xs);
+  transition: box-shadow var(--dur-normal) var(--ease-standard), transform var(--dur-normal) var(--ease-standard), border-color var(--dur-fast);
+}
+a.tile:hover { text-decoration: none; border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.tile .v { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+.tile .k { font-size: 12.5px; color: var(--muted); margin-top: 5px; line-height: 1.35; }
+.tile .go { display: block; margin-top: 10px; font-size: var(--fs-2xs); font-weight: 700; letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--db-pink); }
+
+/* ---- tabelas ---- */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-card); box-shadow: var(--shadow-sm); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 640px; }
+#aceite-trilha table { min-width: 920px; table-layout: fixed; }
+#aceite-trilha th:nth-child(1), #aceite-trilha td:nth-child(1) { width: 12%; min-width: 128px; white-space: nowrap; }
+#aceite-trilha th:nth-child(2), #aceite-trilha td:nth-child(2) { width: 30%; }
+#aceite-trilha th:nth-child(3), #aceite-trilha td:nth-child(3) { width: 30%; }
+#aceite-trilha th:nth-child(4), #aceite-trilha td:nth-child(4) { width: 28%; min-width: 280px; }
+th {
+  text-align: left; font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase;
+  color: var(--text-muted); font-weight: var(--fw-bold); padding: 12px 14px 9px; border-bottom: 1px solid var(--line); background: var(--surface-sunken);
+}
+td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.5; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--accent-tint); }
+table.kv td:first-child { font-weight: 700; color: var(--ink); white-space: nowrap; }
+table.kv td.mono:first-child { font-weight: 500; }
+.duo .tbl-wrap table { min-width: 0; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: var(--fs-2xs); font-weight: var(--fw-bold); border-radius: var(--radius-pill); padding: 3px 10px;
+}
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: var(--radius-full); background: currentColor; flex: none; }
+.chip.ok { background: var(--good-tint); color: var(--status-approved); }
+.chip.info { background: var(--status-info-bg); color: var(--db-dark-blue); }
+.chip.warn { background: var(--warn-tint); color: var(--ink); }
+.chip.decisao { background: var(--accent-tint); color: var(--accent-deep); }
+.chip.neutral { background: var(--neutral-tint); color: var(--ink-2); }
+.chip.bad { background: var(--status-reproved-bg); color: var(--status-reproved); }
+
+.callout {
+  background: var(--status-info-bg); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); border-top: 3px solid var(--status-info);
+  padding: 14px 18px; font-size: var(--fs-sm); margin: 18px 0; box-shadow: var(--shadow-xs); line-height: 1.55;
+}
+.callout.critical { background: var(--status-reproved-bg); border-top-color: var(--status-reproved); }
+.callout.warn { background: var(--warn-tint); border-top-color: var(--status-pending); }
+
+.panel { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px 22px; }
+
+/* ---- pílulas (tipo de pedido / camada) ---- */
+.pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 14px; }
+.pills button {
+  appearance: none; background: var(--surface); border: 1px solid var(--hair);
+  border-radius: var(--radius-pill); padding: 7px 14px; font: 650 13px var(--sans);
+  color: var(--ink-2); cursor: pointer; transition: border-color var(--dur-fast), color var(--dur-fast), background var(--dur-fast);
+}
+.pills button:hover { border-color: var(--border-strong); color: var(--ink); }
+.pills button[aria-pressed="true"] { background: var(--db-dark-blue); border-color: var(--db-dark-blue); color: #fff; }
+.pills button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* ============================================================
+   Fluxogramas
+   ============================================================ */
+.flow-board { position: relative; background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-top: 12px; }
+.flow-legend { display: flex; flex-wrap: wrap; gap: 10px 22px; padding: 11px 18px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--ink-2); font-weight: 600; }
+.flow-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.flow-legend svg { width: 36px; height: 20px; flex: none; }
+.flow-legend .fit {
+  margin-left: auto; appearance: none; border: 1px solid var(--border-subtle); background: var(--surface-card);
+  border-radius: var(--radius-pill); padding: 4px 12px; font: 600 11.5px var(--sans); color: var(--ink-2); cursor: pointer;
+}
+.flow-legend .fit:hover { border-color: var(--accent); color: var(--accent-deep); }
+.flow-map { margin: 0; padding: 14px 12px 6px; overflow-x: auto; }
+.flow-map svg { display: block; height: auto; max-width: none; font-family: var(--font-brand); }
+.flow-map.fit svg { width: 100% !important; min-width: 0 !important; max-width: 100%; height: auto !important; }
+figcaption { font-size: 13px; color: var(--muted); margin: 6px 8px 12px; max-width: 80ch; }
+
+.dag-node { cursor: pointer; transition: opacity var(--dur-fast) var(--ease-standard); outline: none; }
+.dag-node.dim { opacity: 0.28; }
+.dag-node .hit { transition: stroke var(--dur-fast), fill var(--dur-fast), stroke-width var(--dur-fast); }
+.dag-node:hover .hit, .dag-node:focus-visible .hit { stroke: var(--db-pink); }
+.dag-node[aria-pressed="true"] .hit { stroke: var(--db-pink); stroke-width: 2.4; }
+.dag-node[aria-pressed="true"][data-kind="action"] .hit { fill: var(--db-pink-06); }
+.dag-node text { pointer-events: none; }
+.dag-edge { transition: opacity var(--dur-fast) var(--ease-standard); }
+.dag-edge.dim { opacity: 0.16; }
+.dag-edge .wire { fill: none; stroke: var(--db-grey-50); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke var(--dur-fast), stroke-width var(--dur-fast); }
+.dag-edge.back .wire { stroke-dasharray: 6 5; }
+.dag-edge.hi .wire { stroke: var(--db-pink); stroke-width: 2.2; }
+.dag-edge .lbl rect { fill: var(--surface-card); stroke: var(--border-subtle); stroke-width: 1; }
+.dag-edge .lbl.pos rect { fill: var(--db-green-12); stroke: color-mix(in srgb, var(--db-green) 55%, transparent); }
+.dag-edge .lbl.neg rect { fill: var(--db-red-12); stroke: color-mix(in srgb, var(--db-red) 40%, transparent); }
+.dag-edge .lbl text { fill: var(--db-dark-blue); font-size: 11px; font-weight: 600; }
+.dag-edge.hi .lbl rect { stroke: var(--db-pink); }
+
+/* ---- pop-up de detalhe do nó ---- */
+.flow-pop {
+  position: fixed; z-index: 60; width: min(360px, calc(100vw - 24px));
+  background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); padding: 16px 18px 16px; font-size: 13px; line-height: 1.5;
+}
+.flow-pop[hidden] { display: none; }
+.flow-pop .pop-close {
+  position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle); background: var(--surface-card); color: var(--ink-2); cursor: pointer;
+  font-size: 16px; line-height: 1; display: grid; place-items: center;
+}
+.flow-pop .pop-close:hover { background: var(--surface-hover); color: var(--ink); }
+.flow-pop h4 { font-size: 16px; margin: 8px 28px 1px 0; letter-spacing: -0.01em; }
+.flow-pop .who { color: var(--muted); font-size: 12.5px; }
+.flow-pop dl { margin: 12px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; }
+.flow-pop dt { font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--muted); font-weight: 700; padding-top: 3px; }
+.flow-pop dd { margin: 0; }
+.flow-pop dd ul { list-style: none; margin: 0; padding: 0; }
+.flow-pop dd li { padding: 2px 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.flow-pop .when { font-size: 11px; font-weight: 600; border-radius: var(--radius-pill); padding: 1px 8px; background: var(--neutral-tint); color: var(--ink-2); white-space: nowrap; }
+.flow-pop .when.pos { background: var(--db-green-12); }
+.flow-pop .when.neg { background: var(--db-red-12); }
+.flow-pop .when.back { border: 1px dashed var(--border-strong); background: transparent; }
+.flow-pop .pop-hint { margin-top: 12px; font-size: 11.5px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---- componentes próprios do v4, só sobre tokens DB ---- */
+.duo .tbl-wrap table { min-width: 0; }
+td.m, th.m { text-align: center; }
+.tile.cur { background: var(--warn-tint); border-color: var(--status-pending); }
+.tile .v.sm { font-size: 22px; }
+.tiles.fixed { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.arch-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 800px) { .arch-grid { grid-template-columns: 1fr; } }
+.layer { padding: 4px 0; }
+.layer .lab { font-size: var(--fs-2xs); letter-spacing: var(--ls-overline); text-transform: uppercase; color: var(--text-muted); font-weight: var(--fw-bold); margin: 0 0 8px; }
+.layer .lab code { text-transform: none; letter-spacing: 0; }
+.layer .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.layer .chip { white-space: normal; }
+.down { text-align: center; color: var(--text-muted); font-size: 12px; margin: 4px 0; }
+.arch-grid .callout { margin: 0; }
+.note-uso { margin: 0 0 6px; }
+.note-papeis { font-size: 13px; color: var(--ink-2); margin: 0 0 4px; }
+
+/* ---- Formas de saída ---- */
+.forma-card { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px 22px; }
+.forma-card h3 { margin: 8px 0 4px; }
+.forma-meta { color: var(--ink-2); font-size: 14px; margin: 6px 0; overflow-wrap: anywhere; }
+.forma-yaml { margin: 14px 0 0; padding: 14px 16px; background: var(--surface-sunken); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow-x: auto; font-size: 12.5px; line-height: 1.5; }
+.pills button .est { font-size: 11px; opacity: .75; margin-left: 6px; }
+@media print { .forma-yaml { white-space: pre-wrap; } }
+</style></head><body>
+<header class="rx-brand">
+  <div class="rx-brand-inner">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 395.5 156" fill="#FFFFFF" role="img" aria-label="db" width="72" height="28">
+      <path d="M140.85 110.93 C128.12 110.93 117.77 100.57 117.77 87.85 C117.77 75.12 128.12 64.77 140.85 64.77 C153.57 64.77 163.92 75.12 163.92 87.85 C163.92 100.57 153.57 110.93 140.85 110.93 M191.42 7.02 C191.42 3.14 188.27 -0.01 184.39 -0.01 L170.96 -0.01 C167.07 -0.01 163.92 3.14 163.92 7.02 L163.92 42.90 C154.79 38.19 144.09 36.12 132.78 37.91 C110.74 41.40 93.32 59.43 90.65 81.58 C86.87 112.86 111.84 139.45 142.61 138.39 C150.37 138.13 157.61 136.02 164.05 132.59 C164.62 135.90 167.48 138.42 170.96 138.42 L184.39 138.42 C188.27 138.42 191.42 135.28 191.42 131.39 L191.42 86.67 L191.42 86.66 Z"/>
+      <path d="M254.65 110.93 C267.37 110.93 277.72 100.57 277.72 87.85 C277.72 75.12 267.37 64.77 254.65 64.77 C241.92 64.77 231.57 75.12 231.57 87.85 C231.57 100.57 241.92 110.93 254.65 110.93 M204.07 7.02 C204.07 3.14 207.22 -0.01 211.10 -0.01 L224.53 -0.01 C228.42 -0.01 231.57 3.14 231.57 7.02 L231.57 42.90 C240.70 38.19 251.40 36.12 262.71 37.91 C284.75 41.40 302.17 59.43 304.84 81.58 C308.62 112.86 283.65 139.45 252.88 138.39 C245.13 138.13 237.89 136.02 231.45 132.59 C230.87 135.90 228.01 138.42 224.53 138.42 L211.10 138.42 C207.22 138.42 204.07 135.28 204.07 131.39 L204.07 86.67 L204.07 86.66 Z"/>
+      <path d="M81.82 133.78 L35.91 87.87 L81.82 41.96 C84.62 39.16 84.62 34.61 81.82 31.81 L72.53 22.52 C69.72 19.72 65.18 19.72 62.37 22.52 L11.56 73.33 L11.38 73.49 L2.09 82.78 C0.69 84.19 -0.01 86.03 -0.01 87.87 C-0.01 89.71 0.69 91.55 2.09 92.95 L11.38 102.25 L11.56 102.41 L62.38 153.22 C65.18 156.03 69.73 156.03 72.53 153.22 L81.82 143.93 C84.63 141.13 84.63 136.58 81.82 133.78"/>
+      <path d="M313.67 133.78 L359.58 87.87 L313.67 41.96 C310.87 39.16 310.87 34.61 313.67 31.81 L322.96 22.52 C325.77 19.72 330.31 19.72 333.12 22.52 L383.93 73.33 L384.11 73.49 L393.40 82.78 C394.80 84.19 395.50 86.03 395.50 87.87 C395.50 89.71 394.80 91.55 393.40 92.95 L384.11 102.25 L383.93 102.41 L333.11 153.22 C330.31 156.03 325.76 156.03 322.96 153.22 L313.67 143.93 C310.86 141.13 310.86 136.58 313.67 133.78"/>
+    </svg>
+    <div>
+      <p class="db-overline" style="color: color-mix(in srgb, var(--db-white) 70%, transparent); margin: 0 0 2px;">Projeto Avante · Ipiranga</p>
+      <div class="rx-brand-title">Harness da esteira</div>
+    </div>
+    <span class="rx-tagline">design and build the future</span>
+  </div>
+</header>
+<nav class="tabs" aria-label="Seções do guia"><div class="tabs-inner" id="tabs"><button type="button" data-target="principio" aria-selected="true"><span class="n">1</span>Princípio</button><button type="button" data-target="arquitetura" aria-selected="false"><span class="n">2</span>Arquitetura</button><button type="button" data-target="caminho" aria-selected="false"><span class="n">3</span>Simples × estruturado</button><button type="button" data-target="ciclo" aria-selected="false"><span class="n">4</span>Ciclo da fatia</button><button type="button" data-target="trilhas" aria-selected="false"><span class="n">5</span>Trilhas e agentes</button><button type="button" data-target="guardas" aria-selected="false"><span class="n">6</span>Guardas</button><button type="button" data-target="formas" aria-selected="false"><span class="n">7</span>Formas</button><button type="button" data-target="pastas" aria-selected="false"><span class="n">8</span>Pastas</button><button type="button" data-target="estado" aria-selected="false"><span class="n">9</span>Estado</button></div></nav>
+<main>
+<header class="page">
+<p class="eyebrow">Arquitetura de agente · saneamento_migracao</p>
+<h1>Autonomia com prova.</h1>
+<p class="lede">Guia visual: o princípio, o que o harness faz e como ele se organiza. Fluxos conforme <code>agentes/roteamento.yaml</code>. Versão 4.</p>
+</header>
+
+<section id="principio">
+<h2>Princípio: autonomia com prova</h2>
+<p class="section-note">O agente trabalha sozinho. O harness não confia em relato: nega o efeito perigoso antes que aconteça e só aceita “pronto” com prova atual.</p>
+<div class="tiles fixed">
+<div class="tile"><p class="h2-eyebrow">1 · O agente age</p><div class="k">Edita, roda verificações, segue a trilha. Faz a menor mudança que resolve.</div></div>
+<div class="tile"><p class="h2-eyebrow">2 · Guardas negam antes</p><div class="k">Hooks conferem o efeito real da chamada (cwd, target, plano) antes de ela executar.</div></div>
+<div class="tile"><p class="h2-eyebrow">3 · DONE só com prova</p><div class="k">O fecho recusa critério sem prova atual. Editou depois? A prova perde a validade.</div></div>
+</div>
+</section>
+
+<section id="arquitetura">
+<h2>Arquitetura</h2>
+<p class="section-note">Três planos. O agente lê as instruções e age pelo runtime; cada chamada de shell passa por hook, adaptador e núcleo antes de chegar ao Databricks. A guarda nega antes do efeito, e a prova fica em <code>.execucoes/</code>, fora do produto.</p>
+<style>
+.arq-board{width:min(1640px,calc(100vw - 48px));position:relative;left:50%;transform:translateX(-50%)}
+.arq-map{overflow-x:auto;padding:10px 8px 4px}
+.arq{display:block;width:100%;min-width:1180px;height:auto;font-family:var(--font-brand)}
+.arq-map.real .arq{width:1600px;min-width:1600px}
+.arq .band rect{fill:var(--db-grey-04);stroke:var(--border-subtle)}
+.arq .bl{font-size:13px;font-weight:800;letter-spacing:.12em;fill:var(--db-pink);paint-order:stroke;stroke:var(--db-grey-04);stroke-width:8px;stroke-linejoin:round}
+.arq .grp rect{fill:var(--surface-card);stroke:var(--border-default);stroke-width:1.2}
+.arq .grp.core rect{stroke:var(--db-pink);stroke-width:1.8}
+.arq .gl{font-size:12px;font-weight:800;letter-spacing:.1em;fill:var(--text-muted);paint-order:stroke;stroke:var(--surface-card);stroke-width:8px;stroke-linejoin:round}
+.arq .ab rect{fill:var(--surface-card);stroke:var(--border-default);stroke-width:1.4}
+.arq .ab .t{font-size:15px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
+.arq .ab .t.mono{font-family:var(--font-mono);font-size:13.5px}
+.arq .ab .s{font-size:12.5px;fill:var(--text-secondary);text-anchor:middle}
+.arq .ab.start rect{fill:var(--db-dark-blue);stroke:var(--db-dark-blue)}
+.arq .ab.start .t,.arq .ab.start .s{fill:#fff}
+.arq .ab.key rect{fill:var(--db-pink-06);stroke:var(--db-pink)}
+.arq .ab.deny rect{fill:var(--db-red-06);stroke:var(--db-red)}
+.arq .ab.ok rect{fill:var(--db-green-12);stroke:var(--db-green)}
+.arq .ab.plan rect{stroke:var(--db-grey-50);stroke-dasharray:5 4}
+.arq .ab.plan .t,.arq .ab.plan .s{fill:var(--text-muted)}
+.arq .ab.prod rect{fill:var(--db-yellow-06);stroke:var(--db-yellow);stroke-dasharray:5 4}
+.arq .rt .rtbg{fill:transparent;stroke:transparent;stroke-width:1.4}
+.arq .rt rect:not(.rtbg){fill:var(--db-lblue-12);stroke:var(--db-light-blue)}
+.arq .rt text{font-size:12.5px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
+.arq .cfg rect{fill:var(--surface-sunken);stroke:var(--border-subtle)}
+.arq .cfg text{font-family:var(--font-mono);font-size:11.5px;fill:var(--text-secondary);text-anchor:middle}
+.arq .note{font-size:12px;fill:var(--text-muted);text-anchor:middle}
+.arq .note.l{text-anchor:start}
+.arq .ar{fill:none;stroke:var(--db-dark-blue);stroke-width:1.9;stroke-linejoin:round}
+.arq .ar.deny{stroke:var(--db-red);stroke-dasharray:6 4}
+.arq .ar.ok,.arq .ar.ev{stroke:#1f9d6b}
+.arq .ar.ev{stroke-dasharray:2 4;stroke-linecap:round}
+.arq .ar.plan{stroke:var(--db-grey-50);stroke-dasharray:5 4}
+.arq .ar.edit{stroke:var(--db-grey-70)}
+.arq .al rect{fill:#fff;stroke:var(--db-dark-blue);stroke-width:1}
+.arq .al text{font-size:12px;font-weight:700;fill:var(--db-dark-blue);text-anchor:middle}
+.arq .al.deny rect{fill:var(--db-red-06);stroke:var(--db-red)}
+.arq .al.deny text{fill:var(--db-red)}
+.arq .al.ok rect,.arq .al.ev rect{fill:var(--db-green-12);stroke:var(--db-green)}
+.arq .al.ok text,.arq .al.ev text{fill:#14704c}
+.arq .al.edit rect{fill:var(--db-yellow-06);stroke:var(--db-yellow)}
+.arq .lg{font-size:13px;font-weight:600;fill:var(--text-secondary)}
+.arq .hd .hdr{fill:transparent;stroke:transparent}
+.arq .ii{fill:var(--surface-card);stroke:currentColor;stroke-width:1.3;color:var(--db-grey-50)}
+.arq .iit{font-size:11px;font-weight:800;font-style:italic;font-family:Georgia,serif;fill:var(--db-grey-70);text-anchor:middle}
+.arq .arq-hit{cursor:pointer;outline:none}
+.arq .arq-hit text{pointer-events:none}
+.arq .arq-hit>rect{transition:stroke var(--dur-fast),stroke-width var(--dur-fast),filter var(--dur-fast)}
+.arq .arq-hit:hover>rect,.arq .arq-hit:focus-visible>rect{stroke:var(--db-pink);stroke-width:2.4}
+.arq .rt.arq-hit:hover .rtbg,.arq .rt.arq-hit:focus-visible .rtbg{stroke:var(--db-pink);stroke-dasharray:4 3}
+.arq .hd:hover .hdr,.arq .hd:focus-visible .hdr{fill:var(--db-pink-06);stroke:var(--db-pink)}
+.arq .hd:hover .ii,.arq .hd:focus-visible .ii{color:var(--db-pink)}
+.arq .arq-hit[aria-pressed="true"]>rect{stroke:var(--db-pink);stroke-width:3;filter:drop-shadow(0 3px 8px rgba(237,9,115,.28))}
+.arq .rt.arq-hit[aria-pressed="true"] .rtbg{stroke:var(--db-pink);stroke-dasharray:none}
+.arq .hd[aria-pressed="true"] .hdr{fill:var(--db-pink-12);stroke:var(--db-pink)}
+.arq .sel>rect{stroke:var(--db-pink)!important;stroke-width:2.4!important}
+.arq-pop dd p{margin:0}
+.arq-pop .rel{display:flex;flex-wrap:wrap;gap:6px}
+.arq-pop .rel button{appearance:none;border:1px solid var(--border-subtle);background:var(--surface-card);border-radius:var(--radius-pill);padding:2px 10px;font:600 11.5px var(--sans);color:var(--ink-2);cursor:pointer}
+.arq-pop .rel button:hover{border-color:var(--db-pink);color:var(--db-pink)}
+.flow-pop.arq-pop{width:min(420px,calc(100vw - 24px))}
+</style>
+<div class="flow-board arq-board">
+<div class="flow-legend"><span>Clique em uma caixa, no nome de um plano ou grupo <b>(ⓘ)</b> ou em um passo numerado para ver o que é e por que importa.</span><button type="button" class="fit" id="arq-fit">Tamanho real</button></div>
+<div class="arq-map" id="arq-map">
+<svg class="arq" id="arq-svg" viewBox="0 0 1600 1140" role="group" aria-labelledby="arq-t arq-d">
+<title id="arq-t">Arquitetura do harness</title>
+<desc id="arq-d">Três planos: instrução lida pelo agente; controle executado a cada chamada de ferramenta (runtime, hooks, adaptadores, núcleo de guardas e provas, efeito externo); evidência gravada em .execucoes. Cada caixa abre uma explicação.</desc>
+<defs>
+<marker id="m-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#221F52"/></marker>
+<marker id="m-deny" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#FF1229"/></marker>
+<marker id="m-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f9d6b"/></marker>
+<marker id="m-ev" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f9d6b"/></marker>
+<marker id="m-plan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8a8898"/></marker>
+<marker id="m-edit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5b5972"/></marker>
+</defs>
+<g class="band" data-grp="p1"><rect x="20" y="20" width="1560" height="190" rx="18"/></g>
+<g class="hd arq-hit" data-arq="p1" tabindex="0" role="button" aria-pressed="false" aria-label="1 · PLANO DE INSTRUÇÃO — o que o agente lê"><rect class="hdr" x="34" y="32" width="440" height="24" rx="12"/><text class="bl" x="42" y="48">1 · PLANO DE INSTRUÇÃO — o que o agente lê</text><circle class="ii" cx="458" cy="44" r="8.5"/><text class="iit" x="458" y="48">i</text></g>
+<g class="ab  arq-hit" data-arq="agents" tabindex="0" role="button" aria-pressed="false" aria-label="AGENTS.md · CLAUDE.md — regras curtas de todo pedido"><rect x="44" y="76" width="280" height="104" rx="12"/>
+<text class="t" x="184.0" y="124.5">AGENTS.md · CLAUDE.md</text>
+<text class="s" x="184.0" y="144.5">regras curtas de todo pedido</text>
+</g>
+<g class="ab  arq-hit" data-arq="trilhas" tabindex="0" role="button" aria-pressed="false" aria-label="trilhas/ · nucleo/ — passos, aceite e política, lidos sob demanda"><rect x="368" y="76" width="280" height="104" rx="12"/>
+<text class="t" x="508.0" y="116.0">trilhas/ · nucleo/</text>
+<text class="s" x="508.0" y="136.0">passos, aceite e política</text>
+<text class="s" x="508.0" y="153.0">lidos sob demanda</text>
+</g>
+<g class="ab key arq-hit" data-arq="roteamento" tabindex="0" role="button" aria-pressed="false" aria-label="agentes/roteamento.yaml — fonte única: papéis, ordem, e gatilhos · + agentes/*.md"><rect x="692" y="76" width="330" height="104" rx="12"/>
+<text class="t mono" x="857.0" y="116.0">agentes/roteamento.yaml</text>
+<text class="s" x="857.0" y="136.0">fonte única: papéis, ordem</text>
+<text class="s" x="857.0" y="153.0">e gatilhos · + agentes/*.md</text>
+</g>
+<g class="ab  arq-hit" data-arq="gerar" tabindex="0" role="button" aria-pressed="false" aria-label="gerar_agentes.py — neutro → nativo"><rect x="1066" y="76" width="220" height="104" rx="12"/>
+<text class="t mono" x="1176.0" y="124.5">gerar_agentes.py</text>
+<text class="s" x="1176.0" y="144.5">neutro → nativo</text>
+</g>
+<g class="ab  arq-hit" data-arq="nativos" tabindex="0" role="button" aria-pressed="false" aria-label=".claude/agents — .cursor/agents, instalados · observados no Cursor"><rect x="1330" y="76" width="236" height="104" rx="12"/>
+<text class="t mono" x="1448.0" y="116.0">.claude/agents</text>
+<text class="s" x="1448.0" y="136.0">.cursor/agents</text>
+<text class="s" x="1448.0" y="153.0">instalados · observados no Cursor</text>
+</g>
+<path class="ar " d="M324 128 H364" marker-end="url(#m-c)"/>
+<path class="ar " d="M1022 128 H1062" marker-end="url(#m-c)"/>
+<path class="ar " d="M1286 128 H1326" marker-end="url(#m-c)"/>
+<g class="band" data-grp="p2"><rect x="20" y="236" width="1560" height="600" rx="18"/></g>
+<g class="grp" data-grp="g_runtime"><rect x="40" y="310" width="260" height="480" rx="14"/></g>
+<g class="hd arq-hit" data-arq="g_runtime" tabindex="0" role="button" aria-pressed="false" aria-label="RUNTIME"><rect class="hdr" x="48" y="320" width="118" height="24" rx="12"/><text class="gl" x="56" y="336">RUNTIME</text><circle class="ii" cx="150" cy="332" r="8.5"/><text class="iit" x="150" y="336">i</text></g>
+<g class="ab start arq-hit" data-arq="coordenador" tabindex="0" role="button" aria-pressed="false" aria-label="Coordenador — agente principal"><rect x="56" y="340" width="228" height="72" rx="12"/>
+<text class="t" x="170.0" y="372.5">Coordenador</text>
+<text class="s" x="170.0" y="392.5">agente principal</text>
+</g>
+<g class="ab plan arq-hit" data-arq="subagentes" tabindex="0" role="button" aria-pressed="false" aria-label="Subagentes · 7 papéis — map · config · implement, test · refute · docs · dab, ativos: manutenção no Cursor"><rect x="56" y="428" width="228" height="116" rx="12"/>
+<text class="t" x="170.0" y="465.5">Subagentes · 7 papéis</text>
+<text class="s" x="170.0" y="485.5">map · config · implement</text>
+<text class="s" x="170.0" y="502.5">test · refute · docs · dab</text>
+<text class="s" x="170.0" y="519.5">ativos: manutenção no Cursor</text>
+</g>
+<g class="rt arq-hit" data-arq="runtimes" tabindex="0" role="button" aria-pressed="false" aria-label="Runtimes: Cursor, Claude Code, Codex, OpenCode">
+<rect class="rtbg" x="56" y="560" width="228" height="84" rx="12"/>
+<rect x="64" y="568" width="102" height="30" rx="15"/><text x="115" y="588">Cursor</text>
+<rect x="174" y="568" width="102" height="30" rx="15"/><text x="225" y="588">Claude Code</text>
+<rect x="64" y="606" width="102" height="30" rx="15"/><text x="115" y="626">Codex</text>
+<rect x="174" y="606" width="102" height="30" rx="15"/><text x="225" y="626">OpenCode</text>
+</g>
+<text class="note" x="170" y="676">mesmo AGENTS.md nos quatro;</text>
+<text class="note" x="170" y="694">prova no Cursor e no Claude Code</text>
+<g class="grp" data-grp="g_hooks"><rect x="365" y="310" width="240" height="480" rx="14"/></g>
+<g class="hd arq-hit" data-arq="g_hooks" tabindex="0" role="button" aria-pressed="false" aria-label="HOOKS DO RUNTIME"><rect class="hdr" x="373" y="320" width="190" height="24" rx="12"/><text class="gl" x="381" y="336">HOOKS DO RUNTIME</text><circle class="ii" cx="547" cy="332" r="8.5"/><text class="iit" x="547" y="336">i</text></g>
+<g class="ab  arq-hit" data-arq="h_cursor" tabindex="0" role="button" aria-pressed="false" aria-label="Cursor — shell · pre/postToolUse, stop · subagentStart/Stop"><rect x="381" y="340" width="208" height="84" rx="12"/>
+<text class="t" x="485.0" y="370.0">Cursor</text>
+<text class="s" x="485.0" y="390.0">shell · pre/postToolUse</text>
+<text class="s" x="485.0" y="407.0">stop · subagentStart/Stop</text>
+</g>
+<g class="ab  arq-hit" data-arq="h_cc" tabindex="0" role="button" aria-pressed="false" aria-label="Claude Code — Pre/PostToolUse · Agent, SessionStart · Stop"><rect x="381" y="440" width="208" height="84" rx="12"/>
+<text class="t" x="485.0" y="470.0">Claude Code</text>
+<text class="s" x="485.0" y="490.0">Pre/PostToolUse · Agent</text>
+<text class="s" x="485.0" y="507.0">SessionStart · Stop</text>
+</g>
+<g class="ab  arq-hit" data-arq="h_codex" tabindex="0" role="button" aria-pressed="false" aria-label="Codex — PreToolUse"><rect x="381" y="540" width="208" height="70" rx="12"/>
+<text class="t" x="485.0" y="571.5">Codex</text>
+<text class="s" x="485.0" y="591.5">PreToolUse</text>
+</g>
+<g class="ab  arq-hit" data-arq="h_opencode" tabindex="0" role="button" aria-pressed="false" aria-label="OpenCode — tool.execute.before"><rect x="381" y="626" width="208" height="70" rx="12"/>
+<text class="t" x="485.0" y="657.5">OpenCode</text>
+<text class="s" x="485.0" y="677.5">tool.execute.before</text>
+</g>
+<g class="grp" data-grp="g_adapt"><rect x="670" y="310" width="270" height="480" rx="14"/></g>
+<g class="hd arq-hit" data-arq="g_adapt" tabindex="0" role="button" aria-pressed="false" aria-label="ADAPTADORES · adaptadores/"><rect class="hdr" x="678" y="320" width="276" height="24" rx="12"/><text class="gl" x="686" y="336">ADAPTADORES · adaptadores/</text><circle class="ii" cx="938" cy="332" r="8.5"/><text class="iit" x="938" y="336">i</text></g>
+<g class="ab  arq-hit" data-arq="entrada" tabindex="0" role="button" aria-pressed="false" aria-label="entrada.py → executar.py — normaliza o evento e responde, no protocolo do runtime"><rect x="686" y="340" width="238" height="84" rx="12"/>
+<text class="t" x="805.0" y="370.0">entrada.py → executar.py</text>
+<text class="s" x="805.0" y="390.0">normaliza o evento e responde</text>
+<text class="s" x="805.0" y="407.0">no protocolo do runtime</text>
+</g>
+<g class="ab  arq-hit" data-arq="ad_cursor" tabindex="0" role="button" aria-pressed="false" aria-label="cursor/prova.py — coleta prova e subagentes"><rect x="686" y="440" width="238" height="70" rx="12"/>
+<text class="t mono" x="805.0" y="471.5">cursor/prova.py</text>
+<text class="s" x="805.0" y="491.5">coleta prova e subagentes</text>
+</g>
+<g class="ab  arq-hit" data-arq="ad_cc" tabindex="0" role="button" aria-pressed="false" aria-label="claude_code/prova.py — prova e subagentes · observado"><rect x="686" y="526" width="238" height="70" rx="12"/>
+<text class="t mono" x="805.0" y="557.5">claude_code/prova.py</text>
+<text class="s" x="805.0" y="577.5">prova e subagentes · observado</text>
+</g>
+<g class="ab  arq-hit" data-arq="prova_cli" tabindex="0" role="button" aria-pressed="false" aria-label="prova.py (CLI) — iniciar · registros · fechar"><rect x="686" y="612" width="238" height="70" rx="12"/>
+<text class="t mono" x="805.0" y="643.5">prova.py (CLI)</text>
+<text class="s" x="805.0" y="663.5">iniciar · registros · fechar</text>
+</g>
+<g class="grp core" data-grp="g_nucleo"><rect x="1005" y="310" width="270" height="480" rx="14"/></g>
+<g class="hd arq-hit" data-arq="g_nucleo" tabindex="0" role="button" aria-pressed="false" aria-label="NÚCLEO · implementacao/"><rect class="hdr" x="1013" y="320" width="250" height="24" rx="12"/><text class="gl" x="1021" y="336">NÚCLEO · implementacao/</text><circle class="ii" cx="1247" cy="332" r="8.5"/><text class="iit" x="1247" y="336">i</text></g>
+<g class="ab deny arq-hit" data-arq="guardas" tabindex="0" role="button" aria-pressed="false" aria-label="Guardas — guarda_cwd: diretório,, bundle e comando literal, guarda_efeito: target, e ordem plan → deploy"><rect x="1021" y="340" width="238" height="124" rx="12"/>
+<text class="t" x="1140.0" y="373.0">Guardas</text>
+<text class="s" x="1140.0" y="393.0">guarda_cwd: diretório,</text>
+<text class="s" x="1140.0" y="410.0">bundle e comando literal</text>
+<text class="s" x="1140.0" y="427.0">guarda_efeito: target</text>
+<text class="s" x="1140.0" y="444.0">e ordem plan → deploy</text>
+</g>
+<g class="ab ok arq-hit" data-arq="provas" tabindex="0" role="button" aria-pressed="false" aria-label="Provas — provas.py: fatia, manifesto,, invalidação e fecho, formas.py: schema 3.2"><rect x="1021" y="480" width="238" height="112" rx="12"/>
+<text class="t" x="1140.0" y="515.5">Provas</text>
+<text class="s" x="1140.0" y="535.5">provas.py: fatia, manifesto,</text>
+<text class="s" x="1140.0" y="552.5">invalidação e fecho</text>
+<text class="s" x="1140.0" y="569.5">formas.py: schema 3.2</text>
+</g>
+<g class="cfg">
+<g class="arq-hit" data-arq="cfg_politica" tabindex="0" role="button" aria-pressed="false" aria-label="configuracao/politica.json"><rect x="1021" y="610" width="238" height="26" rx="7"/><text x="1140" y="627.5">configuracao/politica.json</text></g>
+<g class="arq-hit" data-arq="cfg_rot" tabindex="0" role="button" aria-pressed="false" aria-label="agentes/roteamento.yaml"><rect x="1021" y="644" width="238" height="26" rx="7"/><text x="1140" y="661.5">agentes/roteamento.yaml</text></g>
+<g class="arq-hit" data-arq="cfg_contrato" tabindex="0" role="button" aria-pressed="false" aria-label="contrato.yaml da fatia"><rect x="1021" y="678" width="238" height="26" rx="7"/><text x="1140" y="695.5">contrato.yaml da fatia</text></g>
+</g>
+<text class="note" x="1140" y="728">entradas lidas pelo núcleo</text>
+<g class="grp" data-grp="g_efeito"><rect x="1340" y="310" width="220" height="480" rx="14"/></g>
+<g class="hd arq-hit" data-arq="g_efeito" tabindex="0" role="button" aria-pressed="false" aria-label="EFEITO EXTERNO"><rect class="hdr" x="1348" y="320" width="172" height="24" rx="12"/><text class="gl" x="1356" y="336">EFEITO EXTERNO</text><circle class="ii" cx="1504" cy="332" r="8.5"/><text class="iit" x="1504" y="336">i</text></g>
+<g class="ab  arq-hit" data-arq="dbcli" tabindex="0" role="button" aria-pressed="false" aria-label="Databricks CLI — bundle validate, plan · deploy, -t sandbox"><rect x="1356" y="340" width="188" height="124" rx="12"/>
+<text class="t" x="1450.0" y="381.5">Databricks CLI</text>
+<text class="s" x="1450.0" y="401.5">bundle validate</text>
+<text class="s" x="1450.0" y="418.5">plan · deploy</text>
+<text class="s" x="1450.0" y="435.5">-t sandbox</text>
+</g>
+<g class="ab start arq-hit" data-arq="workspace" tabindex="0" role="button" aria-pressed="false" aria-label="Workspace — Databricks"><rect x="1356" y="492" width="188" height="70" rx="12"/>
+<text class="t" x="1450.0" y="523.5">Workspace</text>
+<text class="s" x="1450.0" y="543.5">Databricks</text>
+</g>
+<g class="ab prod arq-hit" data-arq="produto" tabindex="0" role="button" aria-pressed="false" aria-label="prj-avante- — analytics-adb/, produto · Git próprio, regras no harness"><rect x="1356" y="590" width="188" height="120" rx="12"/>
+<text class="t mono" x="1450.0" y="629.5">prj-avante-</text>
+<text class="s" x="1450.0" y="649.5">analytics-adb/</text>
+<text class="s" x="1450.0" y="666.5">produto · Git próprio</text>
+<text class="s" x="1450.0" y="683.5">regras no harness</text>
+</g>
+<path class="ar " d="M284 376 H377" marker-end="url(#m-c)"/>
+<g class="al  arq-hit" data-arq="s1" tabindex="0" role="button" aria-pressed="false" aria-label="1 chamada"><rect x="286.5" y="340" width="92" height="24" rx="12"/><text x="332.5" y="356.5">1 chamada</text></g>
+<path class="ar " d="M589 376 H682" marker-end="url(#m-c)"/>
+<g class="al  arq-hit" data-arq="s2" tabindex="0" role="button" aria-pressed="false" aria-label="2 evento"><rect x="597.5" y="340" width="80" height="24" rx="12"/><text x="637.5" y="356.5">2 evento</text></g>
+<path class="ar " d="M924 376 H1017" marker-end="url(#m-c)"/>
+<g class="al  arq-hit" data-arq="s3" tabindex="0" role="button" aria-pressed="false" aria-label="3 operação"><rect x="926.5" y="340" width="92" height="24" rx="12"/><text x="972.5" y="356.5">3 operação</text></g>
+<path class="ar ok" d="M1259 376 H1352" marker-end="url(#m-ok)"/>
+<g class="al ok arq-hit" data-arq="s5" tabindex="0" role="button" aria-pressed="false" aria-label="5 permite"><rect x="1264.5" y="340" width="86" height="24" rx="12"/><text x="1307.5" y="356.5">5 permite</text></g>
+<path class="ar ok" d="M1450 464 V488" marker-end="url(#m-ok)"/>
+<path class="ar deny" d="M1230 340 V284 H236 V336" marker-end="url(#m-deny)"/>
+<g class="al deny arq-hit" data-arq="s4" tabindex="0" role="button" aria-pressed="false" aria-label="4 nega antes do efeito · motivo e correção"><rect x="535.0" y="272" width="360" height="24" rx="12"/><text x="715" y="288.5">4 nega antes do efeito · motivo e correção</text></g>
+<path class="ar ev" d="M924 475 H968 V520 H1017" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M924 647 H982 V560 H1017" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M924 561 H975 V540 H1017" marker-end="url(#m-ev)"/>
+<path class="ar " d="M270 180 V336" marker-end="url(#m-c)"/>
+<text class="note l" x="278" y="228">lê ao iniciar</text>
+<g class="hd arq-hit" data-arq="p2" tabindex="0" role="button" aria-pressed="false" aria-label="2 · PLANO DE CONTROLE — executado a cada chamada de ferramenta"><rect class="hdr" x="34" y="248" width="630" height="24" rx="12"/><text class="bl" x="42" y="264">2 · PLANO DE CONTROLE — executado a cada chamada de ferramenta</text><circle class="ii" cx="648" cy="260" r="8.5"/><text class="iit" x="648" y="264">i</text></g>
+<path class="ar edit" d="M120 790 V808 H1450 V714" marker-end="url(#m-edit)"/>
+<g class="al edit arq-hit" data-arq="s_edit" tabindex="0" role="button" aria-pressed="false" aria-label="o agente edita o código do produto (Git próprio)"><rect x="550.0" y="796" width="420" height="24" rx="12"/><text x="760" y="812.5">o agente edita o código do produto (Git próprio)</text></g>
+<g class="band" data-grp="p3"><rect x="20" y="870" width="1560" height="196" rx="18"/></g>
+<g class="hd arq-hit" data-arq="p3" tabindex="0" role="button" aria-pressed="false" aria-label="3 · PLANO DE EVIDÊNCIA — .execucoes/ (fora do Git)"><rect class="hdr" x="34" y="882" width="510" height="24" rx="12"/><text class="bl" x="42" y="898">3 · PLANO DE EVIDÊNCIA — .execucoes/ (fora do Git)</text><circle class="ii" cx="528" cy="894" r="8.5"/><text class="iit" x="528" y="898">i</text></g>
+<g class="ab  arq-hit" data-arq="ev_sessoes" tabindex="0" role="button" aria-pressed="false" aria-label="sessoes/&lt;hash&gt;/ativa.json — aponta a fatia ativa, de cada sessão"><rect x="44" y="928" width="320" height="108" rx="12"/>
+<text class="t mono" x="204.0" y="970.0">sessoes/&lt;hash&gt;/ativa.json</text>
+<text class="s" x="204.0" y="990.0">aponta a fatia ativa</text>
+<text class="s" x="204.0" y="1007.0">de cada sessão</text>
+</g>
+<g class="ab  arq-hit" data-arq="ev_provas" tabindex="0" role="button" aria-pressed="false" aria-label="provas/&lt;execução&gt;/principal/ — contrato.yaml · baseline.json, estado.json com hashes"><rect x="424" y="928" width="380" height="108" rx="12"/>
+<text class="t mono" x="614.0" y="970.0">provas/&lt;execução&gt;/principal/</text>
+<text class="s" x="614.0" y="990.0">contrato.yaml · baseline.json</text>
+<text class="s" x="614.0" y="1007.0">estado.json com hashes</text>
+</g>
+<g class="ab  arq-hit" data-arq="ev_tentativas" tabindex="0" role="button" aria-pressed="false" aria-label="tentativas/NNN/ — manifesto · eventos · logs, edição posterior invalida"><rect x="864" y="928" width="330" height="108" rx="12"/>
+<text class="t mono" x="1029.0" y="970.0">tentativas/NNN/</text>
+<text class="s" x="1029.0" y="990.0">manifesto · eventos · logs</text>
+<text class="s" x="1029.0" y="1007.0">edição posterior invalida</text>
+</g>
+<g class="ab ok arq-hit" data-arq="ev_fechos" tabindex="0" role="button" aria-pressed="false" aria-label="fechos/ — DONE só com prova atual, senão BLOCKED · FAILED · DECIDE"><rect x="1254" y="928" width="310" height="108" rx="12"/>
+<text class="t mono" x="1409.0" y="970.0">fechos/</text>
+<text class="s" x="1409.0" y="990.0">DONE só com prova atual</text>
+<text class="s" x="1409.0" y="1007.0">senão BLOCKED · FAILED · DECIDE</text>
+</g>
+<path class="ar ev" d="M364 982 H420" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M804 982 H860" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M1194 982 H1250" marker-end="url(#m-ev)"/>
+<path class="ar ev" d="M1259 536 H1300 V850 H614 V924" marker-end="url(#m-ev)"/>
+<g class="al ev arq-hit" data-arq="s_grava" tabindex="0" role="button" aria-pressed="false" aria-label="grava com hash"><rect x="895.0" y="838" width="130" height="24" rx="12"/><text x="960" y="854.5">grava com hash</text></g>
+<path class="ar " d="M40 1106 H76" marker-end="url(#m-c)"/><text class="lg" x="86" y="1111">controle</text>
+<path class="ar deny" d="M199.6 1106 H235.6" marker-end="url(#m-deny)"/><text class="lg" x="245.6" y="1111">negação</text>
+<path class="ar ok" d="M351.0 1106 H387.0" marker-end="url(#m-ok)"/><text class="lg" x="397.0" y="1111">permitido</text>
+<path class="ar ev" d="M518.8 1106 H554.8" marker-end="url(#m-ev)"/><text class="lg" x="564.8" y="1111">evidência</text>
+<path class="ar plan" d="M686.5999999999999 1106 H722.5999999999999" marker-end="url(#m-plan)"/><text class="lg" x="732.5999999999999" y="1111">planejado / a ativar</text>
+<path class="ar edit" d="M944.5999999999999 1106 H980.5999999999999" marker-end="url(#m-edit)"/><text class="lg" x="990.5999999999999" y="1111">edição do produto</text>
+</svg>
+</div>
+</div>
+</section>
+
+<section id="caminho">
+<h2>Caminho simples × estruturado</h2>
+<p class="section-note">Proporcional ao pedido. Só o caminho estruturado exige contrato e prova.</p>
+<div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop"></div><figure class="flow-map"><div id="g-caminho"></div><figcaption>Selecione um nó para ver entradas e saídas.</figcaption></figure></div>
+</section>
+
+<section id="ciclo">
+<h2>Ciclo de vida da fatia</h2>
+<p class="section-note">A fatia nasce com um contrato. As verificações rodam pelo chat e o hook registra a prova. Editar invalida; fechar confere.</p>
+<div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny,back"></div><figure class="flow-map"><div id="g-ciclo"></div><figcaption>Selecione um nó para ver entradas e saídas.</figcaption></figure></div>
+<div class="duo" style="margin-top:16px"><div class="tbl-wrap"><table>
+<thead><tr><th scope="col">Status</th><th scope="col">Quando</th></tr></thead><tbody>
+<tr><td><span class="chip ok">DONE</span></td><td>critérios obrigatórios provados</td></tr>
+<tr><td><span class="chip info">REVIEW</span></td><td>aceite técnico fechou; falta revisão humana</td></tr>
+<tr><td><span class="chip decisao">DECIDE</span></td><td>falta decisão ou autorização humana</td></tr>
+<tr><td><span class="chip warn">BLOCKED</span></td><td>acesso, capacidade ou estado externo impede</td></tr>
+<tr><td><span class="chip bad">FAILED</span></td><td>a verificação rodou e reprovou</td></tr>
+</tbody></table></div></div>
+</section>
+
+<section id="trilhas">
+<h2>Trilhas e agentes</h2>
+<p class="section-note">O coordenador escolhe a trilha e delega a sete papéis. Quem escreve não verifica nem revisa. Escolha uma trilha para ver o fluxo.</p>
+<div class="duo"><div class="tbl-wrap"><table>
+<thead><tr><th scope="col">Papel</th><th scope="col">O que faz</th></tr></thead><tbody>
+<tr><td>coordenador <span class="chip decisao">principal</span></td><td>Escolhe trilha e recorte, define o aceite, delega, trata retornos e emite o fecho único.</td></tr>
+<tr><td><code>map</code> <span class="chip neutral">opcional</span></td><td>Investiga fontes e dependências sem editar o produto.</td></tr>
+<tr><td><code>config</code></td><td>Altera só a superfície YAML atribuída (negócio, ingestão, recurso).</td></tr>
+<tr><td><code>implement</code></td><td>Altera só notebook, Python ou SQL atribuídos. Não muda o aceite.</td></tr>
+<tr><td><code>test</code></td><td>Executa o esperado contratado. Não corrige produto.</td></tr>
+<tr><td><code>refute</code></td><td>Revisa de forma independente e somente leitura, sem o racional do autor.</td></tr>
+<tr><td><code>docs</code></td><td>Escreve ou destila só os documentos atribuídos, com fonte.</td></tr>
+<tr><td><code>dab</code></td><td>Executa só operação de ambiente contratada e autorizada; registra IDs e logs.</td></tr>
+</tbody></table></div></div>
+<div class="pills" id="tabs-trilha" role="group" aria-label="Trilha"></div>
+<p class="note-uso" id="uso"></p><p class="note-papeis" id="papeis"></p>
+<div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny,back"></div><figure class="flow-map"><div id="g-trilha"></div><figcaption>Selecione um nó para ver entradas e saídas. Fecho sem DONE: DECIDE, BLOCKED ou FAILED.</figcaption></figure></div>
+<div class="callout">As definições dos papéis estão em <code>agentes/</code>. <span id="estacao-cursor" class="chip ok">Cursor: observado</span> em <code>.cursor/agents/</code>; obrigatórios nas trilhas <code>manutencao</code>, <code>correcao</code>, <code>novo</code>, <code>docs</code> e <code>review</code>. <span id="estacao-claude" class="chip ok">Claude Code: observado</span> em <code>.claude/agents/</code>; obrigatórios nas trilhas <code>manutencao</code>, <code>correcao</code>, <code>novo</code>, <code>docs</code> e <code>review</code>. Papel obrigatório indisponível fecha <code>BLOCKED</code>.</div>
+</section>
+
+<section id="guardas">
+<h2>Guardas Databricks</h2>
+<p class="section-note">Os degraus validate → plan → deploy valem só em <code>sandbox</code>, no bundle local. A guarda confere o efeito real e nega antes de executar; ela não concede autorização.</p>
+<div class="flow-board"><div class="flow-legend" data-leg="start,action,decision,stop,deny"></div><figure class="flow-map"><div id="g-guarda"></div><figcaption>Selecione um nó para ver entradas e saídas.</figcaption></figure></div>
+<div class="duo" style="margin-top:16px"><div class="tbl-wrap"><table>
+<thead><tr><th scope="col">Resultado</th><th scope="col">Caso</th></tr></thead><tbody>
+<tr><td><span class="chip bad">Negado</span></td><td>pipe, <code>;</code>, <code>&amp;&amp;</code>, <code>$</code> e wrapper no comando</td></tr>
+<tr><td><span class="chip bad">Negado</span></td><td>cwd fora do bundle, perfil ausente</td></tr>
+<tr><td><span class="chip bad">Negado</span></td><td><code>run</code>, <code>destroy</code>, <code>sync</code></td></tr>
+<tr><td><span class="chip bad">Negado</span></td><td>deploy sem plan vigente ou sem <code>--select</code></td></tr>
+<tr><td><span class="chip bad">Negado</span></td><td>SQL ad hoc com escrita (só lê)</td></tr>
+<tr><td><span class="chip decisao">Autorização explícita</span></td><td><code>run</code> e qualquer target diferente de sandbox, <code>dev</code> inclusive</td></tr>
+</tbody></table></div></div>
+</section>
+
+<section id="formas">
+<h2>Formas de saída</h2>
+<p class="section-note">Registros que o fecho lê para aceitar ou recusar <code>DONE</code>, conforme <code>formas/catalogo.yaml</code> (schema 3.2). As onze estão adotadas e validadas por <code>implementacao/formas.py</code>; diagnóstico, ambiente e paridade entraram no C6 e são gravadas pelo <code>prova.py</code> (<code>diagnosticar</code>, <code>registrar-sandbox</code>, <code>registrar-paridade</code>). Exemplos com <code>exemplo: true</code> são ilustração: o validador os rejeita.</p>
+<div class="pills" id="forma-pills" role="group" aria-label="Forma de saída"></div>
+<div id="forma-detalhe" aria-live="polite"></div>
+<h3>Formas do desenho v3 que não serão adotadas</h3>
+<p class="section-note">Relato do autor não é prova; uma forma só entra quando o fecho depende dela. Motivos no plano, seção 3.1.</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th scope="col">Forma v3</th><th scope="col">Motivo</th></tr></thead><tbody id="formas-fora"></tbody>
+</table></div>
+</section>
+
+<section id="pastas">
+<h2>Estrutura de pastas</h2>
+<p class="section-note">Raiz: <code>avante-harness-engineer/</code>. Regras curtas na entrada; o resto é lido sob demanda.</p>
+<div class="duo"><div class="tbl-wrap"><table class="kv">
+<thead><tr><th scope="col">Pasta</th><th scope="col">Conteúdo</th></tr></thead><tbody>
+<tr><td class="mono">avante-harness-engineer/</td><td>raiz do harness</td></tr>
+<tr><td class="mono">AGENTS.md, CLAUDE.md</td><td>regras para todo pedido (CLAUDE.md aponta para AGENTS.md)</td></tr>
+<tr><td class="mono">nucleo/</td><td>política (modus operandi) e contexto do projeto Avante</td></tr>
+<tr><td class="mono">trilhas/</td><td>as oito trilhas: passos, aceite e fecho</td></tr>
+<tr><td class="mono">agentes/</td><td>roteamento.yaml (fonte única dos fluxos) e os sete papéis</td></tr>
+<tr><td class="mono">contratos/</td><td>campos do contrato da fatia</td></tr>
+<tr><td class="mono">guardas/</td><td>o que o código nega e a conduta sem código</td></tr>
+<tr><td class="mono">evidencia/</td><td>prova, validade, status de fecho, layout dos registros</td></tr>
+<tr><td class="mono">formas/</td><td>schema dos registros</td></tr>
+<tr><td class="mono">adaptadores/</td><td>Cursor, Claude Code, Codex e OpenCode</td></tr>
+<tr><td class="mono">.cursor/, .claude/, .codex/, .opencode/</td><td>configuração de cada runtime: hooks e agentes nativos gerados</td></tr>
+<tr><td class="mono">implementacao/</td><td>código das guardas e das provas</td></tr>
+<tr><td class="mono">configuracao/</td><td>politica.json: autorizações e agentes obrigatórios</td></tr>
+<tr><td class="mono">testes/</td><td>suíte do harness</td></tr>
+<tr><td class="mono">avaliacao/</td><td>cenários, métricas e kits de observação por runtime (O-CU, O-CC)</td></tr>
+<tr><td class="mono">acervo/</td><td>candidatas do desenho e a situação de cada uma</td></tr>
+<tr><td class="mono">PLANO-AGENTES-TRILHAS.md</td><td>plano, painel e pendências: único lugar com estado e histórico</td></tr>
+<tr><td class="mono">.agents/skills/</td><td>skills Databricks</td></tr>
+<tr><td class="mono">.execucoes/</td><td>registros locais, fora do Git</td></tr>
+<tr><td class="mono">prj-avante-analytics-adb/</td><td>produto, com Git próprio, ignorado pelo Git do harness; sem instruções de agente próprias</td></tr>
+</tbody></table></div></div>
+</section>
+
+<section id="estado">
+<h2>Estado</h2>
+<p class="section-note">Só o que existe no repositório ou no plano. “Testado” é cobertura da suíte; “observado” é sessão real de um runtime. Pendências e decisões abertas: painel do plano.</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th scope="col">Capacidade</th><th scope="col" class="m">Implementado</th><th scope="col" class="m">Testado</th><th scope="col" class="m">Observado</th></tr></thead><tbody>
+<tr><td>Guarda de shell Databricks e SQL só leitura</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
+<tr><td>Prova e fecho no Cursor (hooks e <code>prova.py</code>)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
+<tr><td>Prova e fecho no Claude Code (sessão, coleta, recibo de plan, <code>Stop</code>)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td></tr>
+<tr><td>Roteamento, definições neutras e agentes nativos</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
+<tr><td>Agentes obrigatórios por trilha (<code>agentes_obrigatorios</code>)</td><td class="m"><span class="chip ok">manutenção, correção, novo, docs e review nos dois</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor</span></td></tr>
+<tr><td>Superfície por papel (C5) e revisão por refute observado</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">Cursor e Claude Code</span></td></tr>
+<tr><td>Formas 3.2: onze adotadas</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip warn">oito no Cursor e no Claude Code; C6 ainda não</span></td></tr>
+<tr><td>Diagnóstico, ambiente e paridade (C6)</td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip ok">sim</span></td><td class="m"><span class="chip neutral">ainda não</span></td></tr>
+<tr><td>Identidade e destinos do deploy</td><td class="m"><span class="chip warn">decisão aberta (ID-DEP)</span></td><td class="m"><span class="chip neutral">—</span></td><td class="m"><span class="chip neutral">—</span></td></tr>
+<tr><td>Guardas de run, dados compartilhados e fronteira do produto</td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">—</span></td><td class="m"><span class="chip neutral">—</span></td></tr>
+<tr><td>Skills do projeto; <code>docs-distill</code></td><td class="m"><span class="chip neutral">ainda não</span></td><td class="m"><span class="chip neutral">—</span></td><td class="m"><span class="chip neutral">—</span></td></tr>
+</tbody></table></div>
+<h3>Roteiro até o aceite final</h3>
+<div class="tiles fixed">
+<div class="tile"><div class="v sm">G1</div><div class="k">aprovado; suíte, consistência e geração estáveis</div></div>
+<div class="tile"><div class="v sm">G2</div><div class="k">aceito no Cursor e no Claude Code</div></div>
+<div class="tile cur"><div class="v sm">E0 / E1</div><div class="k">manutenção, correção, novo, docs e review ativas no Cursor e no Claude Code; onda 1 (manutenção e correção) em tarefa real</div></div>
+<div class="tile"><div class="v sm">E2</div><div class="k">segunda onda, trilha a trilha</div></div>
+<div class="tile"><div class="v sm">G4</div><div class="k">medição e aceite final</div></div>
+</div>
+</section>
+</main>
+<footer style="max-width:var(--container-max);margin:0 auto;padding:0 clamp(16px,3vw,40px) 40px;color:var(--text-muted);font-size:13px">Fonte dos fluxos: <code>agentes/roteamento.yaml</code>. Estado: painel do <code>PLANO-AGENTES-TRILHAS.md</code>. Regras: <code>AGENTS.md</code>. Este guia visual não é fonte de autoridade.</footer>
+<div class="flow-pop" id="flow-pop" role="dialog" aria-modal="false" aria-labelledby="pop-title" hidden><button type="button" class="pop-close" id="pop-close" aria-label="Fechar">×</button><div id="pop-body"></div></div>
+<script>
+const DADOS = {"jobs": [{"id": "novo", "label": "Novo", "uso": "criar ou migrar objeto, ou parte dele"}, {"id": "manutencao", "label": "Manutenção", "uso": "mudança pontual com aceite claro"}, {"id": "correcao", "label": "Correção", "uso": "bug sustentado por log, observação ou reprodução"}, {"id": "docs", "label": "Docs", "uso": "escrever ou atualizar documento"}, {"id": "destilar", "label": "Destilar", "uso": "transformar padrão recorrente em instrução com fonte"}, {"id": "validacao", "label": "Validação", "uso": "verificar até um degrau, sem corrigir código"}, {"id": "review", "label": "Review", "uso": "revisar um recorte, sem reescrever"}, {"id": "entendimento", "label": "Entendimento", "uso": "responder pergunta sem alterar produto"}], "playbooks": {"novo": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Contrato e aceite", "agent": "coordenador", "kind": "action"}, {"id": "escrita", "title": "Escrever por superfície", "agent": "config, depois implement", "kind": "action"}, {"id": "teste", "title": "Verificar", "agent": "test", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "ambiente", "title": "Exige ambiente?", "agent": "coordenador", "kind": "decision"}, {"id": "dab", "title": "Operação autorizada", "agent": "dab", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}, {"id": "blocked", "title": "BLOCKED", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "escrita"}, {"from": "escrita", "to": "teste"}, {"from": "teste", "to": "refute", "when": "passou"}, {"from": "teste", "to": "escrita", "when": "reprovou"}, {"from": "refute", "to": "ambiente", "when": "sem achado"}, {"from": "refute", "to": "escrita", "when": "achado procedente"}, {"from": "ambiente", "to": "dab", "when": "autorizado"}, {"from": "ambiente", "to": "decide", "when": "sem autorização"}, {"from": "ambiente", "to": "fim", "when": "não"}, {"from": "dab", "to": "blocked", "when": "guarda nega"}, {"from": "dab", "to": "fim"}]}, "manutencao": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Contrato e aceite", "agent": "coordenador", "kind": "action"}, {"id": "caso_cobre", "title": "Casos existentes decidem?", "agent": "coordenador", "kind": "decision"}, {"id": "preparar", "title": "Preparar caso", "agent": "test", "kind": "action"}, {"id": "escrita", "title": "Escrever por superfície", "agent": "config, depois implement", "kind": "action"}, {"id": "teste", "title": "Verificar", "agent": "test", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "ambiente", "title": "Exige ambiente?", "agent": "coordenador", "kind": "decision"}, {"id": "dab", "title": "Operação autorizada", "agent": "dab", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}, {"id": "blocked", "title": "BLOCKED", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "caso_cobre"}, {"from": "caso_cobre", "to": "escrita", "when": "sim"}, {"from": "caso_cobre", "to": "preparar", "when": "não"}, {"from": "preparar", "to": "escrita"}, {"from": "escrita", "to": "teste"}, {"from": "teste", "to": "refute", "when": "passou"}, {"from": "teste", "to": "escrita", "when": "reprovou"}, {"from": "refute", "to": "ambiente", "when": "sem achado"}, {"from": "refute", "to": "escrita", "when": "achado procedente"}, {"from": "ambiente", "to": "dab", "when": "autorizado"}, {"from": "ambiente", "to": "decide", "when": "sem autorização"}, {"from": "ambiente", "to": "fim", "when": "não"}, {"from": "dab", "to": "blocked", "when": "guarda nega"}, {"from": "dab", "to": "fim"}]}, "correcao": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "diagnostico", "title": "Diagnosticar", "agent": "coordenador", "kind": "action"}, {"id": "coordenador", "title": "Contrato e aceite", "agent": "coordenador", "kind": "action"}, {"id": "reproduz", "title": "Reproduzir: deve falhar", "agent": "test", "kind": "action"}, {"id": "escrita", "title": "Corrigir por superfície", "agent": "config, depois implement", "kind": "action"}, {"id": "revalida", "title": "Revalidar o mesmo critério", "agent": "test", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "ambiente", "title": "Exige ambiente?", "agent": "coordenador", "kind": "decision"}, {"id": "dab", "title": "Operação autorizada", "agent": "dab", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}, {"id": "blocked", "title": "BLOCKED", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "diagnostico"}, {"from": "map", "to": "diagnostico"}, {"from": "diagnostico", "to": "coordenador"}, {"from": "coordenador", "to": "reproduz"}, {"from": "reproduz", "to": "escrita", "when": "falhou como esperado"}, {"from": "reproduz", "to": "decide", "when": "passou"}, {"from": "reproduz", "to": "blocked", "when": "inconclusivo"}, {"from": "escrita", "to": "revalida"}, {"from": "revalida", "to": "refute", "when": "passou"}, {"from": "revalida", "to": "escrita", "when": "reprovou"}, {"from": "refute", "to": "ambiente", "when": "sem achado"}, {"from": "refute", "to": "escrita", "when": "achado procedente"}, {"from": "ambiente", "to": "dab", "when": "autorizado"}, {"from": "ambiente", "to": "decide", "when": "sem autorização"}, {"from": "ambiente", "to": "fim", "when": "não"}, {"from": "dab", "to": "blocked", "when": "guarda nega"}, {"from": "dab", "to": "fim"}]}, "docs": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Delimitar documento", "agent": "coordenador", "kind": "action"}, {"id": "escrita_docs", "title": "Escrever", "agent": "docs", "kind": "action"}, {"id": "inspecao", "title": "Inspeção documental", "agent": "coordenador", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "escrita_docs"}, {"from": "escrita_docs", "to": "inspecao"}, {"from": "escrita_docs", "to": "decide", "when": "sem superfície documental"}, {"from": "inspecao", "to": "refute"}, {"from": "refute", "to": "fim", "when": "sem achado"}, {"from": "refute", "to": "escrita_docs", "when": "achado procedente"}]}, "destilar": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Fonte e destino", "agent": "coordenador", "kind": "action"}, {"id": "destilar_docs", "title": "Destilar com fonte", "agent": "docs", "kind": "action"}, {"id": "inspecao", "title": "Inspeção documental", "agent": "coordenador", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "destilar_docs", "when": "autorizados"}, {"from": "coordenador", "to": "decide", "when": "sem autorização"}, {"from": "destilar_docs", "to": "inspecao"}, {"from": "inspecao", "to": "refute"}, {"from": "refute", "to": "fim", "when": "sem achado"}, {"from": "refute", "to": "destilar_docs", "when": "achado procedente"}]}, "validacao": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Degrau e aceite", "agent": "coordenador", "kind": "action"}, {"id": "teste", "title": "Verificar", "agent": "test", "kind": "action"}, {"id": "ambiente", "title": "Exige ambiente?", "agent": "coordenador", "kind": "decision"}, {"id": "dab", "title": "Operação autorizada", "agent": "dab", "kind": "action"}, {"id": "paridade", "title": "Paridade, se exigida", "agent": "test", "kind": "action"}, {"id": "refute", "title": "Revisar", "agent": "refute", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "decide", "title": "DECIDE", "agent": "coordenador", "kind": "deny"}, {"id": "blocked", "title": "BLOCKED", "agent": "coordenador", "kind": "deny"}, {"id": "failed", "title": "FAILED", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "teste"}, {"from": "teste", "to": "ambiente", "when": "passou"}, {"from": "teste", "to": "failed", "when": "reprovou"}, {"from": "ambiente", "to": "dab", "when": "autorizado"}, {"from": "ambiente", "to": "decide", "when": "sem autorização"}, {"from": "ambiente", "to": "paridade", "when": "não"}, {"from": "dab", "to": "paridade"}, {"from": "dab", "to": "blocked", "when": "guarda nega"}, {"from": "dab", "to": "failed", "when": "reprovou"}, {"from": "paridade", "to": "refute", "when": "passou"}, {"from": "paridade", "to": "failed", "when": "reprovou"}, {"from": "refute", "to": "fim"}]}, "review": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Delimitar recorte e aceite", "agent": "coordenador", "kind": "action"}, {"id": "refute", "title": "Revisar (somente leitura)", "agent": "refute", "kind": "action"}, {"id": "veredito", "title": "Veredito do artefato", "agent": "coordenador", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}, {"id": "blocked", "title": "BLOCKED", "agent": "coordenador", "kind": "deny"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "refute"}, {"from": "refute", "to": "veredito"}, {"from": "refute", "to": "blocked", "when": "refute indisponível"}, {"from": "veredito", "to": "fim"}]}, "entendimento": {"nodes": [{"id": "ini", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "map", "title": "Mapear fontes", "agent": "map (opcional)", "kind": "action"}, {"id": "coordenador", "title": "Responder com fontes e inferências", "agent": "coordenador", "kind": "action"}, {"id": "fim", "title": "Fecho único", "agent": "coordenador", "kind": "stop"}], "edges": [{"from": "ini", "to": "map", "when": "investigação ampla"}, {"from": "ini", "to": "coordenador"}, {"from": "map", "to": "coordenador"}, {"from": "coordenador", "to": "fim"}]}}};
+const DIAGRAMAS = {"caminho": {"nodes": [{"id": "p", "title": "Pedido", "agent": "coordenador", "kind": "start"}, {"id": "q", "title": "Pedido pequeno e reversível?", "agent": "coordenador", "kind": "decision", "who": "Pergunta delimitada ou mudança pequena e reversível."}, {"id": "s", "title": "Simples: responde ou altera", "agent": "sem contrato", "kind": "action", "who": "Responde com fontes, ou altera e verifica, sem contrato."}, {"id": "e", "title": "Estruturado: iniciar a fatia", "agent": "prova.py iniciar", "kind": "action"}, {"id": "m", "title": "Agentes obrigatórios?", "agent": "politica.json", "kind": "decision", "who": "Trilha com agentes obrigatórios no runtime."}, {"id": "a", "title": "Coordena e delega aos papéis", "agent": "coordenador + papéis", "kind": "action"}, {"id": "u", "title": "Executa a trilha sozinho", "agent": "agente único", "kind": "action"}, {"id": "f", "title": "Fecho", "agent": "status, resultado, prova, limite", "kind": "stop"}], "edges": [{"from": "p", "to": "q"}, {"from": "q", "to": "s", "when": "sim"}, {"from": "q", "to": "e", "when": "não"}, {"from": "e", "to": "m"}, {"from": "m", "to": "a", "when": "sim"}, {"from": "m", "to": "u", "when": "não"}, {"from": "s", "to": "f"}, {"from": "a", "to": "f"}, {"from": "u", "to": "f"}]}, "ciclo": {"nodes": [{"id": "i", "title": "Iniciar a fatia", "agent": "prova.py iniciar contrato.yaml", "kind": "start"}, {"id": "v", "title": "Verificar pelo chat", "agent": "hook registra a prova", "kind": "action"}, {"id": "ed", "title": "Editou depois da prova?", "agent": "arquivo relevante mudou", "kind": "decision"}, {"id": "inv", "title": "Prova invalidada", "agent": "hash do estado difere", "kind": "action"}, {"id": "c", "title": "Fechar", "agent": "prova.py fechar", "kind": "action"}, {"id": "ac", "title": "Todo critério provado?", "agent": "fecho", "kind": "decision", "who": "Prova atual em todo critério obrigatório. Com a trilha ativada, também as chamadas previstas observadas, a revisão de cada refute e cada papel na sua superfície."}, {"id": "ok", "title": "DONE / REVIEW", "agent": "fecho aceito", "kind": "stop"}, {"id": "no", "title": "BLOCKED / FAILED / DECIDE", "agent": "motivo e condição de retomada", "kind": "deny"}], "edges": [{"from": "i", "to": "v"}, {"from": "v", "to": "ed"}, {"from": "ed", "to": "inv", "when": "sim"}, {"from": "inv", "to": "v", "when": "verificar de novo"}, {"from": "ed", "to": "c", "when": "não"}, {"from": "c", "to": "ac"}, {"from": "ac", "to": "ok", "when": "sim"}, {"from": "ac", "to": "v", "when": "recusado"}, {"from": "ac", "to": "no", "when": "sem como provar"}]}, "guarda": {"nodes": [{"id": "c", "title": "Chamada de shell", "agent": "databricks bundle ...", "kind": "start"}, {"id": "g1", "title": "Comando literal no bundle?", "agent": "cwd-bundle", "kind": "decision", "who": "Comando literal, dentro do bundle local."}, {"id": "g2", "title": "Sandbox e perfil -p?", "agent": "target-dev", "kind": "decision", "who": "Target sandbox e perfil -p explícito."}, {"id": "g3", "title": "Qual subcomando?", "agent": "validate, plan, deploy ou outro", "kind": "decision", "who": "validate, plan e deploy seguem; run, destroy e sync são negados."}, {"id": "val", "title": "1. validate", "agent": "sandbox", "kind": "action"}, {"id": "pl", "title": "2. plan", "agent": "grava o recibo do plan", "kind": "action"}, {"id": "dep", "title": "3. deploy", "agent": "plan vigente, -p, --select", "kind": "action"}, {"id": "neg", "title": "NEGADO antes do efeito", "agent": "corrigir e repetir", "kind": "deny"}, {"id": "aut", "title": "Exige autorização explícita", "agent": "run, dev e outros targets", "kind": "deny"}, {"id": "fx", "title": "Efeito no sandbox", "agent": "", "kind": "stop"}], "edges": [{"from": "c", "to": "g1"}, {"from": "g1", "to": "g2", "when": "sim"}, {"from": "g1", "to": "neg", "when": "não"}, {"from": "g2", "to": "g3", "when": "sim"}, {"from": "g2", "to": "aut", "when": "não"}, {"from": "g3", "to": "val", "when": "validate"}, {"from": "val", "to": "pl"}, {"from": "pl", "to": "dep"}, {"from": "g3", "to": "neg", "when": "run, destroy, sync"}, {"from": "dep", "to": "fx", "when": "ok"}, {"from": "dep", "to": "neg", "when": "sem plan vigente"}]}};
+
+const NW = 240, NH = 84, RGAP = 112, NGAP = 40, PAD = 32, R = 16, LANE = 28, DX = 14, DY = 10;
+const POS_WORDS = new Set(["sim", "passou", "limpo", "fechado"]);
+const NEG_WORDS = new Set(["não", "falhou", "vago", "falhas", "copia", "revalidar"]);
+const KIND_LABEL = { start: "Início", action: "Ação", decision: "Decisão", stop: "Fim", deny: "Fim sem DONE" };
+const KIND_CHIP  = { start: "neutral", action: "info", decision: "decisao", stop: "ok", deny: "bad" };
+
+function escapar(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function tom(when) {
+  if (!when) return "";
+  const w = when.toLowerCase();
+  if (POS_WORDS.has(w)) return "pos";
+  if (NEG_WORDS.has(w)) return "neg";
+  return "";
+}
+/* Rótulo longo quebra em linhas curtas nas vírgulas. */
+function quebrar_rotulo(text) {
+  if (text.length <= 14 || !text.includes(", ")) return [text];
+  const parts = text.split(", ").map((p, i, a) => i < a.length - 1 ? p + "," : p);
+  const lines = [];
+  parts.forEach(p => {
+    const last = lines[lines.length - 1];
+    if (last !== undefined && (last + " " + p).length <= 14) lines[lines.length - 1] = last + " " + p;
+    else lines.push(p);
+  });
+  return lines;
+}
+
+function posicionar_grafo(graph) {
+  const nodes = graph.nodes, edges = graph.edges;
+  const ids = nodes.map(n => n.id);
+  const byId = Object.fromEntries(nodes.map(n => [n.id, n]));
+  const incoming = Object.fromEntries(ids.map(id => [id, []]));
+  const outgoing = Object.fromEntries(ids.map(id => [id, []]));
+  edges.forEach(e => { incoming[e.to].push(e.from); outgoing[e.from].push(e.to); });
+
+  /* Nós entram no array na ordem de leitura. Aresta para um nó anterior é volta. */
+  const idx = Object.fromEntries(ids.map((id, i) => [id, i]));
+  const isLoop = (from, to) => idx[to] <= idx[from];
+
+  const rank = Object.fromEntries(ids.map(id => [id, 0]));
+  let changed = true, guard = 0;
+  while (changed && guard++ < 40) {
+    changed = false;
+    ids.forEach(id => {
+      const preds = incoming[id].filter(p => !isLoop(p, id));
+      if (!preds.length) return;
+      const r = Math.max(...preds.map(p => rank[p] + 1));
+      if (r > rank[id]) { rank[id] = r; changed = true; }
+    });
+  }
+
+  /* Espinha: caminho para a frente mais longo a partir da primeira coluna. */
+  const best = {}, next = {};
+  ids.slice().sort((a, b) => rank[b] - rank[a]).forEach(id => {
+    let b = 0, n = null;
+    outgoing[id].forEach(t => {
+      if (isLoop(id, t) || rank[t] <= rank[id]) return;
+      if (best[t] + 1 > b) { b = best[t] + 1; n = t; }
+    });
+    best[id] = b; next[id] = n;
+  });
+  let head = ids.find(id => rank[id] === 0);
+  ids.forEach(id => { if (rank[id] === 0 && best[id] > best[head]) head = id; });
+  const spine = new Set();
+  for (let c = head; c; c = next[c]) spine.add(c);
+
+  const byRank = {};
+  ids.forEach(id => (byRank[rank[id]] || (byRank[rank[id]] = [])).push(id));
+  const maxRank = Math.max(0, ...Object.keys(byRank).map(Number));
+  const colSize = {}, pos = {};
+  let maxRows = 1;
+  for (let r = 0; r <= maxRank; r++) {
+    const col = (byRank[r] || []).slice().sort((a, b) => (spine.has(b) - spine.has(a)) || (idx[a] - idx[b]));
+    colSize[r] = col.length;
+    maxRows = Math.max(maxRows, col.length);
+    col.forEach((id, i) => { pos[id] = { x: PAD + DX + r * (NW + RGAP), y: 0, r, i }; });
+  }
+
+  /* Roteamento: adjacente na mesma direção = direto; o resto vai por faixa. */
+  const lanes = { top: [], bottom: [] };
+  const above = id => pos[id].i > 0;
+  const below = id => pos[id].i < colSize[rank[id]] - 1;
+  const specs = edges.map(e => {
+    const rf = rank[e.from], rt = rank[e.to];
+    const back = isLoop(e.from, e.to) || rt <= rf;
+    if (!back && rt - rf === 1) return { e, kind: "fwd", back: false };
+    const topOk = !above(e.from) && !above(e.to);
+    const botOk = !below(e.from) && !below(e.to);
+    const side = back ? (topOk ? "top" : "bottom") : (botOk ? "bottom" : "top");
+    const lo = Math.min(rf, rt), hi = Math.max(rf, rt);
+    const arr = lanes[side];
+    let k = arr.findIndex(iv => !iv.some(([a, b]) => lo <= b && a <= hi));
+    if (k < 0) { k = arr.length; arr.push([]); }
+    arr[k].push([lo, hi]);
+    /* A faixa de baixo fica logo abaixo da linha mais funda das colunas atravessadas. */
+    let rows = 1;
+    for (let r = lo; r <= hi; r++) rows = Math.max(rows, colSize[r] || 1);
+    return { e, kind: "lane", side, k, back, rows };
+  });
+  const nTop = lanes.top.length;
+  const topSpace = nTop ? 26 + (nTop - 1) * LANE + 8 : 0;
+  const TOP = PAD + DY + topSpace;
+  ids.forEach(id => { pos[id].y = TOP + pos[id].i * (NH + NGAP); });
+  const rowsBottom = TOP + maxRows * NH + (maxRows - 1) * NGAP;
+  const laneTop = s => TOP - DY - 26 - s.k * LANE;
+  const laneBot = s => TOP + s.rows * NH + (s.rows - 1) * NGAP + DY + 26 + s.k * LANE;
+  const width = PAD * 2 + DX * 2 + (maxRank + 1) * NW + maxRank * RGAP;
+  let height = rowsBottom + PAD;
+  specs.forEach(s => { if (s.kind === "lane" && s.side === "bottom") height = Math.max(height, laneBot(s) + 12 + PAD); });
+  return { nodes, edges, byId, pos, rank, width, height, incoming, outgoing, isLoop, specs, laneTop, laneBot };
+}
+
+function porta(L, id, side, off = 0) {
+  const p = L.pos[id], n = L.byId[id];
+  const cx = p.x + NW / 2, cy = p.y + NH / 2;
+  const dec = n.kind === "decision";
+  const ex = dec ? DX : 0, ey = dec ? DY : 0;
+  /* No losango, um porta deslocado do centro cai na aresta inclinada. */
+  const slope = dec ? Math.abs(off) * (NH / 2 + DY) / (NW / 2 + DX) : 0;
+  if (side === "right") return { x: p.x + NW + ex, y: cy };
+  if (side === "left")  return { x: p.x - ex, y: cy };
+  if (side === "top")   return { x: cx + off, y: p.y - ey + slope };
+  return { x: cx + off, y: p.y + NH + ey - slope };
+}
+
+function caminho_aresta(L, s, portUse) {
+  const e = s.e;
+  if (s.kind === "fwd") {
+    const a = porta(L, e.from, "right"), b = porta(L, e.to, "left");
+    if (Math.abs(a.y - b.y) < 1) return { d: `M ${a.x} ${a.y} H ${b.x}`, lx: (a.x + b.x) / 2, ly: a.y };
+    const mid = (a.x + b.x) / 2, sy = b.y > a.y ? 1 : -1;
+    /* Ramo que muda de linha: rótulo sobre o trecho final, junto ao destino. */
+    const lines = e.when ? quebrar_rotulo(e.when) : [""];
+    const lw = Math.max(30, Math.round(Math.max(...lines.map(l => l.length)) * 6.6 + 16));
+    const lh = lines.length * 13 + 7;
+    return {
+      d: `M ${a.x} ${a.y} H ${mid - R} Q ${mid} ${a.y} ${mid} ${a.y + sy * R} V ${b.y - sy * R} Q ${mid} ${b.y} ${mid + R} ${b.y} H ${b.x}`,
+      lx: b.x - 6 - lw / 2, ly: b.y - 6 - lh / 2
+    };
+  }
+  const side = s.side;
+  const take = id => {
+    const key = id + "|" + side;
+    const n = portUse[key] = (portUse[key] || 0) + 1;
+    return [0, 18, -18, 36, -36][(n - 1) % 5];
+  };
+  const a = porta(L, e.from, side, take(e.from)), b = porta(L, e.to, side, take(e.to));
+  const laneY = side === "top" ? L.laneTop(s) : L.laneBot(s);
+  const dir = b.x > a.x ? 1 : -1;
+  const vs = laneY > a.y ? 1 : -1;
+  const d = `M ${a.x} ${a.y} V ${laneY - vs * R} Q ${a.x} ${laneY} ${a.x + dir * R} ${laneY} H ${b.x - dir * R} Q ${b.x} ${laneY} ${b.x} ${laneY - vs * R} V ${b.y}`;
+  return { d, lx: (a.x + b.x) / 2, ly: laneY };
+}
+
+function rotulo_aresta(text, x, y) {
+  const lines = quebrar_rotulo(text);
+  const w = Math.max(30, Math.round(Math.max(...lines.map(l => l.length)) * 6.6 + 16));
+  const h = lines.length * 13 + 7;
+  const y0 = y - h / 2;
+  const tspans = lines.map((l, i) => `<tspan x="${x}" dy="${i === 0 ? 0 : 13}">${escapar(l)}</tspan>`).join("");
+  return `<g class="lbl ${tom(text)}"><rect x="${x - w / 2}" y="${y0}" width="${w}" height="${h}" rx="${Math.min(10, h / 2)}"/>
+    <text x="${x}" y="${y0 + 13.5}" text-anchor="middle">${tspans}</text></g>`;
+}
+
+function forma_no(n, p) {
+  const cx = p.x + NW / 2, cy = p.y + NH / 2;
+  if (n.kind === "decision") {
+    const pts = `${cx},${p.y - DY} ${p.x + NW + DX},${cy} ${cx},${p.y + NH + DY} ${p.x - DX},${cy}`;
+    return `<polygon class="hit" points="${pts}" fill="var(--db-pink-06)" stroke="var(--db-pink)" stroke-width="1.5"/>`;
+  }
+  const box = `x="${p.x}" y="${p.y}" width="${NW}" height="${NH}"`;
+  if (n.kind === "start") return `<rect class="hit" ${box} rx="32" fill="var(--db-dark-blue)" stroke="var(--db-dark-blue)" stroke-width="1.5"/>`;
+  if (n.kind === "stop")  return `<rect class="hit" ${box} rx="32" fill="var(--db-green-12)" stroke="var(--db-green)" stroke-width="1.5"/>`;
+  if (n.kind === "deny")  return `<rect class="hit" ${box} rx="32" fill="var(--db-red-12)" stroke="var(--db-red)" stroke-width="1.5"/>`;
+  return `<rect class="hit" ${box} rx="10" fill="var(--surface-card)" stroke="var(--border-default)" stroke-width="1.5"/>`;
+}
+
+/* ---- pop-up de detalhe do nó ---- */
+const pop = document.getElementById("flow-pop");
+const popBody = document.getElementById("pop-body");
+let popAnchor = null;
+let activeFlow = null;
+
+function posicionar_detalhe() {
+  if (pop.hidden || !popAnchor) return;
+  const r = popAnchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  let left = r.left + r.width / 2 - w / 2;
+  left = Math.max(12, Math.min(left, window.innerWidth - w - 12));
+  let top = r.bottom + 10;
+  if (top + h > window.innerHeight - 12) top = r.top - h - 10;
+  if (top < 12) top = 12;
+  pop.style.left = left + "px";
+  pop.style.top = top + "px";
+}
+function abrir_detalhe(g, L, id) {
+  const n = L.byId[id];
+  const isBack = e => L.isLoop(e.from, e.to) || L.rank[e.to] <= L.rank[e.from];
+  const ins = L.edges.filter(e => e.to === id).map(e => ({ t: L.byId[e.from].title, w: e.when, back: isBack(e) }));
+  const outs = L.edges.filter(e => e.from === id).map(e => ({ t: L.byId[e.to].title, w: e.when, back: isBack(e) }));
+  const li = x => `<li>${x.w ? `<span class="when ${tom(x.w)}${x.back ? " back" : ""}">${escapar(x.w)}</span>` : ""}<span>${escapar(x.t)}</span></li>`;
+  popBody.innerHTML =
+    `<span class="chip ${KIND_CHIP[n.kind] || "neutral"}">${KIND_LABEL[n.kind] || escapar(n.kind)}</span>
+     <h4 id="pop-title">${escapar(n.title)}</h4>
+     ${n.agent ? `<div class="who"><b>Responsável:</b> ${escapar(n.agent)}</div>` : ""}
+     ${n.who ? `<div class="who"><b>Trabalho:</b> ${escapar(n.who)}</div>` : ""}
+     <dl>${ins.length ? `<dt>Entra</dt><dd><ul>${ins.map(li).join("")}</ul></dd>` : ""}${outs.length ? `<dt>Sai</dt><dd><ul>${outs.map(li).join("")}</ul></dd>` : ""}</dl>
+     <p class="pop-hint">Esc fecha · clique em outro nó para trocar</p>`;
+  pop.classList.remove("arq-pop");
+  pop.hidden = false;
+  popAnchor = g;
+  posicionar_detalhe();
+}
+function fechar_detalhe() { pop.hidden = true; popAnchor = null; }
+function limpar_selecao() { if (activeFlow) activeFlow.clear(); fechar_detalhe(); }
+
+document.getElementById("pop-close").addEventListener("click", limpar_selecao);
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !pop.hidden) limpar_selecao(); });
+document.addEventListener("click", ev => {
+  if (pop.hidden) return;
+  if (pop.contains(ev.target) || ev.target.closest(".dag-node")) return;
+  limpar_selecao();
+});
+document.addEventListener("scroll", posicionar_detalhe, true);
+window.addEventListener("resize", posicionar_detalhe);
+
+function renderizar_fluxo(mountId, graph, uid) {
+  const L = posicionar_grafo(graph);
+  let svg = `<svg viewBox="0 0 ${L.width} ${L.height}" width="${L.width}" height="${L.height}" class="svg-ink" role="group" aria-label="Fluxograma interativo">
+    <defs>
+      <marker id="${uid}" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" fill="var(--db-grey-50)"/>
+      </marker>
+      <marker id="${uid}-hi" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" fill="var(--db-pink)"/>
+      </marker>
+    </defs>`;
+  const portUse = {};
+  L.specs.forEach(s => {
+    const e = s.e;
+    const { d, lx, ly } = caminho_aresta(L, s, portUse);
+    svg += `<g class="dag-edge${s.back ? " back" : ""}" data-from="${escapar(e.from)}" data-to="${escapar(e.to)}">
+      <path class="wire" d="${d}" marker-end="url(#${uid})"/>
+      ${e.when ? rotulo_aresta(e.when, lx, ly) : ""}
+    </g>`;
+  });
+  L.nodes.forEach(n => {
+    const p = L.pos[n.id];
+    const cx = p.x + NW / 2, cy = p.y + NH / 2;
+    const start = n.kind === "start";
+    const tl = quebrar_titulo(n.title, n.kind === "decision" ? 22 : 26);
+    const ag = n.agent ? [n.agent] : [];
+    const nl = tl.length + ag.length, y0 = cy - (nl * 15) / 2 + 11;
+    const tx = tl.map((t, i) => `<text x="${cx}" y="${y0 + i * 15}" text-anchor="middle" fill="${start ? "#fff" : "var(--ink)"}" font-size="13" font-weight="700">${escapar(t)}</text>`).join("")
+      + ag.map((t, i) => `<text x="${cx}" y="${y0 + (tl.length + i) * 15}" text-anchor="middle" fill="${start ? "#fff" : "var(--db-pink)"}" font-size="11" font-weight="700">${escapar(t)}</text>`).join("");
+    svg += `<g class="dag-node" tabindex="0" role="button" data-id="${escapar(n.id)}" data-kind="${escapar(n.kind)}" aria-pressed="false" aria-label="${escapar(n.title)}${n.agent ? " — " + escapar(n.agent) : ""}">
+      ${forma_no(n, p)}
+      ${tx}
+    </g>`;
+  });
+  svg += "</svg>";
+
+  const mount = document.getElementById(mountId);
+  mount.innerHTML = svg;
+  const svgEl = mount.querySelector("svg");
+  svgEl.style.width = L.width + "px";
+  svgEl.style.minWidth = L.width + "px";
+
+  const flow = {
+    clear() {
+      svgEl.querySelectorAll(".dag-node").forEach(g => { g.classList.remove("dim"); g.setAttribute("aria-pressed", "false"); });
+      svgEl.querySelectorAll(".dag-edge").forEach(g => {
+        g.classList.remove("dim", "hi");
+        g.querySelector(".wire").setAttribute("marker-end", `url(#${uid})`);
+      });
+      if (activeFlow === flow) activeFlow = null;
+    },
+    select(g, id) {
+      if (activeFlow && activeFlow !== flow) activeFlow.clear();
+      activeFlow = flow;
+      const keep = new Set([id, ...(L.incoming[id] || []), ...(L.outgoing[id] || [])]);
+      svgEl.querySelectorAll(".dag-node").forEach(n => {
+        const nid = n.getAttribute("data-id");
+        n.classList.toggle("dim", !keep.has(nid));
+        n.setAttribute("aria-pressed", nid === id ? "true" : "false");
+      });
+      svgEl.querySelectorAll(".dag-edge").forEach(ed => {
+        const on = ed.getAttribute("data-from") === id || ed.getAttribute("data-to") === id;
+        ed.classList.toggle("dim", !on);
+        ed.classList.toggle("hi", on);
+        ed.querySelector(".wire").setAttribute("marker-end", `url(#${uid}${on ? "-hi" : ""})`);
+      });
+      abrir_detalhe(g, L, id);
+    }
+  };
+  svgEl.querySelectorAll(".dag-node").forEach(g => {
+    g.addEventListener("click", () => {
+      if (g.getAttribute("aria-pressed") === "true") limpar_selecao();
+      else flow.select(g, g.getAttribute("data-id"));
+    });
+    g.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); g.click(); }
+    });
+  });
+
+  /* Botão "ajustar à largura" na legenda do quadro. */
+  const board = mount.closest(".flow-board");
+  const legend = board && board.querySelector(".flow-legend");
+  if (legend && !legend.querySelector(".fit")) {
+    const btn = document.createElement("button");
+    btn.type = "button"; btn.className = "fit";
+    const fig = mount.closest(".flow-map");
+    const sync = () => { btn.textContent = fig.classList.contains("fit") ? "Tamanho real" : "Ajustar à largura"; };
+    btn.addEventListener("click", () => { fig.classList.toggle("fit"); sync(); posicionar_detalhe(); });
+    sync();
+    legend.appendChild(btn);
+  }
+  return flow;
+}
+
+/* Título do nó quebrado por palavras em até 3 linhas (o v3 usa títulos curtos de uma linha). */
+function quebrar_titulo(text, max) {
+  const out = []; let cur = "";
+  String(text).split(" ").forEach(w => {
+    if (cur && (cur + " " + w).length > max) { out.push(cur); cur = w; } else cur = cur ? cur + " " + w : w;
+  });
+  if (cur) out.push(cur);
+  return out.slice(0, 3);
+}
+
+/* Legenda com as formas do fluxo, em SVG. */
+const LEG = {
+  start:    ['<rect x="1" y="3" width="34" height="14" rx="7" fill="var(--db-dark-blue)"/>', "início"],
+  action:   ['<rect x="1" y="3" width="34" height="14" rx="3" fill="var(--surface-card)" stroke="var(--border-default)" stroke-width="1.5"/>', "ação"],
+  decision: ['<polygon points="18,1 35,10 18,19 1,10" fill="var(--db-pink-06)" stroke="var(--db-pink)" stroke-width="1.5"/>', "decisão"],
+  stop:     ['<rect x="1" y="3" width="34" height="14" rx="7" fill="var(--db-green-12)" stroke="var(--db-green)" stroke-width="1.5"/>', "fim"],
+  deny:     ['<rect x="1" y="3" width="34" height="14" rx="7" fill="var(--db-red-12)" stroke="var(--db-red)" stroke-width="1.5"/>', "fim sem DONE"],
+  back:     ['<path d="M2 10 H34" stroke="var(--db-grey-50)" stroke-width="1.6" stroke-dasharray="6 5" fill="none"/>', "retorno"]
+};
+document.querySelectorAll(".flow-legend[data-leg]").forEach(el => {
+  el.innerHTML = el.dataset.leg.split(",").map(k => `<span><svg viewBox="0 0 36 20" aria-hidden="true">${LEG[k][0]}</svg>${LEG[k][1]}</span>`).join("");
+});
+
+renderizar_fluxo("g-caminho", DIAGRAMAS.caminho, "arr-caminho");
+renderizar_fluxo("g-ciclo", DIAGRAMAS.ciclo, "arr-ciclo");
+renderizar_fluxo("g-guarda", DIAGRAMAS.guarda, "arr-guarda");
+
+const PAPEIS = ["coordenador", "map", "config", "implement", "test", "refute", "docs", "dab"];
+const pillsEl = document.getElementById("tabs-trilha");
+function mostrar(id, clique) {
+  const job = DADOS.jobs.find(j => j.id === id), pb = DADOS.playbooks[id];
+  pillsEl.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === id)));
+  document.getElementById("uso").innerHTML = "<b>" + escapar(job.label) + "</b>: " + escapar(job.uso) + ".";
+  const usados = PAPEIS.filter(p => pb.nodes.some(n => new RegExp("\\b" + p + "\\b").test(n.agent)));
+  document.getElementById("papeis").textContent = "Papéis neste fluxo: " + usados.join(", ") + ".";
+  limpar_selecao();
+  renderizar_fluxo("g-trilha", { nodes: pb.nodes, edges: pb.edges }, "arr-pb");
+  if (clique) try { history.replaceState(null, "", "#trilha-" + id); } catch (e) {}
+}
+DADOS.jobs.forEach(j => {
+  const b = document.createElement("button");
+  b.type = "button"; b.dataset.id = j.id; b.textContent = j.label;
+  b.addEventListener("click", () => mostrar(j.id, true));
+  pillsEl.appendChild(b);
+});
+const hsh = (location.hash.match(/^#trilha-(\w+)/) || [])[1];
+mostrar(DADOS.playbooks[hsh] ? hsh : DADOS.jobs[0].id);
+
+/* Navegação: botões numerados levam à seção; o ativo acompanha a seção visível. */
+const abas = [...document.querySelectorAll("#tabs button")];
+function ativar(id) {
+  abas.forEach(b => b.setAttribute("aria-selected", String(b.dataset.target === id)));
+  const a = abas.find(b => b.dataset.target === id);
+  if (a) a.scrollIntoView({ inline: "nearest", block: "nearest" });
+}
+abas.forEach(b => b.addEventListener("click", () => {
+  document.getElementById(b.dataset.target).scrollIntoView({ behavior: "smooth", block: "start" });
+  ativar(b.dataset.target);
+}));
+if ("IntersectionObserver" in window) {
+  const obs = new IntersectionObserver(es => {
+    const vis = es.filter(e => e.isIntersecting).sort((x, y) => x.boundingClientRect.top - y.boundingClientRect.top)[0];
+    if (vis) ativar(vis.target.id);
+  }, { rootMargin: "-20% 0px -65% 0px" });
+  abas.forEach(b => obs.observe(document.getElementById(b.dataset.target)));
+}
+/* ---- Arquitetura: pop-up explicativo por caixa, plano, grupo ou passo ---- */
+const ARQ = {
+  p1: { tipo: "Plano", chip: "info", t: "Plano de instrução", onde: "AGENTS.md, CLAUDE.md, trilhas/, nucleo/, agentes/",
+    oque: "Tudo o que o agente lê: regras, trilhas, papéis e roteamento. É texto, não código executável.",
+    serve: "Diz ao agente o que fazer, em que ordem e com qual critério de aceite.",
+    importa: "Instrução orienta, mas não garante. O agente pode esquecer ou interpretar mal; por isso existe o plano de controle logo abaixo.",
+    liga: ["agents", "trilhas", "roteamento", "p2"] },
+  p2: { tipo: "Plano", chip: "info", t: "Plano de controle", onde: "hooks do runtime, adaptadores/, implementacao/",
+    oque: "Código que roda a cada chamada de ferramenta, independentemente do que o agente entendeu das instruções.",
+    serve: "Conferir o efeito real da chamada (diretório, target, plano) e negar o que é perigoso antes que aconteça.",
+    importa: "É aqui que a regra vira garantia. Uma instrução ignorada não passa, porque a guarda olha o comando, não o relato.",
+    liga: ["s1", "s2", "s3", "s4", "s5"] },
+  p3: { tipo: "Plano", chip: "info", t: "Plano de evidência", onde: ".execucoes/ (fora do Git)",
+    oque: "Registros locais do que foi observado: qual comando rodou, sobre qual estado, com qual resultado.",
+    serve: "Sustentar o fecho. “Pronto” só vale quando há prova atual para cada critério obrigatório.",
+    importa: "Sem registro, o fecho seria só relato do agente. Fica fora do Git para não poluir o produto nem o PR.",
+    liga: ["ev_sessoes", "ev_provas", "ev_tentativas", "ev_fechos"] },
+
+  agents: { tipo: "Instrução", chip: "neutral", t: "AGENTS.md · CLAUDE.md", onde: "raiz do harness",
+    oque: "As regras curtas que valem para todo pedido. CLAUDE.md apenas aponta para AGENTS.md.",
+    serve: "Dar ao agente o mínimo comum logo ao iniciar: princípios, limites e onde buscar o resto.",
+    importa: "É a porta de entrada nos quatro runtimes. Mantê-la curta evita que o detalhe dilua as regras que importam.",
+    liga: ["trilhas", "coordenador", "runtimes"] },
+  trilhas: { tipo: "Instrução", chip: "neutral", t: "trilhas/ · nucleo/", onde: "trilhas/, nucleo/",
+    oque: "As oito trilhas (passos, aceite e fecho) e o núcleo de política e contexto do projeto Avante.",
+    serve: "Detalhar como executar cada tipo de trabalho, lido só quando a trilha é escolhida.",
+    importa: "Leitura sob demanda mantém o contexto do agente enxuto e focado na tarefa da vez.",
+    liga: ["agents", "roteamento"] },
+  roteamento: { tipo: "Instrução · fonte única", chip: "warn", t: "agentes/roteamento.yaml", onde: "agentes/roteamento.yaml + agentes/*.md",
+    oque: "A fonte única dos fluxos: quais papéis existem, em que ordem atuam e quais gatilhos os acionam.",
+    serve: "Definir as trilhas de forma neutra, sem depender de runtime. Os fluxogramas deste guia saem dele.",
+    importa: "Uma fonte só evita divergência entre Cursor, Claude Code e o resto. O núcleo também lê este arquivo.",
+    liga: ["gerar", "cfg_rot", "subagentes"] },
+  gerar: { tipo: "Gerador", chip: "neutral", t: "gerar_agentes.py", onde: "adaptadores/gerar_agentes.py",
+    oque: "Script que converte as definições neutras dos papéis no formato nativo de cada runtime.",
+    serve: "Produzir .claude/agents e .cursor/agents a partir de agentes/, sem edição manual.",
+    importa: "Garante que todos os runtimes recebam os mesmos papéis. Editar a cópia nativa à mão criaria desvio.",
+    liga: ["roteamento", "nativos"] },
+  nativos: { tipo: "Instalado", chip: "ok", t: ".claude/agents · .cursor/agents", onde: ".claude/agents/, .cursor/agents/",
+    oque: "As versões nativas dos papéis, no formato que cada runtime entende.",
+    serve: "Permitir que o runtime ative de fato os subagentes da trilha.",
+    importa: "Instalados nos dois runtimes. Observados em sessão real no Cursor e no Claude Code. Papel obrigatório indisponível fecha BLOCKED.",
+    liga: ["gerar", "subagentes"] },
+
+  g_runtime: { tipo: "Grupo", chip: "info", t: "Runtime", onde: "Cursor, Claude Code, Codex, OpenCode",
+    oque: "O ambiente onde o agente roda e chama ferramentas (shell, edição, subagentes).",
+    serve: "Hospedar o coordenador e os subagentes, e expor hooks que o harness usa para interceptar chamadas.",
+    importa: "O harness não substitui o runtime: ele se pluga nos hooks de cada um. Por isso o mesmo controle vale nos quatro.",
+    liga: ["coordenador", "subagentes", "runtimes", "g_hooks"] },
+  coordenador: { tipo: "Agente", chip: "neutral", t: "Coordenador", onde: "agente principal da sessão",
+    oque: "O agente que recebe o pedido, escolhe trilha e recorte, define o aceite e delega aos papéis.",
+    serve: "Tratar os retornos e emitir o fecho único da fatia.",
+    importa: "Só ele publica o fecho. Ninguém disputa o resultado e a responsabilidade fica clara.",
+    liga: ["agents", "subagentes", "s1", "ev_fechos"] },
+  subagentes: { tipo: "Agentes · ativação parcial", chip: "warn", t: "Subagentes · 7 papéis", onde: "agentes/*.md",
+    oque: "map, config, implement, test, refute, docs e dab: cada um com escopo estreito.",
+    serve: "Separar quem escreve de quem verifica e revisa. Cada papel altera só a superfície atribuída.",
+    importa: "Revisão independente pega o que o autor não vê. Hoje são obrigatórios em manutenção, correção, novo, docs e review, no Cursor e no Claude Code; validação e destilar entram depois, e entendimento não tem papéis.",
+    liga: ["coordenador", "roteamento", "nativos"] },
+  runtimes: { tipo: "Runtimes", chip: "info", t: "Cursor · Claude Code · Codex · OpenCode", onde: "",
+    oque: "Os quatro ambientes suportados. Todos leem o mesmo AGENTS.md.",
+    serve: "Deixar o time usar a ferramenta que preferir sem mudar as regras.",
+    importa: "Prova observada em sessão real no Cursor e no Claude Code. Codex e OpenCode têm só a guarda.",
+    liga: ["h_cursor", "h_cc", "h_codex", "h_opencode"] },
+
+  g_hooks: { tipo: "Grupo", chip: "info", t: "Hooks do runtime", onde: "configuração de cada runtime",
+    oque: "Pontos de extensão que o runtime chama antes (e às vezes depois) de cada ferramenta.",
+    serve: "Entregar a chamada ao harness antes que ela execute.",
+    importa: "Sem hook, a guarda não teria como negar antes do efeito; só poderia reclamar depois.",
+    liga: ["h_cursor", "h_cc", "h_codex", "h_opencode", "s2"] },
+  h_cursor: { tipo: "Hook", chip: "ok", t: "Hooks do Cursor", onde: "",
+    oque: "sessionStart, beforeShellExecution, preToolUse (Shell e Task), postToolUse, postToolUseFailure, stop e subagentStart/Stop.",
+    serve: "Interceptar o shell e observar o resultado e o ciclo dos subagentes.",
+    importa: "Coleta de prova e chamadas de subagente observadas em sessão real (G2 aceito).",
+    liga: ["entrada", "ad_cursor"] },
+  h_cc: { tipo: "Hook", chip: "ok", t: "Hooks do Claude Code", onde: ".claude/settings.json",
+    oque: "PreToolUse e PostToolUse em Bash, PowerShell e Agent; PostToolUseFailure; SessionStart; Stop; SubagentStop.",
+    serve: "Passar o shell pela guarda, coletar o resultado e observar as chamadas de subagente.",
+    importa: "Guarda, coleta de prova e chamadas de subagente observadas em sessão real (G2 aceito).",
+    liga: ["entrada", "ad_cc"] },
+  h_codex: { tipo: "Hook", chip: "neutral", t: "Hook do Codex", onde: "",
+    oque: "PreToolUse.", serve: "Passar a chamada pela guarda antes do efeito.",
+    importa: "Mesmo núcleo, mesmo resultado de negação: a regra não depende do runtime.",
+    liga: ["entrada"] },
+  h_opencode: { tipo: "Hook", chip: "neutral", t: "Hook do OpenCode", onde: "adaptadores/opencode/esteira.js",
+    oque: "tool.execute.before, via plugin JavaScript.", serve: "Encaminhar a chamada ao mesmo adaptador Python.",
+    importa: "Mostra que o desenho aceita runtimes de outras linguagens sem duplicar a guarda.",
+    liga: ["entrada"] },
+
+  g_adapt: { tipo: "Grupo", chip: "info", t: "Adaptadores", onde: "adaptadores/",
+    oque: "A camada de tradução entre o protocolo de cada runtime e o núcleo comum.",
+    serve: "Converter o evento do runtime numa operação padrão e devolver a resposta no formato que ele espera.",
+    importa: "Isola as diferenças. Para suportar um runtime novo basta um adaptador; guardas e provas não mudam.",
+    liga: ["entrada", "ad_cursor", "ad_cc", "prova_cli", "s3"] },
+  entrada: { tipo: "Adaptador", chip: "neutral", t: "entrada.py → executar.py", onde: "adaptadores/entrada.py, executar.py, protocolo.py",
+    oque: "Recebe o evento cru do hook, normaliza e chama o núcleo.",
+    serve: "Responder ao runtime com permitir ou negar, junto do motivo e da correção.",
+    importa: "É a ponte única: todo runtime passa por aqui, então a mesma decisão vale para todos.",
+    liga: ["s2", "s3", "guardas"] },
+  ad_cursor: { tipo: "Coleta de prova", chip: "ok", t: "cursor/prova.py", onde: "adaptadores/cursor/prova.py",
+    oque: "Registra o resultado das verificações e o ciclo dos subagentes no Cursor.",
+    serve: "Transformar a verificação rodada no chat em prova gravada com hash.",
+    importa: "Sem esta coleta, o fecho não teria como confirmar DONE.",
+    liga: ["provas", "h_cursor"] },
+  ad_cc: { tipo: "Coleta de prova · observada", chip: "ok", t: "claude_code/prova.py", onde: "adaptadores/claude_code/prova.py",
+    oque: "Sessão, coleta de prova, recibo de plan, chamadas de subagente com o agente_id devolvido ao coordenador e Stop.",
+    serve: "Permitir DONE comprovado também no Claude Code.",
+    importa: "Observado em sessão real; o fechar comprova DONE como no Cursor.",
+    liga: ["provas", "h_cc", "prova_cli"] },
+  prova_cli: { tipo: "CLI", chip: "neutral", t: "prova.py (CLI)", onde: "adaptadores/prova.py",
+    oque: "iniciar, estado e fechar da fatia, e os registros inspecionar, revisar, triar, diagnosticar, registrar-sandbox e registrar-paridade.",
+    serve: "Abrir a fatia, registrar o que o fecho exige, consultar pendências e chamadas observadas (com agente_id) e pedir o fecho.",
+    importa: "O fecho confere cada critério obrigatório. Sem prova atual, recusa o DONE.",
+    liga: ["provas", "cfg_contrato", "ev_fechos"] },
+
+  g_nucleo: { tipo: "Grupo · núcleo", chip: "bad", t: "Núcleo", onde: "implementacao/",
+    oque: "O código que decide: guardas que negam e provas que registram e fecham.",
+    serve: "Concentrar a regra num lugar só, testado pela suíte do harness.",
+    importa: "É o coração do “autonomia com prova”. Tudo ao redor apenas leva a chamada até aqui.",
+    liga: ["guardas", "provas", "cfg_politica"] },
+  guardas: { tipo: "Guarda", chip: "bad", t: "Guardas", onde: "implementacao/ · guardas/",
+    oque: "guarda_cwd confere diretório, bundle e comando literal. guarda_efeito confere target e a ordem plan → deploy.",
+    serve: "Negar antes de executar: pipe, wrapper, cwd fora do bundle, run/destroy/sync, deploy sem plan vigente, SQL com escrita.",
+    importa: "A guarda confere o efeito real e não concede autorização: target fora de sandbox exige autorização explícita.",
+    liga: ["s4", "s5", "cfg_politica"] },
+  provas: { tipo: "Provas", chip: "ok", t: "Provas", onde: "implementacao/provas.py, formas.py",
+    oque: "Gerencia a fatia, o manifesto de hashes, a invalidação e o fecho. formas.py valida o schema 3.2.",
+    serve: "Gravar cada verificação com o estado sobre o qual rodou.",
+    importa: "Editou um arquivo relevante depois da prova? Ela perde a validade e o critério precisa rodar de novo.",
+    liga: ["s_grava", "ad_cursor", "prova_cli"] },
+  cfg_politica: { tipo: "Configuração", chip: "neutral", t: "configuracao/politica.json", onde: "",
+    oque: "Autorizações e agentes obrigatórios por trilha.",
+    serve: "Dizer ao núcleo o que é permitido e quais papéis precisam atuar.",
+    importa: "Muda o comportamento sem mexer no código das guardas.",
+    liga: ["guardas", "subagentes"] },
+  cfg_rot: { tipo: "Configuração", chip: "neutral", t: "agentes/roteamento.yaml", onde: "",
+    oque: "O mesmo roteamento do plano de instrução, agora lido pelo código.",
+    serve: "Permitir que o núcleo saiba os papéis e a ordem da trilha.",
+    importa: "Instrução e controle leem a mesma fonte, então não divergem.",
+    liga: ["roteamento"] },
+  cfg_contrato: { tipo: "Configuração", chip: "neutral", t: "contrato.yaml da fatia", onde: "contratos/ (campos) · .execucoes/provas/…",
+    oque: "O contrato criado ao iniciar a fatia: escopo, critérios e o esperado de cada um.",
+    serve: "Definir o que precisa ser provado para fechar.",
+    importa: "Sem contrato não há fecho estruturado. O caminho simples dispensa contrato.",
+    liga: ["prova_cli", "ev_provas"] },
+
+  g_efeito: { tipo: "Grupo", chip: "info", t: "Efeito externo", onde: "",
+    oque: "Onde a chamada permitida produz efeito: a CLI do Databricks, o workspace e o produto.",
+    serve: "Receber só o que passou pelas guardas.",
+    importa: "É o que se quer proteger. Toda negação acontece antes de chegar aqui.",
+    liga: ["dbcli", "workspace", "produto"] },
+  dbcli: { tipo: "Efeito", chip: "neutral", t: "Databricks CLI", onde: "",
+    oque: "bundle validate, plan e deploy, com -t sandbox e perfil -p explícito.",
+    serve: "Executar os degraus validate → plan → deploy no bundle local.",
+    importa: "Só em sandbox. run e qualquer outro target, dev inclusive, exigem autorização explícita.",
+    liga: ["s5", "workspace"] },
+  workspace: { tipo: "Efeito", chip: "neutral", t: "Workspace Databricks", onde: "",
+    oque: "O ambiente remoto onde o bundle é implantado.",
+    serve: "Receber o deploy aprovado.",
+    importa: "Efeito real e compartilhado; por isso a guarda exige plan vigente e --select antes do deploy.",
+    liga: ["dbcli"] },
+  produto: { tipo: "Produto", chip: "warn", t: "prj-avante-analytics-adb/", onde: "prj-avante-analytics-adb/",
+    oque: "O código do produto, num repositório Git próprio, sem instruções de agente próprias: as regras são as do harness.",
+    serve: "É o que o agente realmente altera para entregar a tarefa.",
+    importa: "Clonado dentro da raiz do harness e ignorado pelo Git dele; provas e registros nunca entram no repositório do produto.",
+    liga: ["s_edit"] },
+
+  ev_sessoes: { tipo: "Registro", chip: "neutral", t: "sessoes/<hash>/ativa.json", onde: ".execucoes/sessoes/",
+    oque: "Aponta qual fatia está ativa em cada sessão.",
+    serve: "Saber a qual fatia atribuir cada evento que o hook recebe.",
+    importa: "Permite sessões paralelas sem misturar provas.",
+    liga: ["ev_provas"] },
+  ev_provas: { tipo: "Registro", chip: "neutral", t: "provas/<execução>/principal/", onde: ".execucoes/provas/",
+    oque: "contrato.yaml, baseline.json (estado anterior) e estado.json com hashes.",
+    serve: "Guardar o ponto de partida e o andamento da fatia; a retomada parte daqui.",
+    importa: "O baseline inclui arquivo não rastreado: Git limpo não é pré-condição.",
+    liga: ["ev_tentativas", "cfg_contrato"] },
+  ev_tentativas: { tipo: "Registro", chip: "neutral", t: "tentativas/NNN/", onde: ".execucoes/provas/…/tentativas/",
+    oque: "Cada tentativa guarda manifesto, eventos imutáveis e logs.",
+    serve: "Mostrar comando, cwd, exit code e o estado testado.",
+    importa: "Toda tentativa nova preserva as anteriores. Edição posterior relevante invalida a prova.",
+    liga: ["ev_fechos"] },
+  ev_fechos: { tipo: "Fecho", chip: "ok", t: "fechos/", onde: ".execucoes/provas/…/fechos/",
+    oque: "O resultado final da fatia: status, resultado, prova e limite.",
+    serve: "Declarar DONE, REVIEW, DECIDE, BLOCKED ou FAILED.",
+    importa: "DONE só com prova atual em todo critério obrigatório; senão o fecho diz o motivo e a condição de retomada.",
+    liga: ["coordenador", "provas"] },
+
+  s1: { tipo: "Passo 1", chip: "info", t: "Chamada de ferramenta", onde: "",
+    oque: "O agente pede ao runtime para rodar algo, por exemplo databricks bundle deploy.",
+    serve: "Iniciar a ação que a trilha exige.", importa: "O runtime não executa direto: chama o hook primeiro.",
+    liga: ["coordenador", "s2"] },
+  s2: { tipo: "Passo 2", chip: "info", t: "Evento do hook", onde: "",
+    oque: "O hook entrega a chamada ao adaptador, no formato próprio do runtime.",
+    serve: "Dar ao harness a chance de decidir antes do efeito.", importa: "Cada runtime fala um protocolo; o adaptador traduz.",
+    liga: ["s1", "s3", "entrada"] },
+  s3: { tipo: "Passo 3", chip: "info", t: "Operação normalizada", onde: "",
+    oque: "O adaptador entrega ao núcleo uma operação padrão: comando, cwd, sessão.",
+    serve: "Permitir que a mesma guarda avalie qualquer runtime.", importa: "A decisão não depende de qual ferramenta o time usa.",
+    liga: ["s2", "guardas"] },
+  s4: { tipo: "Passo 4 · negação", chip: "bad", t: "Nega antes do efeito", onde: "",
+    oque: "Se uma guarda reprova, a chamada volta ao agente sem executar, com motivo e correção.",
+    serve: "O agente corrige e tenta de novo sem intervenção humana.", importa: "Nada chega ao Databricks. A negação isolada de um comando não é BLOCKED.",
+    liga: ["guardas", "coordenador"] },
+  s5: { tipo: "Passo 5 · permitido", chip: "ok", t: "Permite", onde: "",
+    oque: "Passou em todas as guardas: o runtime executa o comando.",
+    serve: "Produzir o efeito no sandbox.", importa: "Permitir não é autorizar: a guarda confere o efeito, a autorização humana é outra coisa.",
+    liga: ["dbcli", "s_grava"] },
+  s_grava: { tipo: "Evidência", chip: "ok", t: "Grava com hash", onde: ".execucoes/provas/",
+    oque: "O resultado da verificação é gravado junto com os hashes do estado testado.",
+    serve: "Alimentar o fecho com prova verificável.", importa: "O hash permite detectar edição posterior e invalidar a prova.",
+    liga: ["provas", "ev_provas"] },
+  s_edit: { tipo: "Edição", chip: "warn", t: "Edição do produto", onde: "prj-avante-analytics-adb/",
+    oque: "O agente edita o código do produto diretamente, no repositório dele.",
+    serve: "Entregar a mudança pedida.", importa: "Editar depois de provar invalida a prova: o critério precisa rodar de novo.",
+    liga: ["produto", "ev_tentativas"] }
+};
+
+const arqSvg = document.getElementById("arq-svg");
+/* Ícone "i" e área clicável dos rótulos de plano e grupo, pela largura real do texto. */
+arqSvg.querySelectorAll(".hd").forEach(h => {
+  const t = h.querySelector("text.bl, text.gl"), w = t.getBBox().width, x = +t.getAttribute("x");
+  h.querySelector(".ii").setAttribute("cx", x + w + 14);
+  h.querySelector(".iit").setAttribute("x", x + w + 14);
+  h.querySelector(".hdr").setAttribute("width", w + 38);
+});
+function arq_alvo(id) { return arqSvg.querySelector(`.arq-hit[data-arq="${id}"]`); }
+const arqFlow = {
+  clear() {
+    arqSvg.querySelectorAll('.arq-hit[aria-pressed="true"]').forEach(g => g.setAttribute("aria-pressed", "false"));
+    arqSvg.querySelectorAll(".sel").forEach(g => g.classList.remove("sel"));
+    if (activeFlow === arqFlow) activeFlow = null;
+  },
+  select(g, id) {
+    if (activeFlow && activeFlow !== arqFlow) activeFlow.clear();
+    arqFlow.clear();
+    activeFlow = arqFlow;
+    g.setAttribute("aria-pressed", "true");
+    const grp = arqSvg.querySelector(`[data-grp="${id}"]`);
+    if (grp) grp.classList.add("sel");
+    const n = ARQ[id];
+    const rel = (n.liga || []).filter(k => ARQ[k]).map(k => `<button type="button" data-ir="${k}">${escapar(ARQ[k].t)}</button>`).join("");
+    popBody.innerHTML =
+      `<span class="chip ${n.chip || "neutral"}">${escapar(n.tipo)}</span>
+       <h4 id="pop-title">${escapar(n.t)}</h4>
+       ${n.onde ? `<div class="who"><b>Onde:</b> <code>${escapar(n.onde)}</code></div>` : ""}
+       <dl><dt>O que é</dt><dd><p>${escapar(n.oque)}</p></dd>
+       <dt>Para que</dt><dd><p>${escapar(n.serve)}</p></dd>
+       <dt>Por que importa</dt><dd><p>${escapar(n.importa)}</p></dd>
+       ${rel ? `<dt>Liga com</dt><dd><div class="rel">${rel}</div></dd>` : ""}</dl>
+       <p class="pop-hint">Esc fecha · clique em outra caixa para trocar</p>`;
+    pop.classList.add("arq-pop");
+    pop.hidden = false;
+    popAnchor = g;
+    posicionar_detalhe();
+  }
+};
+arqSvg.querySelectorAll(".arq-hit").forEach(g => {
+  g.addEventListener("click", ev => {
+    ev.stopPropagation();
+    if (g.getAttribute("aria-pressed") === "true") limpar_selecao();
+    else arqFlow.select(g, g.dataset.arq);
+  });
+  g.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); g.dispatchEvent(new MouseEvent("click", { bubbles: true })); }
+  });
+});
+popBody.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-ir]");
+  if (!b) return;
+  ev.stopPropagation();
+  const g = arq_alvo(b.dataset.ir);
+  if (g) { arqFlow.select(g, b.dataset.ir); g.focus({ preventScroll: true }); }
+});
+const arqFit = document.getElementById("arq-fit"), arqMap = document.getElementById("arq-map");
+arqFit.addEventListener("click", () => {
+  arqMap.classList.toggle("real");
+  arqFit.textContent = arqMap.classList.contains("real") ? "Ajustar à largura" : "Tamanho real";
+  posicionar_detalhe();
+});
+const FORMAS = [{"id": "contrato", "titulo": "Contrato", "estado": "adotada", "pacote": null, "versao": "3.1 e 3.2", "uso": "Critérios tipados; superfície de produto separada de artefatos.", "produtor": "coordenador", "consumidor": "executores, verificador", "validacao": "Aceite não vazio, IDs únicos, tipo permitido e esperado verificável. Superfície e artefatos separados. Em 3.1, verificacao exige comando, cwd e caminhos. Em 3.2, teste, ambiente, validacao_dados e paridade exigem os tres; inspecao_documental e analise_codigo exigem caminhos, checagens e produtor (coordenador ou refute), sem comando. autorizacao_ref é caminho relativo opcional apenas em aceite[].tipo=ambiente 3.2; 3.1 preserva o contrato anterior. A exigencia estatica preserva a leitura 3.1; as regras condicionais descrevem as excecoes 3.2.", "campos": ["objetivo", "termino_fatia", "trilha", "superficie", "artefatos_raiz", "fora", "fontes", "prazo", "aceite", "orcamento", "responsaveis"], "yaml": "schema_versao: '3.2'\ntipo: contrato\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_contrato_001\nprodutor: coordenador\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  objetivo: Ajustar a regra de vigência do contrato de compra na etapa 03.\n  termino_fatia: Regra alterada, teste do contrato verde e revisão sem achado procedente.\n  trilha: manutencao\n  superficie:\n  - bundles/src/notebooks/saneamento_migracao/mm/contrato_de_compra/03_saneamento/contrato_de_compra.py\n  artefatos_raiz: .execucoes/exemplo/T1\n  fora:\n  - deploy\n  - alterar_outros_objetos\n  fontes:\n  - PLANO-DE-EXECUCAO.md do bundle\n  - irmão vivo da etapa 03\n  prazo: null\n  aceite:\n  - id: vigencia\n    tipo: teste\n    obrigatorio: true\n    esperado: Contrato vencido vai para exceções.\n    verificacao:\n      comando: py -3 -m pytest testes/teste_contrato_de_compra.py\n      cwd: prj-avante-analytics-adb\n      caminhos:\n      - bundles/src/notebooks/saneamento_migracao/mm/contrato_de_compra/03_saneamento/contrato_de_compra.py\n  - id: sem_excesso\n    tipo: analise_codigo\n    obrigatorio: true\n    esperado: Sem código morto nem parâmetro sem uso.\n    verificacao:\n      caminhos:\n      - bundles/src/notebooks/saneamento_migracao/mm/contrato_de_compra/03_saneamento/contrato_de_compra.py\n      checagens:\n      - id: codigo_morto\n        esperado: nenhum\n      produtor: refute\n  orcamento:\n    ciclos_correcao_max: 3\n    ciclos_sem_progresso_max: 2\n    repeticoes_operacao_max: 2\n  responsaveis:\n    executor: implement\n    verificador: test\n    coordenador: principal\n"}, {"id": "guarda", "titulo": "Guarda", "estado": "adotada", "pacote": null, "versao": "3.1 e 3.2", "uso": "Evento próprio do hook, sem sobrescrever brief.", "produtor": "hook", "consumidor": "coordenador", "validacao": "nao_aplica exige justificativa de escopo; nao_verificado não aprova critério obrigatório. Decisão negar impede somente a chamada dependente.", "campos": ["operacao", "checagens", "decisao", "recuperacao"], "yaml": "schema_versao: '3.2'\ntipo: guarda\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_guarda_001\nprodutor: hook\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  operacao: bundle_deploy\n  checagens:\n  - id: target\n    resultado: limpo\n  - id: plan_vigente\n    resultado: bloqueio\n    motivo: Nenhum plan atual para este estado.\n  decisao: negar\n  recuperacao: Rodar plan -t sandbox no bundle local e repetir o deploy com --select.\n"}, {"id": "teste", "titulo": "Teste", "estado": "adotada", "pacote": null, "versao": "3.1 e 3.2", "uso": "Resultado do executor, vinculado ao estado; não basta o agente afirmar pass.", "produtor": "executor_teste", "consumidor": "coordenador", "validacao": "Exit code inteiro ou null em execução incompleta; pass/fail casa com o comando e o esperado. Log real e manifesto referenciado existem. O produtor é sempre o executor observado pelo hook, também quando o comando roda num subagente; agente_id é o ID desse subagente nos eventos do runtime e, com a trilha ativada, precisa casar com uma chamada observada do papel test. exit_code_origem diz de onde veio o código: campo_resultado (campo numérico do runtime), evento_sucesso (evento de sucesso sem código, vale 0) ou texto_falha (código lido do texto do evento de falha, diferente de 0).", "campos": ["criterio_id", "chamada_id", "cwd", "comando", "inicio", "fim", "exit_code", "log_ref", "log_sha256", "estado_testado", "resultado", "validade"], "yaml": "schema_versao: '3.2'\ntipo: teste\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_teste_001\nprodutor: executor_teste\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  criterio_id: vigencia\n  chamada_id: shell-0007\n  agente_id: conv-test-41\n  cwd: prj-avante-analytics-adb\n  comando: py -3 -m pytest testes/teste_contrato_de_compra.py\n  inicio: '2026-10-05T12:00:00+00:00'\n  fim: '2026-10-05T12:00:09+00:00'\n  exit_code: 0\n  exit_code_origem: campo_resultado\n  log_ref: tentativas/001/logs/teste_0007.txt\n  log_sha256: 836ff184e7b41b1e13cb5fd89fa1de98dbbab99e9d2918913ff43b86a5c7c213\n  estado_testado: 2e7f8e8c72e5a9178f4766338083a5b482c2d385cfacf26c41fd2086a8a420ce\n  resultado: pass\n  validade: valida\n"}, {"id": "ataque", "titulo": "Revisão independente", "estado": "adotada", "pacote": null, "versao": "3.2", "uso": "Payload referencia intenção e aceite, baseline, provas e estado revisado (manifesto); sem racional persuasivo do autor.", "produtor": "refute", "consumidor": "coordenador", "validacao": "O manifesto_ref do envelope identifica o estado revisado. com_achados exige achados com evidência; simplificacao é uma categoria válida. nao_quebrei exige tentativas e cobertura. Inconclusivo não aprova critério obrigatório.", "campos": ["entrada", "veredito", "tentativas", "achados", "cobertura"], "yaml": "schema_versao: '3.2'\ntipo: ataque\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_ataque_001\nprodutor: refute\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  entrada:\n    intencao_ref: eventos/contrato_001.yaml\n    aceite_ref: eventos/contrato_001.yaml\n    baseline_ref: baseline.json\n    provas_refs:\n    - eventos/teste_0007.yaml\n  veredito: com_achados\n  tentativas:\n  - id: T1\n    procedimento: Contrato com fim de vigência igual à data de corte.\n    resultado: pass\n  achados:\n  - id: A1\n    categoria: simplificacao\n    severidade: baixa\n    local: contrato_de_compra.py:212\n    evidencia_ref: revisoes/A1.txt\n  cobertura:\n  - criterio_id: vigencia\n    coberto: true\n  - criterio_id: sem_excesso\n    coberto: true\n"}, {"id": "triagem", "titulo": "Triagem de achado", "estado": "adotada", "pacote": null, "versao": "3.2", "uso": "Registra a decisao do coordenador sobre um achado da revisao e sua resolucao ou descarte fundamentado.", "produtor": "coordenador", "consumidor": "autor, refute, coordenador", "validacao": "Procedente exige evidencia da resolucao; descartado exige motivo. A triagem referencia, por revisao_ref, um achado da revisao registrada na fatia.", "campos": ["revisao_ref", "achado_id", "decisao", "responsavel"], "yaml": "schema_versao: '3.2'\ntipo: triagem\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_triagem_001\nprodutor: coordenador\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  revisao_ref: eventos/ataque_001.yaml\n  achado_id: A1\n  decisao: procedente\n  responsavel: implement\n  evidencia_resolucao_ref: eventos/teste_0009.yaml\n"}, {"id": "inspecao", "titulo": "Inspecao", "estado": "adotada", "pacote": null, "versao": "3.2", "uso": "Resultado do criterio documental ou analise de codigo, vinculado ao manifesto do estado inspecionado.", "produtor": "coordenador, refute", "consumidor": "coordenador", "validacao": "Cada checagem referencia um criterio e um estado. Mudanca relevante em qualquer caminho invalida a inspecao, como invalida um teste.", "campos": ["criterio_id", "caminhos", "manifesto_sha256", "checagens", "resultado", "validade"], "yaml": "schema_versao: '3.2'\ntipo: inspecao\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_inspecao_001\nprodutor: refute\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  criterio_id: sem_excesso\n  caminhos:\n  - bundles/src/notebooks/saneamento_migracao/mm/contrato_de_compra/03_saneamento/contrato_de_compra.py\n  manifesto_sha256: 856e0cd02f3352d6b5b2b641c9d7e2586482f528ce32358ac99e77f9a4b8012b\n  checagens:\n  - id: codigo_morto\n    resultado: pass\n  resultado: pass\n  validade: valida\n"}, {"id": "chamada", "titulo": "Chamada observada", "estado": "adotada", "pacote": null, "versao": "3.2", "uso": "Evidencia observada pelo adaptador de que um papel foi chamado; relato do coordenador nao basta.", "produtor": "adaptador", "consumidor": "coordenador", "validacao": "IDs devem vir dos eventos observados do runtime. Inicio e fim delimitam a chamada. O produtor adaptador nao pode ser substituido pelo coordenador.", "campos": ["chamada_id", "papel", "runtime", "ids_observados", "inicio", "fim", "status"], "yaml": "schema_versao: '3.2'\ntipo: chamada\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_chamada_001\nprodutor: adaptador\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  chamada_id: tool-use-91\n  papel: test\n  runtime: cursor\n  ids_observados:\n  - nome: subagent_id\n    valor: tool-use-91\n  - nome: agente_id\n    valor: conv-test-41\n  inicio: '2026-10-05T11:59:50+00:00'\n  fim: '2026-10-05T12:00:20+00:00'\n  status: concluida\n"}, {"id": "brief", "titulo": "Fecho", "estado": "adotada", "pacote": null, "versao": "3.1 e 3.2", "uso": "Somente coordenador publica; resultados por critério sustentam o status.", "produtor": "coordenador", "consumidor": "pessoa, retomada", "validacao": "DONE exige critérios obrigatórios atendidos e evidências válidas; nenhuma pendência obrigatória ou ação humana. REVIEW exige revisão prevista. Um novo fecho não apaga o anterior.", "campos": ["escopo_conclusao", "status", "outcome", "criterios", "pendencias", "acao_humana"], "yaml": "schema_versao: '3.2'\ntipo: brief\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_brief_001\nprodutor: coordenador\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  escopo_conclusao: fatia_T1\n  status: DONE\n  outcome: Regra de vigência ajustada; teste verde e achado de simplificação resolvido.\n  criterios:\n  - id: vigencia\n    atendido: true\n    evidencia_ref: eventos/teste_0009.yaml\n    validade: valida\n  - id: sem_excesso\n    atendido: true\n    evidencia_ref: eventos/inspecao_002.yaml\n    validade: valida\n  pendencias: []\n  acao_humana: null\n"}, {"id": "diagnostico", "titulo": "Diagnóstico", "estado": "adotada", "pacote": "C6", "versao": "3.2", "uso": "Registro mínimo do diagnóstico na correção: causa sustentada ou hipótese com próximo experimento, ligada ao critério de reprodução.", "produtor": "coordenador, map", "consumidor": "executor, coordenador", "validacao": "Na correção ativada, a escrita de config ou implement exige um diagnóstico na tentativa; criterio_reproducao existe no contrato.", "campos": ["sintoma", "hipotese_causa", "base", "evidencia_ref", "criterio_reproducao", "proximo_passo"], "yaml": "schema_versao: '3.2'\ntipo: diagnostico\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_diagnostico_001\nprodutor: coordenador\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/001/manifesto.json\ndados:\n  sintoma: Contrato vencido aparece no saneado.\n  hipotese_causa: Comparação de vigência usa a data de carga, não a data de corte.\n  base: direct\n  evidencia_ref: logs/run_123_vigencia.txt\n  criterio_reproducao: vigencia\n  proximo_passo: test reproduz com contrato vencido na data de corte.\n"}, {"id": "sandbox", "titulo": "Ambiente", "estado": "adotada", "pacote": "C6", "versao": "3.2", "uso": "Pré-condições distintas por operação. Nomes são confirmação adicional.", "produtor": "dab", "consumidor": "coordenador", "validacao": "Deploy exige plan válido e compatível; run exige também coordenação verificada. O núcleo deriva operação, target, perfil, seleção, cwd, resultado, autorização e teste_ref. Campo sem observação integrada vale nao_verificado: em deploy, identidade e destinos nao_verificado não aprovam critério ambiente obrigatório. Com a trilha ativada, agente_id casa com uma chamada dab concluída.", "campos": ["operacao", "cwd", "bundle", "target", "perfil", "selecao", "plan_ref", "plan_estado_compativel", "autorizacao_ref", "identidade", "destinos_resolvidos", "coordenacao", "resultado", "teste_ref"], "yaml": "schema_versao: '3.2'\ntipo: sandbox\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_sandbox_001\nprodutor: dab\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/004/manifesto.json\ndados:\n  operacao: deploy\n  cwd: prj-avante-analytics-adb/bundles/src/notebooks/saneamento_migracao\n  bundle: saneamento_migracao\n  target: sandbox\n  perfil: <perfil>\n  selecao:\n  - pipelines.dlt_trusted_mm_contrato_de_compra\n  plan_ref: plans/recibo_plan.json\n  plan_estado_compativel: true\n  autorizacao_ref: .execucoes/autorizacoes/sandbox_001.yaml\n  identidade: nao_verificado\n  destinos_resolvidos:\n  - nao_verificado\n  coordenacao: nao_aplica\n  resultado: pass\n  teste_ref: tentativas/004/eventos/teste_deploy.yaml\n  agente_id: agente_dab_exemplo\n"}, {"id": "paridade", "titulo": "Paridade", "estado": "adotada", "pacote": "C6", "versao": "3.2", "uso": "Mesmo recorte, insumos identificados, cálculo reproduzível e gap tratado.", "produtor": "test", "consumidor": "coordenador", "validacao": "Contas em decimal, com diferença igual a origem menos destino; diferença sem divergência listada é recusada. Divergência pendente reprova a paridade mesmo com exit 0. O resultado é do núcleo. Com a trilha ativada, agente_id casa com uma chamada test concluída.", "campos": ["criterio_id", "recorte", "insumos", "contas", "divergencias", "resultado", "teste_ref"], "yaml": "schema_versao: '3.2'\ntipo: paridade\nexemplo: true\nexecucao_id: exemplo\nfatia_id: T1\ntentativa: 1\nevento_id: exemplo_paridade_001\nprodutor: test\nregistrado_em: '2026-10-05T12:00:30+00:00'\nmanifesto_ref: tentativas/004/manifesto.json\ndados:\n  criterio_id: paridade_objeto\n  recorte: <data de corte e filtros exatos>\n  insumos:\n  - nome: legado\n    identificador: <arquivo e hash>\n  - nome: esteira\n    identificador: <tabela e versão>\n  contas:\n  - id: aba_sap\n    descricao: Registros na aba SAP\n    valor_origem: '1180'\n    valor_destino: '1174'\n    diferenca: '6'\n  divergencias:\n  - id: d1\n    estado: pendente\n  resultado: fail\n  teste_ref: tentativas/005/eventos/teste_paridade.yaml\n  agente_id: agente_test_exemplo\n"}];
+const FORMAS_FORA = [{"formas": "config, implement, docs", "motivo": "Repetem o relato do autor; o núcleo calcula manifesto e invalida provas por edição. A superfície por papel de config, implement e docs é conferida pelo núcleo (C5)."}, {"formas": "mapa", "motivo": "map é opcional e só lê; nenhum fecho depende do mapa. A chamada comprova a execução."}, {"formas": "destilar", "motivo": "A trilha fecha por critério inspecao_documental (forma inspecao); fonte e destino viram checagens."}, {"formas": "intencao", "motivo": "O objetivo mora no contrato; ataque.entrada.intencao_ref aponta para ele."}, {"formas": "resposta", "motivo": "Entendimento fecha pelo brief; preservação de estado já é medida por baseline e manifesto."}];
+
+let forma_atual = "contrato";
+const ESTADO_CHIP = { adotada: ["ok", "Adotada"], aprovada: ["decisao", "Aprovada · C6"] };
+function renderizar_formas() {
+  const botoes = document.getElementById("forma-pills");
+  botoes.innerHTML = FORMAS.map(f => `<button type="button" data-forma="${escapar(f.id)}" aria-pressed="${f.id === forma_atual}">${escapar(f.titulo)}${f.estado === "aprovada" ? '<span class="est">C6</span>' : ""}</button>`).join("");
+  const f = FORMAS.find(x => x.id === forma_atual);
+  const [chip, rotulo] = ESTADO_CHIP[f.estado];
+  const nota = f.estado === "aprovada" ? "Campos propostos no pacote C6; o validador ainda recusa esta forma." : `Schema ${escapar(f.versao)}; exemplo conferido com o validador.`;
+  document.getElementById("forma-detalhe").innerHTML = `<article class="forma-card" id="forma-${escapar(f.id)}">
+    <span class="chip ${chip}">${rotulo}</span><h3>${escapar(f.titulo)} <code>${escapar(f.id)}</code></h3>
+    <p class="forma-meta">${escapar(f.uso)}</p>
+    <p class="forma-meta"><b>Produz:</b> ${escapar(f.produtor)} · <b>Consome:</b> ${escapar(f.consumidor)}</p>
+    ${f.validacao ? `<p class="forma-meta"><b>Validação:</b> ${escapar(f.validacao)}</p>` : ""}
+    <p class="forma-meta"><b>${f.estado === "aprovada" ? "Campos propostos" : "Chaves obrigatórias em dados"}:</b> ${f.campos.map(escapar).join(", ")}</p>
+    <p class="forma-meta">${nota}</p>
+    <pre class="forma-yaml"><code>${escapar(f.yaml)}</code></pre></article>`;
+  botoes.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    forma_atual = b.dataset.forma;
+    renderizar_formas();
+    document.querySelector(`[data-forma="${forma_atual}"]`).focus();
+  }));
+}
+document.getElementById("formas-fora").innerHTML = FORMAS_FORA.map(x => `<tr><td><code>${escapar(x.formas)}</code></td><td>${escapar(x.motivo)}</td></tr>`).join("");
+renderizar_formas();
+</script>
+</body></html>

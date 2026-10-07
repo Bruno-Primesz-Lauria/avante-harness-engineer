@@ -2,7 +2,7 @@
 
 Cheque o efeito real antes da ferramenta executar: identidade, destino resolvido, argumentos. O nome do recurso confirma, mas não prova. Nenhum selo de ambiente substitui o destino real. A guarda não concede autorização.
 
-Mapa do código: [arquitetura](../adaptadores/arquitetura.md). Comandos dos degraus 0–6: `AGENTS.md` do produto.
+Mapa do código: [arquitetura](../adaptadores/arquitetura.md). Comandos dos degraus 0–6: `PLANO-DE-EXECUCAO.md` do bundle `saneamento_migracao`, no produto.
 
 ## O que o código nega
 
@@ -15,9 +15,9 @@ A guarda vale para chamadas de shell de `databricks bundle` e de SQL ad hoc pela
 | `target-dev` | Target ausente. Target fora de `sandbox` e `dev`. `dev` sem `autorizacoes_dev` na política para aquela operação e seleção (a política atual não tem nenhuma). Perfil (`-p`/`--profile`) ausente. Flag e prefixo `DATABRICKS_BUNDLE_TARGET=` divergentes. | Só lê flag e prefixo literal. Não lê o ambiente do processo, o default do YAML nem variável da CLI. |
 | Plan antes de deploy | Deploy sem `--select` e sem `intencao_deploy_completo` na política. Deploy sem recibo de plan do mesmo bundle, target, perfil e seleção, ou com arquivo do bundle alterado depois do plan. | Com recibo vigente, o deploy só passa em `sandbox` e com `deploy_sandbox_autorizado: true` na política (ligado em `configuracao/politica.json`); em `dev` continua negado. Identidade autenticada e destinos resolvidos não são conferidos. O recibo hasheia `databricks.yml` e os arquivos informados dentro do bundle; não cobre código fora dele. `--select` não restringe o sync. |
 | SQL ad hoc | `databricks experimental aitools tools query` com escrita (`INSERT`, `UPDATE`, `DELETE`, `MERGE`, `CREATE`, `DROP`, `ALTER`...), mais de um comando que não seja leitura, comentário SQL, `$`, crase, pipe ou encadeamento. Só passa `SELECT`, `WITH`, `SHOW`, `DESCRIBE`, `EXPLAIN`, `VALUES`. | Não vê SQL por SDK, REST, notebook ou editor. Identificador com crase não é aceito. |
-| Fecho | `adaptadores/prova.py fechar` recusa `DONE` ou `REVIEW` sem prova atual de cada critério obrigatório. Prova perde validade se arquivo relevante mudar (hash). Fecho adulterado é inválido. | O `stop` do Cursor pede correção em até duas continuações. Não bloqueia texto livre já exibido. Uso: [evidencia/uso.md](../evidencia/uso.md). |
+| Fecho | `adaptadores/prova.py fechar` recusa `DONE` ou `REVIEW` sem prova atual de cada critério obrigatório. Prova perde validade se arquivo relevante mudar (hash). Fecho adulterado é inválido. | O `stop` do Cursor pede correção em até duas continuações; o `Stop` do Claude Code bloqueia uma vez por turno. Não bloqueia texto livre já exibido. Uso: [evidencia/uso.md](../evidencia/uso.md). |
 
-O recibo de plan nasce quando o Cursor observa `exitCode` 0 (`postToolUse`) de um `plan` literal declarado como verificação no contrato de uma fatia ativa. A guarda de antes da execução nunca grava sucesso.
+O recibo de plan nasce quando o adaptador observa sucesso de um `plan` literal declarado como verificação no contrato de uma fatia ativa: `exitCode` 0 no `postToolUse` do Cursor, ou `PostToolUse` no Claude Code (com o prefixo literal de diretório). A guarda de antes da execução nunca grava sucesso.
 
 Não implementado: guarda de `run`, de identidade autenticada, de coordenação de dados, de fronteira de produto e `docs-distill`.
 
@@ -49,7 +49,7 @@ Sem coordenação válida, pause a execução dependente e siga com o trabalho i
 
 ### Fronteira e superfície
 
-Mudança de produto segue a fronteira do invariante 1 do `AGENTS.md` do produto: o que o `include:` de `bundles/src/notebooks/saneamento_migracao/databricks.yml` lista, mais `src/shared/saneamento_migracao/**`. O contrato da fatia recorta essa fronteira. Artefato do harness fica em namespace separado, na raiz do adaptador.
+Mudança de produto segue esta fronteira: o que o `include:` de `bundles/src/notebooks/saneamento_migracao/databricks.yml` lista, mais `src/shared/saneamento_migracao/**`. O contrato da fatia recorta essa fronteira. Artefato do harness fica em namespace separado, na raiz do adaptador.
 
 Mudança fora do escopo impede o aceite. Preserve o trabalho anterior do usuário.
 
