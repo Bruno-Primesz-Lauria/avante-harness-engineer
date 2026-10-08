@@ -1,6 +1,6 @@
 # Projeto Avante — contexto para o assistente
 
-Referência `advisory`: apoio para entender o vocabulário das fontes e do PO. Nunca é fonte de
+Referência `advisory`: apoio para entender o vocabulário das fontes e do negócio. Nunca é fonte de
 regra nem de decisão — regra só existe com `source_id` + `source_entry_digest` de uma fonte do
 objeto. Cite este arquivo apenas como "contexto do projeto", nunca como autoridade.
 
@@ -34,16 +34,16 @@ objeto. Cite este arquivo apenas como "contexto do projeto", nunca como autorida
 
 ## As oito etapas de cada objeto
 
-| Etapa | Nome | Onde o harness entra |
-|---|---|---|
-| 01 | Revisão de Regras — mapeamento e aprovação das regras de transformação | **Sim**: `/importar-fonte`, `/extrair-reuniao`, `/exportar-docx` |
-| 02 | Extração e Saneamento — legados → Databricks | Não |
-| 03 | Preparação do Arquivo — scripts e pipelines do arquivo de carga | Não |
-| 04 | Validação — testes do arquivo gerado, bugs (IPC/Jira), golden data, problemas da Mock | **Sim**: `/validar-objeto` |
-| 05 | Simulação e Carga — IDQ, Cockpit/MDG, carga no SAP | Não |
-| 06 | Aceite — homologação funcional e aceite pelos Key Users | Não: o aceite do harness é o do PO sobre o comprovante, distinto do aceite do Key User |
-| 07 | Base MDM — envio à base centralizadora | Não |
-| 08 | Consumo — sistemas especialistas | Não |
+| Etapa | Nome |
+|---|---|
+| 01 | Revisão de Regras — mapeamento e aprovação das regras de transformação |
+| 02 | Extração e Saneamento — legados → Databricks |
+| 03 | Preparação do Arquivo — scripts e pipelines do arquivo de carga |
+| 04 | Validação — testes do arquivo gerado, bugs (IPC/Jira), golden data, problemas da Mock |
+| 05 | Simulação e Carga — IDQ, Cockpit/MDG, carga no SAP |
+| 06 | Aceite — homologação funcional e aceite pelos Key Users |
+| 07 | Base MDM — envio à base centralizadora |
+| 08 | Consumo — sistemas especialistas |
 
 ## Módulos SAP no escopo (base para sugerir `--modulo`)
 
@@ -62,7 +62,7 @@ objeto. Cite este arquivo apenas como "contexto do projeto", nunca como autorida
 | Papel | O que faz | Peso do que diz numa fonte |
 |---|---|---|
 | Key User / Líder Avante (Ipiranga) | Define regras funcionais, de negócio e de cutover; esclarece dúvidas; valida nos testes integrados; aceita. | Autoridade para regra de negócio (`key_user`). |
-| PO | Levanta regras de transformação, é o ponto de contato com o negócio, valida o arquivo de carga, apoia os Key Users. | No harness é quem confirma, autoriza e aceita (`po`). Uma regra dita pelo PO ainda é candidata até a cerimônia. |
+| PO | Levanta regras de transformação, é o ponto de contato com o negócio, valida o arquivo de carga, apoia os Key Users. | Papel do projeto; hoje não participa do harness, que é operado pela engenharia (quem confirma, autoriza e aceita é o engenheiro). Uma regra dita pelo PO numa fonte (`po`) ainda é candidata até a cerimônia. |
 | Líder de POs | Apoia a gestão dos POs, remove impedimentos, aciona as áreas de negócio. | Não define regra de negócio. |
 | Consultor Funcional SAP | Apoia Key Users e migração em regras e validações funcionais. | Consultado: orienta, não decide. |
 | Líder Técnico/Funcional | Decisões táticas e estratégicas, impedimentos escalados, negociação com sistemas especialistas. | Aprova (accountable) a revisão de regras; o que diz vira candidato até a cerimônia. |
