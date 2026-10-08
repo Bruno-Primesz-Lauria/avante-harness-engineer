@@ -5,7 +5,7 @@ O núcleo define a política ([guardas](../guardas/README.md)). Cada runtime tra
 | Runtime | Evento | O que guarda | Prova coletada | Instalar e conferir |
 |---|---|---|---|---|
 | [Cursor](cursor/README.md) | `beforeShellExecution` (falha fecha) | Shell: cwd, target, plan e deploy | `sessionStart`, `preToolUse`, `postToolUse`, `postToolUseFailure` e `stop` | `gerenciar.py cursor --instalar`. Customize, Hooks e canal Hooks. |
-| [Claude Code](claude_code/README.md) | `PreToolUse` em `Bash` e `PowerShell` | Idem | Nenhuma | `gerenciar.py claude_code --instalar`. `/hooks`. |
+| [Claude Code](claude_code/README.md) | `PreToolUse` em `Bash` e `PowerShell` | Idem | `SessionStart`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `Stop` e `SubagentStop` | `gerenciar.py claude_code --instalar`. `/hooks`. |
 | [Codex](codex/README.md) | `PreToolUse` em `Bash` | Idem | Nenhuma | `gerenciar.py codex --instalar`. Revisar e confiar em `/hooks`. |
 | [OpenCode](opencode/README.md) | `tool.execute.before` em `bash` | Idem | Nenhuma | `gerenciar.py opencode --instalar`. Nova sessão. |
 
@@ -19,8 +19,8 @@ Estado atual dos arquivos de configuração: Cursor, Claude Code e OpenCode inst
 
 | Runtime | Versão |
 |---|---|
-| Cursor | 3.17.8 |
-| Claude Code | 2.1.289 |
+| Cursor | 3.17.8, 3.19.19 |
+| Claude Code | 2.1.283, 2.1.289, 2.1.292 |
 | Codex CLI | 0.158.0 |
 | OpenCode | 1.18.15 |
 
@@ -32,8 +32,8 @@ Um hook de um produto não vale como o de outro. Guarda obrigatória indisponív
 |---|---|---|
 | Instruções | `CLAUDE.md`. Confira o que carrega. | `AGENTS.md`. Confira o que carrega. |
 | Pergunta | Cartão, se existir. Senão, texto. | Ferramenta de pergunta ou texto. |
-| Agentes do fluxo | Papéis em `.claude/agents/`, a gerar de [`agentes/`](../agentes/) (B1/B2). Obrigatórios nas trilhas de `agentes_obrigatorios.claude_code`. | Cursor: sete papéis instalados em `.cursor/agents/` (B2-CU); O-CU/G2 pendentes. Obrigatórios nas trilhas de `agentes_obrigatorios.cursor`, hoje vazia. Codex e OpenCode ficam fora da chave: agente único, com delegação opcional. |
+| Agentes do fluxo | Sete papéis em `.claude/agents/`, gerados de [`agentes/`](../agentes/), observados em sessão real. Obrigatórios nas trilhas de `agentes_obrigatorios.claude_code`, hoje `manutencao`, `correcao`, `novo`, `docs` e `review`; o runtime vem de `CLAUDE_CODE_SESSION_ID`. | Cursor: sete papéis em `.cursor/agents/`, observados em sessão real. Obrigatórios nas trilhas de `agentes_obrigatorios.cursor`, hoje `manutencao`, `correcao`, `novo`, `docs` e `review`; passe `--runtime cursor` ao `prova.py`. Codex e OpenCode ficam fora da chave: agente único, com delegação opcional; passe `--runtime codex` ou `--runtime opencode` ao `prova.py` para selecionar o runtime. Essa seleção não adiciona esses runtimes à política e não habilita coleta de provas de shell. |
 | Persistência | Árvore de [`evidencia/layout.md`](../evidencia/layout.md), sob a raiz configurada. | Idem. |
 | Memória do time | `SessionStart` entrega os itens de `memoria/indice.md` (até 40 linhas e 4000 caracteres), além da orientação do `AGENTS.md`. | Só a orientação condicional do `AGENTS.md`; leitura e busca pelo agente. |
 
-Subagentes: definição neutra em [`agentes/`](../agentes/); a versão nativa do Cursor está instalada em `.cursor/agents/`; a do Claude Code ainda não foi gerada. Não inclua trilha em `agentes_obrigatorios` de um runtime antes de seus agentes estarem instalados e observados (G2). Instalação e observação por runtime ficam nos metadados de [`agentes/roteamento.yaml`](../agentes/roteamento.yaml). Skills do projeto: não implementadas.
+Subagentes: definição neutra em [`agentes/`](../agentes/); as versões nativas ficam em `.cursor/agents/` e `.claude/agents/`. Não inclua trilha em `agentes_obrigatorios` de um runtime antes de seus agentes estarem instalados e observados (G2). Instalação e observação por runtime ficam nos metadados de [`agentes/roteamento.yaml`](../agentes/roteamento.yaml); gates e histórico, no painel do [plano](../PLANO-AGENTES-TRILHAS.md#painel). Skills do projeto: não implementadas.

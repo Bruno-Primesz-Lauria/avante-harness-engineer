@@ -4,12 +4,12 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 
 ## Como a IA recebe o harness
 
-| Runtime | Instruções | Guarda antes do shell | Prova da fatia |
-|---|---|---|---|
-| Cursor (principal) | `AGENTS.md` | `.cursor/hooks.json` | Sim: `sessionStart`, `preToolUse`, `postToolUse`, `postToolUseFailure`, `stop` |
-| Claude Code | `CLAUDE.md` → `@AGENTS.md` | `.claude/settings.json` | Não |
-| Codex | `AGENTS.md` | Só após `gerenciar.py codex --instalar` | Não |
-| OpenCode | `AGENTS.md` | `.opencode/plugins/esteira.js` | Não |
+| Runtime | Instruções | Guarda antes do shell | Prova da fatia | Papéis (`agentes/`) |
+|---|---|---|---|---|
+| Cursor (principal) | `AGENTS.md` | `.cursor/hooks.json` | Sim, observada em sessão real | `.cursor/agents/`, obrigatórios em `manutencao`, `correcao`, `novo`, `docs` e `review` |
+| Claude Code | `CLAUDE.md` → `@AGENTS.md` | `.claude/settings.json` | Sim, observada em sessão real | `.claude/agents/`, obrigatórios em `manutencao`, `correcao`, `novo`, `docs` e `review` |
+| Codex | `AGENTS.md` | Só após `gerenciar.py codex --instalar` | Não | Agente único |
+| OpenCode | `AGENTS.md` | `.opencode/plugins/esteira.js` | Não | Agente único |
 
 `AGENTS.md` é curto e traz as regras que mais importam. O resto é lido sob demanda. Detalhes por runtime: [adaptadores](adaptadores/README.md).
 
@@ -22,16 +22,20 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 | [`contratos/`](contratos/README.md) | Campos do contrato da fatia. |
 | [`guardas/`](guardas/README.md) | O que o código nega e as regras de conduta sem código. |
 | [`evidencia/`](evidencia/uso.md) | Uso da prova, validade, status de fecho e layout dos registros. |
-| [`formas/`](formas/README.md) | Schema dos registros (4 formas adotadas, 11 candidatas). |
+| [`formas/`](formas/README.md) | Schema dos registros (11 formas adotadas). |
 | [`acervo/`](acervo/README.md) | Inventário das candidatas do desenho e a situação de cada uma. |
 | `.agents/skills/` | 10 skills Databricks (aitools v0.2.10); roteamento em [`trilhas/`](trilhas/README.md#skills-databricks). |
 | [`adaptadores/`](adaptadores/README.md) | Tradução dos eventos de cada runtime para a mesma guarda. |
-| [`avaliacao/`](avaliacao/README.md) | Oito cenários e métricas para medir a política. |
+| [`avaliacao/`](avaliacao/README.md) | Cenários, métricas e kits de observação dos agentes por runtime. |
+| [`agentes/`](agentes/roteamento.yaml) | Sete papéis (map, config, implement, test, refute, docs, dab) e o roteamento por trilha. |
 | [`memoria/`](memoria/README.md) | Memória do time: decisões, aprendizados e padrões verificados, com fonte, revisados por PR. Advisory. |
 | `implementacao/`, `configuracao/`, `testes/` | Código da guarda e da prova, política de caminhos e testes. |
-| `.execucoes/` | Registros locais: provas, sessões e diagnósticos. Fora do Git. |
+| `.execucoes/` | Registros locais: provas, sessões e diagnósticos. Fora do Git; pode ser apagada entre ciclos de teste. |
+| [`PLANO-AGENTES-TRILHAS.md`](PLANO-AGENTES-TRILHAS.md) | Plano, gates e histórico. É o único lugar com estado e histórico do harness. |
 
 ## Estado
+
+O que existe hoje. Gates, pendências e histórico: [painel do plano](PLANO-AGENTES-TRILHAS.md#painel).
 
 **Imposto por código** (vale para o shell do chat, quando o hook dispara):
 
@@ -39,7 +43,8 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 - `validate` e `plan` passam em `sandbox` (e em `dev` só com autorização na política). `deploy` passa só em `sandbox`, com plan vigente, `-p` e `--select`; identidade e destinos não são conferidos. `run`, `destroy` e `sync` são negados.
 - Target `dev` só passa com autorização registrada na política. Hoje não há nenhuma.
 - SQL ad hoc pela CLI só lê; escrita é negada.
-- No Cursor, `prova.py fechar` recusa `DONE` sem prova atual; o `stop` pede correção até duas vezes.
+- No Cursor e no Claude Code, `prova.py fechar` recusa `DONE` sem prova atual; o `stop` pede correção (no Cursor até duas vezes; no Claude Code uma vez por turno, e não enquanto um subagente roda).
+- Nas trilhas `manutencao`, `correcao`, `novo`, `docs` e `review`, no Cursor e no Claude Code (`agentes_obrigatorios`), `fechar` também exige as chamadas previstas dos papéis observadas, a revisão do refute e cada papel escrevendo só na sua superfície.
 
 **Só instrução** (depende do modelo): escolher o caminho e a trilha, iniciar a fatia antes de editar, perguntar pouco, preservar trabalho prévio, coordenar dados do sandbox, respeitar a fronteira do produto.
 
@@ -47,13 +52,11 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 
 **Memória do time** (Fase 1 de [`plano_memoria_harness.md`](plano_memoria_harness.md)): notas em `memoria/` com metadados, índice mantido à mão e `adaptadores/memoria.py validar`, que confere estrutura, links, fontes e índice. Todos os runtimes recebem a orientação condicional pelo `AGENTS.md`. No Claude Code, o `SessionStart` também entrega os itens do índice, limitados a 40 linhas e 4000 caracteres. Ainda não existem busca, índice gerado, aviso de revalidação nem `docs-distill`. Compartilhamento entre engenheiros não observado (piloto da Fase 3).
 
-**Skills Databricks**: as 10 de `.agents/skills/` valem para Cursor, Codex e OpenCode. O Claude Code recebe as 31 `databricks:databricks-*` pelo plugin `databricks` do projeto (CLI 2.1.289), inclusive no subagente.
+**Skills Databricks**: as 10 de `.agents/skills/` valem para Cursor, Codex e OpenCode. O Claude Code recebe as `databricks:databricks-*` pelo plugin `databricks` do projeto, inclusive no subagente.
 
-**Não implementado**: skills do projeto, versões nativas dos subagentes (`.claude/agents/`, `.cursor/agents/`; definições neutras prontas em `agentes/`), 10 das 18 formas (candidatas), coleta de prova no Claude Code, conferência de identidade e destinos, coordenação de dados e `docs-distill`.
+**Observado em sessão real**: no Cursor e no Claude Code, os sete papéis em série, guarda negando no subagente e fatias de manutenção e docs fechando `DONE` com prova.
 
-**Observado** (sondagens P0.4 no Claude Code 2.1.289 e P0.5 no Cursor 3.17.8, com subagente de sondagem): instruções e skills chegando ao subagente, hooks de shell disparando nele e a guarda negando ali sem executar. Resumos nos READMEs de [`adaptadores/claude_code`](adaptadores/claude_code/README.md) e [`adaptadores/cursor`](adaptadores/cursor/README.md).
-
-**Não observado**: os sete papéis em sessão real, uma fatia estruturada fechando `DONE` ponta a ponta e os oito cenários de avaliação. Os testes locais cobrem o código, não a ativação.
+**Não implementado**: skills do projeto, conferência de identidade e destinos no deploy, coordenação de dados e `docs-distill`.
 
 ## Preparar um clone
 
@@ -76,7 +79,8 @@ py -3 -m venv .venv
 - Os hooks de Cursor, Claude Code e OpenCode já vêm no clone, no formato Windows (`py -3`). Em Linux/macOS, gere de novo com `python3 adaptadores/gerenciar.py <runtime> --instalar` e não commite a configuração gerada. Sem isso, no Claude Code a guarda fica desligada sem aviso ([nota](memoria/aprendizados/claude-code-hooks-windows-desligam-guarda-no-macos.md)).
 - Em macOS/Linux, crie o `.venv` com `python3.12` ou mais novo (`python3.14 -m venv .venv`; o executável fica em `.venv/bin/python`). O `python3` do Anaconda ou do sistema pode ser anterior e quebrar a prova ([nota](memoria/aprendizados/python-anterior-a-3-12-quebra-prova.md)).
 - Sem o clone do produto, a guarda nega toda chamada `databricks bundle`. Ela não procura outro checkout.
-- O `AGENTS.md` e o `CLAUDE.md` do produto não são versionados; um clone novo não os traz.
+- O produto não tem instruções de agente próprias: as regras ficam todas neste harness.
+- No Windows, se o checkout do produto falhar com `Filename too long`, rode `git -C prj-avante-analytics-adb config core.longpaths true` e `git -C prj-avante-analytics-adb restore .`.
 - Versione mudanças de produto no repositório dele (`git -C prj-avante-analytics-adb ...`).
 
 ## Primeiro teste no Cursor
@@ -90,15 +94,39 @@ Mostra se o hook dispara e se a guarda nega antes do efeito. Um comando digitado
 
 Se o hook não disparar, interrompa e não peça plan, deploy nem run.
 
+## Uso pelo time
+
+Prepare o clone (acima) uma vez. Depois:
+
+**Cursor** (runtime completo)
+
+1. Abra `avante-harness-engineer/` como raiz e confie nos hooks. Em Settings → Hooks aparecem os comandos de `adaptadores/entrada.py`; em Settings → Subagents, os sete papéis.
+2. Cada tarefa começa em **chat novo** (Ctrl+N). O contexto inicial traz `Sessao para --sessao: <ID>`. Sem essa linha, os hooks não estão ativos: pare e confira.
+3. Pergunta ou mudança pequena: peça direto. Trabalho de várias etapas: o agente escreve o contrato ([modelo](evidencia/uso.md)), roda `py -3 adaptadores/prova.py --runtime cursor --sessao <ID> iniciar <contrato.yaml>` antes de editar e fecha com `fechar`.
+4. Na trilha `manutencao`, o agente coordena e delega aos papéis (test, config, implement, refute, dab) um de cada vez. Se o chat mostrar `[esteira] A fatia ativa nao tem fecho valido...`, é o hook pedindo para terminar a trilha.
+5. Só conta como pronto o `DONE` aceito pelo `fechar`. Recusa vira nova verificação ou fecho `BLOCKED`, `FAILED` ou `DECIDE`, com motivo.
+
+**Claude Code** (runtime completo)
+
+1. Rode `claude` na raiz do clone e confie nos hooks. Confira `/hooks` (inclui `SubagentStop`) e `/agents` (sete papéis).
+2. Cada tarefa começa em sessão nova (`/clear` ou `claude` de novo). O contexto inicial traz `Sessao Claude Code para a esteira: <ID>`. Sem essa linha, os hooks não estão ativos: pare e confira.
+3. Pergunta ou mudança pequena: peça direto. Trabalho de várias etapas: o agente escreve o contrato ([modelo](evidencia/uso.md)), roda `py -3 adaptadores/prova.py --sessao <ID> iniciar <contrato.yaml>` antes de editar e fecha com `fechar`. O runtime vem de `CLAUDE_CODE_SESSION_ID`.
+4. Na trilha `manutencao`, o agente coordena e delega aos papéis um de cada vez. O subagente pode rodar em segundo plano: o hook devolve `[esteira] Chamada <papel> ... agente_id=...` e registra a chamada quando ele termina, então o coordenador espera o fim antes do passo seguinte.
+5. Só conta como pronto o `DONE` aceito pelo `fechar`. Recusa vira nova verificação ou fecho `BLOCKED`, `FAILED` ou `DECIDE`, com motivo.
+
+**Codex e OpenCode**: guarda do shell apenas; agente único e sem prova de fatia.
+
+Em todos: nunca peça `deploy` ou `run` sem autorização explícita, e não contorne uma negação da guarda com outra ferramenta.
+
 ## Precedência
 
-No escopo do produto, o `AGENTS.md` dele prevalece. Sobre o comportamento da esteira, valem o código e o `AGENTS.md` do produto. Sobre o harness, valem estes arquivos e o código; o HTML é o desenho.
+As regras do harness valem também no produto, que não tem instruções de agente próprias. Sobre o comportamento da esteira, valem o código do produto e a documentação do bundle (`README.md`, `GUIA-DESENVOLVIMENTO.md`, `PLANO-DE-EXECUCAO.md`) como fonte de fato. Sobre o harness, valem estes arquivos e o código; o HTML é o desenho.
 
 ## Manter README e HTML consistentes
 
-O HTML reúne o desenho proposto e seções sobre o estado atual. Ao mudar a implementação, atualize as afirmações de estado atual no README e no HTML. Funcionalidades ainda propostas devem continuar identificadas como propostas.
+O HTML reúne o desenho e as seções de estado ("Estado" e o roteiro). Ao mudar a implementação, atualize as afirmações de estado no README, no HTML e no painel do plano. Funcionalidades ainda propostas continuam identificadas como propostas.
 
-O layout implementado está em [`evidencia/layout.md`](evidencia/layout.md) e na seção “Layout implementado” do HTML. A árvore genérica e os exemplos de formas no desenho são ilustrativos. A tabela “Estrutura” do HTML detalha código e configuração dos runtimes; a estrutura completa está neste README.
+O layout dos registros está em [`evidencia/layout.md`](evidencia/layout.md). Os exemplos de formas no HTML são ilustrativos. A seção "Estrutura de pastas" do HTML resume a árvore; a estrutura completa está neste README.
 
 ## Verificar mudanças no harness
 

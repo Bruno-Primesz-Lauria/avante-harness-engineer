@@ -34,6 +34,16 @@ FERRAMENTAS_CLAUDE = {
     "docs": ("Read", "Grep", "Glob", "Edit", "Write"),
     "dab": ("Read", "Grep", "Glob", "Bash"),
 }
+# No Cursor o ID do subagente só aparece no Shell que ele roda na própria janela.
+# Test e dab já rodam Shell; o refute, só leitura, precisa de um inofensivo.
+VINCULO_CURSOR = {
+    "refute": (
+        "## Vínculo da chamada no Cursor\n\n"
+        "O Cursor só associa esta chamada ao seu ID quando você roda um Shell dentro dela. Rode uma única vez "
+        "`Write-Output refute-janela`, com o diretório absoluto no campo `cwd`, e nenhum outro Shell; leia "
+        "arquivos pela ferramenta de leitura. Sem isso, a revisão registrada fica `revisao:fora_do_refute`."
+    ),
+}
 MARCADOR = re.compile(
     rb"(?m)^<!-- esteira-agentes source=([0-9a-f]{64}) "
     rb"payload=([0-9a-f]{64}) -->\r?\n"
@@ -122,7 +132,7 @@ def _yaml_string(valor):
 
 
 def _yaml_simples(valor):
-    """Escalar sem aspas: o Cursor 3.17.8 guarda as aspas no nome do subagente (O-CU, 2026-10-05)."""
+    """Escalar sem aspas: o Cursor guarda as aspas no nome do subagente."""
     valor = str(valor)
     seguro = (valor == valor.strip() and not re.match(r"[-?:,\[\]{}#&*!|>'\"%@`]", valor) and
               ": " not in valor and " #" not in valor)
@@ -154,9 +164,10 @@ def _corpo(rota, papel, runtime, definicao):
     if runtime == "claude_code":
         return definicao
     skills = _skills_cursor(rota["agentes"][papel])
-    linhas = [
-        definicao.rstrip(),
-        "",
+    linhas = [definicao.rstrip(), ""]
+    if papel in VINCULO_CURSOR:
+        linhas.extend([VINCULO_CURSOR[papel], ""])
+    linhas += [
         "## Referências de skills no Cursor",
         "",
         "Leia somente as skills pertinentes ao gatilho, a partir do workspace:",

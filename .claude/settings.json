@@ -62,6 +62,18 @@
           }
         ]
       }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"${CLAUDE_PROJECT_DIR}/adaptadores/entrada.py\" claude_code",
+            "timeout": 10,
+            "shell": "powershell"
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {

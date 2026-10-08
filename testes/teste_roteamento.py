@@ -251,9 +251,9 @@ class ConsistenciaRoteamentoTestes(unittest.TestCase):
         self.assertIn("coordenador", _papeis_no_rotulo(nos["veredito"]["agent"]))
         self.assertIn(("refute", "blocked"), arestas)
 
-    def test_d5_hook_de_shell_em_subagente_observado_na_p0_5(self):
+    def test_d5_hook_de_shell_em_subagente_observado(self):
         self.assertEqual(
-            "observada_p0_5",
+            "observada",
             self.rota["runtimes"]["cursor"]["observacao_habilidades_em_subagente"],
         )
 

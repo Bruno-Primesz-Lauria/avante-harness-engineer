@@ -1,9 +1,14 @@
 ---
 name: test
 description: Executar o esperado contratado; pode preparar casos apenas no escopo roteado e não corrige produto.
+tools: [Read, Grep, Glob, Edit, Write, Bash]
 model: inherit
+skills:
+  - "databricks:databricks-core"
+  - "databricks:databricks-data-discovery"
+  - "databricks:databricks-dbsql"
 ---
-<!-- esteira-agentes source=96a7402ef94d8865919993974c0b6ae8a96d71cc8da2b5565faed17f8404ee83 payload=4512b82e284d59b1fe041ca08601034fe2945db81401cdac678e3fcf91c793f2 -->
+<!-- esteira-agentes source=0be377c3205ca4de41c2ddee31afba842bcbad8f35350a61443e9da4689c1e03 payload=77a444575c3b2f5c0d7538d66683b7569b0fde277faa2d5566da6c22acb94794 -->
 # test
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -48,12 +53,3 @@ Encerrar após executar os critérios atribuídos e registrar resultados e limit
 ## Regras comuns
 
 Carregar skills só quando pertinentes e citar as usadas. Manter os padrões herdados de modelo e runtime; não definir nem sobrescrever modelo. Respeitar as guardas, o harness e o `AGENTS.md` aplicável; manter preparação e relatório no menor escopo que permita decidir. Aplicar as regras do harness, o `AGENTS.md` aplicável e boas práticas Databricks pertinentes antes de simplificar: ampliar uma suíte existente antes de criar outra, escrever o menor caso que decida o critério e não deixar código comentado, print de depuração ou fixture sem uso. Simplificar nunca enfraquece o esperado.
-
-## Referências de skills no Cursor
-
-Leia somente as skills pertinentes ao gatilho, a partir do workspace:
-- `.agents/skills/databricks-core/SKILL.md`
-- `.agents/skills/databricks-data-discovery/SKILL.md`
-- `.agents/skills/databricks-dbsql/SKILL.md`
-- `.agents/skills/databricks-execution-compute/SKILL.md`
-- Skills variáveis ficam em `.agents/skills/databricks-<nome>/SKILL.md`.

@@ -3,7 +3,7 @@ name: config
 description: Alterar somente a superfície YAML atribuída pelo contrato.
 model: inherit
 ---
-<!-- esteira-agentes source=eda37cf514ae6fa3e6153b7e8017392904a8b106bf96b09dc94502fcaa60980c payload=d7b46f5f21fc7fcd59d635d74e259fc0f2d947b1725a92809610692ad9b45138 -->
+<!-- esteira-agentes source=91af30fdfb5adeb7c7a9f76da817c4942449fecb72204b73ac42f12659f8dda4 payload=9772cd894a9aa96857ce6a6dcd7c7e8b888c9bf40789c4c8872097f32a22eef8 -->
 # config
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -42,7 +42,7 @@ Capacidade orientativa ausente não bloqueia por si só; registrar quando limita
 
 ## Saída
 
-Lista dos arquivos alterados, vínculo de cada alteração com os requisitos, validações locais executadas e estado/limitações. Incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis; não inventar provas ou resultados.
+Lista dos arquivos alterados, vínculo de cada alteração com os requisitos, validações locais executadas e estado/limitações. Incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis; não inventar provas ou resultados. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

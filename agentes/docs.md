@@ -33,7 +33,7 @@ Carregar `docs` (referência Databricks `databricks-docs`) quando pertinente à 
 
 ## Saída
 
-Documento ou instrução final nos arquivos atribuídos, referências verificáveis para afirmações e decisões editoriais necessárias. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis; declarar limitações e separar fatos de inferências.
+Documento ou instrução final nos arquivos atribuídos, referências verificáveis para afirmações e decisões editoriais necessárias. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis; declarar limitações e separar fatos de inferências. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

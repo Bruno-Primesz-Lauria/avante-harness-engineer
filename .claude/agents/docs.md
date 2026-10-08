@@ -1,9 +1,12 @@
 ---
 name: docs
 description: Escrever ou destilar somente os documentos atribuídos, com fontes verificáveis.
+tools: [Read, Grep, Glob, Edit, Write]
 model: inherit
+skills:
+  - "databricks:databricks-docs"
 ---
-<!-- esteira-agentes source=c9f8375debcd30261f4ea4b2ee3241c7388748a5b2d5e7f045f7fabbaef15030 payload=fcfbc54ca947efdcff688adab29d351339a59c316f7e604eea3f45548e668489 -->
+<!-- esteira-agentes source=e56d36c531a118afa81a9b3c77cfe2e8588824a63e2c04b204036d8a7a286a01 payload=1aee414f0ceacdadf180eb325efcdea57fc176d0ac7e1cac793c5657f3e3ec85 -->
 # docs
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -48,9 +51,3 @@ Encerrar quando o documento atribuído cumprir o contrato e suas afirmações ti
 ## Regras comuns
 
 Carregar skills só quando pertinentes e citar as usadas. Manter os padrões herdados de modelo e runtime; não definir nem sobrescrever modelo. Aplicar as regras do harness e o `AGENTS.md` aplicável antes de simplificar; preferir a menor instrução útil, remover repetição e preservar contexto necessário para entendimento e decisão.
-
-## Referências de skills no Cursor
-
-Leia somente as skills pertinentes ao gatilho, a partir do workspace:
-- `.agents/skills/databricks-docs/SKILL.md`
-- Skills variáveis ficam em `.agents/skills/databricks-<nome>/SKILL.md`.

@@ -1,9 +1,13 @@
 ---
 name: dab
 description: Executar somente operação de ambiente explicitamente contratada e autorizada; registrar resultado, IDs, logs e destinos observados.
+tools: [Read, Grep, Glob, Bash]
 model: inherit
+skills:
+  - "databricks:databricks-core"
+  - "databricks:databricks-dabs"
 ---
-<!-- esteira-agentes source=6e426709daa70f5654528c078015d563353f0a3aae1f3b8a384b48d2ca434c2d payload=9696aa35195d0f787691b3748ad47229982b53c174795fafb9dd45297a15d6ae -->
+<!-- esteira-agentes source=f14cb9273a99d375293cb9224932fcbebc3efc088cee6402dd4d842beda8e0cb payload=8eb9d779447ffbd00ca578fbe868049e1fbe7bb45c4d7b4f372b020e6c0088cb -->
 # dab
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -51,12 +55,3 @@ Encerrar após registrar o resultado real da operação autorizada ou interrompe
 ## Regras comuns
 
 Carregar skills só quando pertinentes e citar as usadas. Manter os padrões herdados de modelo e runtime; não definir nem sobrescrever modelo. Respeitar as regras do harness, o `AGENTS.md` aplicável e boas práticas Databricks; executar somente o menor passo autorizado que satisfaça o critério. Simplificar nunca remove pré-checagem, guarda ou passo da escada exigido; o relatório traz só o necessário para decidir, sem repetir log que já está na evidência.
-
-## Referências de skills no Cursor
-
-Leia somente as skills pertinentes ao gatilho, a partir do workspace:
-- `.agents/skills/databricks-core/SKILL.md`
-- `.agents/skills/databricks-dabs/SKILL.md`
-- `.agents/skills/databricks-jobs/SKILL.md`
-- `.agents/skills/databricks-pipelines/SKILL.md`
-- Skills variáveis ficam em `.agents/skills/databricks-<nome>/SKILL.md`.

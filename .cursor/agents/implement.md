@@ -3,7 +3,7 @@ name: implement
 description: Alterar somente a superfície de notebook, Python ou SQL atribuída; não mudar o aceite unilateralmente.
 model: inherit
 ---
-<!-- esteira-agentes source=9f9f84e51772e84913e812ea335c02c1540c4c0e0968d067559a5eb839ec1bf1 payload=27ce3bf6ec7aece39b11dac8d98c178939d5d6ed5797c50b4a11da074f996fe2 -->
+<!-- esteira-agentes source=7a24315b68ff8198d4d3789c0e364c75a3121a263d662229e625370ec9bfdfc5 payload=0725ed12d4370eb33f5ad15450abc10f0bdc6407f6d51647b5cd742d5347c918 -->
 # implement
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -42,7 +42,7 @@ Capacidade orientativa ausente não bloqueia por si só; registrar quando limita
 
 ## Saída
 
-Arquivos alterados, manifesto conciso das mudanças, vínculo com requisitos e critérios a verificar, validações locais e limitações. Incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis; não alegar prova ainda não coletada.
+Arquivos alterados, manifesto conciso das mudanças, vínculo com requisitos e critérios a verificar, validações locais e limitações. Incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis; não alegar prova ainda não coletada. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

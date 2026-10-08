@@ -1,3 +1,14 @@
+---
+name: map
+description: Investigar fontes e dependências sem editar produto.
+tools: [Read, Grep, Glob, Bash]
+model: inherit
+skills:
+  - "databricks:databricks-data-discovery"
+  - "databricks:databricks-docs"
+  - "databricks:databricks-unity-catalog"
+---
+<!-- esteira-agentes source=a65e3f5bc7163b9686561ab436d9f4fb26b4ff4583e2080be1b58fbbbe2baaca payload=92fdc829601fe7dd6b57e27c0b1f4872177dc5dbaed155b9012f954adfff865e -->
 # map
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

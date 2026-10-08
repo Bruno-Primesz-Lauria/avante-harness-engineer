@@ -1,3 +1,16 @@
+---
+name: implement
+description: Alterar somente a superfície de notebook, Python ou SQL atribuída; não mudar o aceite unilateralmente.
+tools: [Read, Grep, Glob, Edit, Write, Bash]
+model: inherit
+skills:
+  - "databricks:databricks-dabs"
+  - "databricks:databricks-dbsql"
+  - "databricks:databricks-jobs"
+  - "databricks:databricks-pipelines"
+  - "databricks:databricks-python-sdk"
+---
+<!-- esteira-agentes source=0018472a08befa2ae3cea1f789e5d1b514bfb263475a459cf2b042ceeeba61d8 payload=e924da38b012c38d629c35c3aebc1bd916b03fd50d3adc3422a5b9217917046e -->
 # implement
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

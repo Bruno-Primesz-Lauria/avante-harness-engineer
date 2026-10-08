@@ -1,3 +1,14 @@
+---
+name: config
+description: Alterar somente a superfície YAML atribuída pelo contrato.
+tools: [Read, Grep, Glob, Edit, Write, Bash]
+model: inherit
+skills:
+  - "databricks:databricks-dabs"
+  - "databricks:databricks-jobs"
+  - "databricks:databricks-pipelines"
+---
+<!-- esteira-agentes source=d35268eebb9294214c3ac45760196f39a461fa560928cee8aac9187c8bb73745 payload=b5fd4d1fafc12cbd3888814cde143b2be708c2daddda7212217b2e5519d17662 -->
 # config
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

@@ -42,7 +42,7 @@ pode corrigir?
 - Workspace com alteração prévia exige atribuir a mudança: `git diff` sozinho não delimita a fatia.
 - Com agentes, quem altera não verifica nem revisa: o `test` verifica e o `refute` revisa. Como agente único, registre o modo de revisão e apoie o aceite em prova objetiva.
 - Teste em outro agente continua o mesmo teste. O esperado vem do requisito, do dado de referência ou do comportamento contratado.
-- O CI do PR não executa as suítes locais. Rode-as antes do PR (regra do `AGENTS.md` do produto). Ampliação local de suíte vai separada no manifesto de entrega.
+- O CI do PR não executa as suítes locais. Rode-as antes do PR (degrau 0 do `PLANO-DE-EXECUCAO.md` do bundle). Ampliação local de suíte vai separada no manifesto de entrega.
 - Orçamento do laço: [`nucleo/modus-operandi.md`](../nucleo/modus-operandi.md#recuperação).
 
 ## Agentes
@@ -66,13 +66,14 @@ Vale só para a trilha que está em `agentes_obrigatorios` do seu runtime. A fon
 - **Plano de chamadas:** `iniciar` calcula as chamadas previstas e as grava no `estado.json` da fatia. Não escreva o plano à mão. Só a chamada observada pelo adaptador do runtime conta como execução do papel.
 - **Prova do teste:** vale a do comando que o `test` rodou. Teste rodado por você no lugar do `test` não fecha o critério (`teste_fora_do_test`).
 - **Entrada do refute:** intenção, aceite, baseline, estado atual e provas. Não envie o racional do autor. Achado procedente volta ao dono da superfície, conta no orçamento e pede novo teste e nova revisão; descarte exige motivo registrado na triagem.
+- **Registros do coordenador** ([uso](../evidencia/uso.md#inspeção-revisão-e-triagem)): `revisar` para cada refute chamado e `triar` para cada achado; `diagnosticar` na correção, antes de chamar `config` ou `implement`; `registrar-sandbox` com o retorno do `dab` quando o critério `ambiente` roda `databricks bundle`; `registrar-paridade` com o retorno do `test` no critério `paridade`. O `agente_id` de cada registro é o da chamada observada: no Cursor, o dos `ids_observados` da chamada no `estado`; no Claude Code, o que o hook devolve em `[esteira] Chamada <papel> registrada ... agente_id=`.
 - **Edição depois da prova:** invalida teste, inspeção e revisão afetados.
 - **Papel ou capacidade obrigatória indisponível:** `BLOCKED` para o trabalho que depende dele; o trabalho independente continua. Falta de decisão ou autorização humana: `DECIDE`.
 - O papel não amplia autorização: guardas, permissões do runtime e o `AGENTS.md` prevalecem.
 
 ## Skills Databricks
 
-Use a skill para acertar comando e API da plataforma. Ela não muda escopo, autorização nem guarda. Se divergir do harness ou do `AGENTS.md` do produto, vale o harness.
+Use a skill para acertar comando e API da plataforma. Ela não muda escopo, autorização nem guarda. Se divergir do harness, vale o harness.
 
 | Skill | Use quando | Trilhas |
 |---|---|---|

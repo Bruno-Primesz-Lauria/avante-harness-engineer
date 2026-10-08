@@ -1,3 +1,12 @@
+---
+name: refute
+description: Revisar de forma independente e somente leitura; receber intenção e aceite, sem o racional persuasivo do autor.
+tools: [Read, Grep, Glob, Bash]
+model: inherit
+skills:
+  - "databricks:databricks-docs"
+---
+<!-- esteira-agentes source=a6040dd1e46cef9dc63ed962e8ed61a517b82774d8fd14ea7a674d8caa2296ed payload=0f866ce49bec02a2e552c4c4072389324b5f03b6931ad7318164846b37739cbc -->
 # refute
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.

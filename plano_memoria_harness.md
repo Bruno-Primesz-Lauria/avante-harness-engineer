@@ -1,8 +1,6 @@
 # Plano de implementação da memória compartilhada do harness
 
-Data: 2026-10-03. Reconferida em 2026-10-05 contra a branch `feat/engenheiro-bruno-lauria` (commit `a0a5604`), depois de A1–A5, C1–C3 e P0.5 do plano de agentes.
-
-Estado em 2026-10-06: Fase 1 implementada na branch `feat/memoria-claude-macos` (`MEM-1`), executada no Claude Code em macOS. Por decisão humana, a entrega antecipou um item da Fase 4: o `SessionStart` do Claude Code entrega os itens do índice, com limite de volume. Fases 2 e 3 e o restante da Fase 4 não foram iniciados. Decisões registradas na seção 9.
+Estado: Fase 1 implementada (`MEM-1`) e aplicada ao produto em teste local (`MEM-2`, seção 8). Fases 2 e 3 e o restante da Fase 4 não foram iniciados. Estado e histórico do harness: painel do [plano de agentes](PLANO-AGENTES-TRILHAS.md#painel).
 
 ## Intenção
 
@@ -41,11 +39,11 @@ A primeira entrega cobre a memória do harness. A memória específica do produt
 | Destilação | `trilhas/destilar.md` limita a superfície a skills e referências do adaptador. Desde o A5, prevê `docs` com `distill` no passo 2, inspeção do coordenador e `refute`, quando a trilha estiver em `agentes_obrigatorios`. | Incluir notas como destino e ajustar o aceite, sem mexer na sequência de papéis. Notas `.md` já cabem na superfície documental do `docs`. |
 | Acervo | `distill` (skill) e `docs-distill` (hook que "sinaliza candidato; não exige pergunta nem destilação") são candidatos em `acervo/README.md`. | Reusar essas peças para destilar e sinalizar notas. Não criar peça paralela. |
 | Schema de eventos | Schema 3.2 adotado (C1–C3): `contrato`, `guarda`, `brief`, `teste`, `ataque`, `triagem`, `inspecao` e `chamada`. `destilar` continua candidata. | Notas têm metadados próprios e não são apresentadas como eventos adotados. |
-| Fecho técnico | O núcleo já aceita critério `inspecao_documental` sem comando (`Provas.inspecionar`, forma `inspecao`), mas `adaptadores/prova.py` ainda não expõe a inspeção: só `iniciar`, `estado` e `fechar`. | A Fase 1 mantém o comando `validar`, que fecha como critério `teste` em qualquer runtime com coleta. A inspeção documental cobre o que o comando não exercita quando houver caminho de CLI para ela. |
-| Prova por runtime | Só o Cursor coleta prova. No Claude Code `fechar` recusa `DONE`, porque não há sessão nem coleta (BL2 do plano de agentes). | Fatia estruturada fecha `DONE` só no Cursor; no Claude Code fecha com impedimento declarado (DM-2). |
+| Fecho técnico | O núcleo aceita critério `inspecao_documental` sem comando (`Provas.inspecionar`, forma `inspecao`), exposto em `adaptadores/prova.py inspecionar`. | A Fase 1 mantém o comando `validar`, que fecha como critério `teste` em qualquer runtime com coleta. A inspeção documental cobre o que o comando não exercita quando houver caminho de CLI para ela. |
+| Prova por runtime | Cursor e Claude Code coletam prova, observada em sessão real nos dois, e o `fechar` comprova `DONE` nos dois. | Fatia estruturada fecha `DONE` nos dois runtimes; a Fase 1 roda no Claude Code (DM-2). |
 | Retrato da prova | O controle do manifesto inclui `implementacao/`, `adaptadores/`, `configuracao/`, `formas/catalogo.yaml` e `agentes/roteamento.yaml` (`CONTROLE` em `implementacao/provas.py`). `memoria/` fica fora. | Editar nota não invalida a prova de outra fatia, salvo se o contrato declarar o caminho. Código da memória nessas pastas passa a integrar o retrato de toda fatia. |
 | Git e revisão | Branch de referência `main` (`origin/HEAD`). Não há `.github/`, CODEOWNERS nem CI no repositório. | Revisor é decisão do time (DM-1). A validação roda localmente antes do PR, como as suítes. |
-| Plano de agentes | P0.6, A5 e C1–C3 concluídos; o texto do A5 já está em `AGENTS.md`, núcleo, trilhas, acervo e adaptadores. A próxima onda (B1, E0a, D-CC, D-CU) mexe em `adaptadores/` e `testes/`. Define a sequência de `destilar`: docs com distill → inspeção documental → refute. | Partir do texto do A5, sequenciar as entregas (DM-3) e manter `trilhas/destilar.md` compatível com essa sequência. |
+| Plano de agentes | Estado no [painel](PLANO-AGENTES-TRILHAS.md#painel). Mexe em `adaptadores/` e `testes/`. Define a sequência de `destilar`: docs com distill → inspeção documental → refute. | Partir do texto do A5, sequenciar as entregas (DM-3) e manter `trilhas/destilar.md` compatível com essa sequência. |
 | Memória nativa dos runtimes | Runtimes podem manter memória própria fora do repositório (por exemplo, a auto memory do Claude Code em `~/.claude/projects/`). | Ela é pessoal e não substitui nem alimenta esta memória. Conhecimento para o time entra em `memoria/` por PR. |
 | Fronteira de repositórios | O produto tem Git próprio e está ignorado pelo Git do harness. | Conhecimento do produto acompanha o repositório do produto. |
 
@@ -289,7 +287,7 @@ O piloto manual pode começar após a entrega 1 e ser repetido depois da entrega
 
 ## 8. Adoção no produto e evolução posterior
 
-Depois do piloto, ler o `AGENTS.md` e os documentos vigentes do produto, escolher uma pasta compatível com sua organização e adotar o mesmo protocolo de notas. Como o README do harness informa que as instruções do produto não vêm no clone, conferir como distribuir essa orientação aos engenheiros antes de prometer descoberta automática ali.
+Depois do piloto, ler os documentos vigentes do produto, escolher uma pasta compatível com sua organização e adotar o mesmo protocolo de notas. O produto não tem instruções de agente próprias: a orientação aos agentes continua no harness, que é aberto como raiz também para trabalhar no produto.
 
 Teste local em 2026-10-06 (`MEM-2`): a estrutura foi aplicada ao produto em `bundles/.claude/memoria/`, pasta que o `.gitignore` do produto já ignora, sem nada rastreado nem enviado ao remoto. O índice é por objeto e aponta primeiro para os documentos existentes (`bp/BASE-DE-CONHECIMENTO.md` e os READMEs de cada objeto). Há duas notas de teste, e as opcionais `modulo`, `objeto` e `etapa` chaveiam a nota. `adaptadores/memoria.py` ganhou `--raiz`, `--pasta` e `sessao`. Um hook `SessionStart` no `settings.local.json` do produto, também ignorado, entrega o índice ao abrir o Claude Code em `bundles/`. O teste revelou que hash de commit só com dígitos vira número no YAML; o validador agora explica o erro. Pendente: observar uma sessão nova do produto e decidir onde a memória será versionada (hoje `bundles/.claude/` não chega a outro clone).
 
@@ -302,7 +300,7 @@ Busca semântica, serviço central, integração MCP ou uso da CLI do Obsidian s
 | ID | Decisão | Proposta | Decidido em 2026-10-06 |
 |---|---|---|---|
 | DM-1 | Quem aprova PRs que tocam `memoria/`. | O mesmo revisor dos PRs do harness, registrado em `memoria/README.md`. CODEOWNERS é opcional. | Proposta aceita. |
-| DM-2 | Runtime da fatia da Fase 1. | Cursor, para fechar `DONE` com prova do `validar` e das suítes. No Claude Code, fechar `BLOCKED` com o motivo (sem coleta) e pedir revisão do PR. | Claude Code em macOS, com hooks POSIX locais. A fatia fecha `BLOCKED` até o G2 do Claude Code, conforme o README do adaptador. |
+| DM-2 | Runtime da fatia da Fase 1. | Claude Code, que coleta prova depois do G2-CC e fecha `DONE` com o `validar` e as suítes. A trilha `docs` está em `agentes_obrigatorios`: a fatia chama `docs`, a inspeção do coordenador e o `refute`. | Claude Code em macOS, com hooks POSIX locais. O `MEM-1` foi executado antes do G2-CC e fechou `BLOCKED`. |
 | DM-3 | Ordem em relação ao plano de agentes. | A proposta original (antes de A1/A5) ficou superada: A1–A5 foram concluídos em 2026-10-05. Nova proposta: a parte documental da Entrega 1 pode correr em paralelo com a onda B1/E0a/D-CC/D-CU, porque os arquivos são disjuntos, exceto `README.md` e o HTML; `memoria.py` e seus testes entram depois do G1, para não alterar o controle do manifesto durante a onda. Commits separados, com o ID `MEM-1`. | G1 aprovado em 2026-10-05; Entrega 1 em branch própria a partir de `feat/engenheiro-bruno-lauria`, com o ID `MEM-1`. |
 | DM-4 | Integração no Claude Code antes do piloto. | Seção 5, Fase 4: só depois do piloto. | Antecipar só a entrega do índice no `SessionStart`, limitada; consulta registrada e `docs-distill` continuam na Fase 4. |
 

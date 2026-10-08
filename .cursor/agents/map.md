@@ -3,7 +3,7 @@ name: map
 description: Investigar fontes e dependências sem editar produto.
 model: inherit
 ---
-<!-- esteira-agentes source=872f7abaccc6aa4ef30173a7c83422955ed8829601e0f826fbf8da733675dda4 payload=72b7911137c8a11ecaa74203a46143697d967c54c7f7f5d8b236aac69ae530d2 -->
+<!-- esteira-agentes source=c41e91e7e818ad4c873b172620c7f59b9d5c9aa0deb1af3fb1949b58bd9a8c46 payload=bb8a87241dd54f549c5c36cab1e301ffb950421315b886e1bbddff6bc384b2eb -->
 # map
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -38,7 +38,7 @@ Selecionar apenas as pertinentes ao gatilho: `data-discovery`, `unity-catalog` e
 
 ## Saída
 
-Mapa verificável de fontes e referências, dependências, recorte sugerido e incertezas; incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir fatos de inferências e não afirmar que uma chamada foi comprovada: essa observação cabe ao adaptador.
+Mapa verificável de fontes e referências, dependências, recorte sugerido e incertezas; incluir execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir fatos de inferências e não afirmar que uma chamada foi comprovada: essa observação cabe ao adaptador. Em `correcao`, devolva sintoma, hipótese de causa, base (`direct`, `derived` ou `reported`) e evidência, para o coordenador registrar com `diagnosticar`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 
