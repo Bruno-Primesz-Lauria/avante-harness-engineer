@@ -370,6 +370,16 @@ class Hook(Pasta):
         self.assertEqual(saida, {})
         self.assertIn("SessionStart", (dados / "meu-projeto" / "erros.jsonl").read_text())
 
+    def test_worktree_do_app_cai_no_chat_do_projeto(self):
+        repo = self.repo()
+        subprocess.run(["git", "-C", str(repo), "commit", "-q", "--allow-empty", "-m", "x"], check=True,
+                       env={**__import__("os").environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+                            "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"})
+        worktree = repo / ".claude" / "worktrees" / "lucid-x"
+        subprocess.run(["git", "-C", str(repo), "worktree", "add", "-q", str(worktree)], check=True)
+        self.assertEqual(cli.projeto_de(str(worktree)), "meu-projeto")
+        self.assertEqual(cli.projeto_de(str(repo / "sub")), "meu-projeto")
+
     def test_fora_de_repositorio_e_sessao_filha_nao_registram(self):
         self.assertEqual(cli.hook({"hook_event_name": "Stop", "cwd": str(self.tmp)}, self.tmp), {})
 

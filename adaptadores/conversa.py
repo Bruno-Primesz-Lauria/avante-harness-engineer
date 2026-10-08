@@ -32,7 +32,12 @@ def projeto_de(cwd):
         return None
     feito = subprocess.run(["git", "-C", cwd, "rev-parse", "--show-toplevel"],
                            capture_output=True, text=True, timeout=5)
-    return Path(feito.stdout.strip()).name if feito.returncode == 0 and feito.stdout.strip() else None
+    raiz = feito.stdout.strip()
+    if feito.returncode != 0 or not raiz:
+        return None
+    # Worktree que o app desktop cria para a sessao (<projeto>/.claude/worktrees/<nome>) e o mesmo projeto.
+    principal, separador, _ = raiz.partition("/.claude/worktrees/")
+    return Path(principal if separador else raiz).name
 
 
 def abrir(dados, projeto):
