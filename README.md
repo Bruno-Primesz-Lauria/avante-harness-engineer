@@ -52,6 +52,8 @@ O que existe hoje. Gates, pendências e histórico: [painel do plano](PLANO-AGEN
 
 **Memória do time** (Fase 1 de [`plano_memoria_harness.md`](plano_memoria_harness.md)): notas em `memoria/` com metadados, índice mantido à mão e `adaptadores/memoria.py validar`, que confere estrutura, links, fontes e índice. Todos os runtimes recebem a orientação condicional pelo `AGENTS.md`. No Claude Code, o `SessionStart` também entrega os itens do índice, limitados a 40 linhas e 4000 caracteres. Ainda não existem busca, índice gerado, aviso de revalidação nem `docs-distill`. Compartilhamento entre engenheiros não observado (piloto da Fase 3).
 
+**Conversa contínua** ([`plano_conversa_continua.md`](plano_conversa_continua.md)): memória pessoal e local por projeto em `.execucoes/conversa/<projeto>/`, com log append-only dos transcripts do Claude Code, árvore de resumos de 512 bytes e visão de até 8.000 caracteres no `SessionStart`, mais `adaptadores/conversa.py zoom`. É advisory, abaixo do `memoria/`. C0 e C1 testadas; compactação (C2) ainda sem rodar contra o modelo; ligada só no produto, por hooks locais não versionados.
+
 **Skills Databricks**: as 10 de `.agents/skills/` valem para Cursor, Codex e OpenCode. O Claude Code recebe as `databricks:databricks-*` pelo plugin `databricks` do projeto, inclusive no subagente.
 
 **Observado em sessão real**: no Cursor e no Claude Code, os sete papéis em série, guarda negando no subagente e fatias de manutenção e docs fechando `DONE` com prova.
