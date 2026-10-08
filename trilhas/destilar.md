@@ -1,6 +1,8 @@
 # Destilar docs
 
-Usar quando: transformar padrão recorrente em instrução acionável, com fonte. O sinal `docs-distill` (não implementado) só apontaria candidato; ele não abre esta trilha sozinho.
+Usar quando: transformar padrão recorrente em instrução acionável, com fonte, ou registrar conhecimento verificado como nota da [memória do time](../memoria/README.md). O sinal `docs-distill` (não implementado) só apontaria candidato; ele não abre esta trilha sozinho. A forma `destilar` segue candidata.
+
+Instrução ou nota: o que o agente deve seguir sempre vai para o arquivo operacional (trilha, guarda, skill ou `AGENTS.md`). Contexto, motivo de decisão ou limite observado vai para nota em `memoria/`, que aponta para o arquivo operacional quando ele existir. Nota que só repete documento existente não entra.
 
 ## Passos
 
@@ -13,9 +15,9 @@ Com agentes: `docs`, com a capacidade `distill`, escreve no passo 2; sem `distil
 
 ## Aceite
 
-Superfície: a skill e as referências do adaptador, só se o contrato as autoriza. Escreva só nos arquivos autorizados.
+Superfície: a skill e as referências do adaptador, ou a nota e o índice em `memoria/`, só se o contrato os autoriza. Escreva só nos arquivos autorizados.
 
-Gatilho claro, instrução acionável, fonte rastreável, sem duplicação desnecessária. Link funcional e exemplo consistente com a fonte.
+Gatilho claro, instrução acionável, fonte rastreável, sem duplicação desnecessária. Link funcional e exemplo consistente com a fonte. Para nota: metadados completos, fonte acessível a partir de outro clone, nota ativa no índice e `python3 adaptadores/memoria.py validar` com exit 0 (no Windows, `py -3`).
 
 ## Fecho
 

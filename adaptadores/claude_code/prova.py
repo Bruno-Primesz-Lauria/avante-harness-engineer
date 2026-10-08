@@ -6,6 +6,7 @@ import re
 
 from formas import exigir
 from guarda_cwd import Operacao, avaliar_operacao
+from memorias import resumo_indice
 from protocolo import mensagem, traduzir
 from provas import Provas, gravar, ler
 
@@ -193,10 +194,18 @@ def tratar(evento, politica, raiz):
     sessao = evento.get("session_id")
     exigir(isinstance(sessao, str) and sessao, "session_id ausente")
     if nome == "SessionStart":
+        contexto = ("Sessao Claude Code para a esteira: " + sessao +
+                    ". O comando de prova seleciona esta sessao por CLAUDE_CODE_SESSION_ID.")
+        try:
+            indice = resumo_indice(raiz)
+        except (OSError, UnicodeDecodeError):
+            # Memoria indisponivel nao impede a sessao; o indice so orienta.
+            indice = None
+        if indice:
+            contexto += "\n\n" + indice
         return {"hookSpecificOutput": {
             "hookEventName": "SessionStart",
-            "additionalContext": ("Sessao Claude Code para a esteira: " + sessao +
-                                  ". O comando de prova seleciona esta sessao por CLAUDE_CODE_SESSION_ID."),
+            "additionalContext": contexto,
         }}
 
     if nome == "Stop" and evento.get("stop_hook_active") is True:

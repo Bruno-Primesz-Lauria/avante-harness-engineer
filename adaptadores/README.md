@@ -9,7 +9,7 @@ O núcleo define a política ([guardas](../guardas/README.md)). Cada runtime tra
 | [Codex](codex/README.md) | `PreToolUse` em `Bash` | Idem | Nenhuma | `gerenciar.py codex --instalar`. Revisar e confiar em `/hooks`. |
 | [OpenCode](opencode/README.md) | `tool.execute.before` em `bash` | Idem | Nenhuma | `gerenciar.py opencode --instalar`. Nova sessão. |
 
-Sem `--instalar`, `gerenciar.py` só mostra a configuração. Comandos a partir da raiz do harness: `py -3 adaptadores/gerenciar.py <runtime> [--instalar]`.
+Sem `--instalar`, `gerenciar.py` só mostra a configuração. Comandos a partir da raiz do harness: `py -3 adaptadores/gerenciar.py <runtime> [--instalar]`. Em macOS/Linux, `python3 adaptadores/gerenciar.py <runtime> --instalar --plataforma posix` gera a configuração local. Não a commite: o formato versionado é Windows.
 
 Instalar não prova ativação. Em cada runtime, observe uma negação real antes do efeito.
 
@@ -34,5 +34,6 @@ Um hook de um produto não vale como o de outro. Guarda obrigatória indisponív
 | Pergunta | Cartão, se existir. Senão, texto. | Ferramenta de pergunta ou texto. |
 | Agentes do fluxo | Papéis em `.claude/agents/`, a gerar de [`agentes/`](../agentes/) (B1/B2). Obrigatórios nas trilhas de `agentes_obrigatorios.claude_code`. | Cursor: sete papéis instalados em `.cursor/agents/` (B2-CU); O-CU/G2 pendentes. Obrigatórios nas trilhas de `agentes_obrigatorios.cursor`, hoje vazia. Codex e OpenCode ficam fora da chave: agente único, com delegação opcional. |
 | Persistência | Árvore de [`evidencia/layout.md`](../evidencia/layout.md), sob a raiz configurada. | Idem. |
+| Memória do time | `SessionStart` entrega os itens de `memoria/indice.md` (até 40 linhas e 4000 caracteres), além da orientação do `AGENTS.md`. | Só a orientação condicional do `AGENTS.md`; leitura e busca pelo agente. |
 
 Subagentes: definição neutra em [`agentes/`](../agentes/); a versão nativa do Cursor está instalada em `.cursor/agents/`; a do Claude Code ainda não foi gerada. Não inclua trilha em `agentes_obrigatorios` de um runtime antes de seus agentes estarem instalados e observados (G2). Instalação e observação por runtime ficam nos metadados de [`agentes/roteamento.yaml`](../agentes/roteamento.yaml). Skills do projeto: não implementadas.

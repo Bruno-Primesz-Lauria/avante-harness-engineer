@@ -10,6 +10,7 @@ Contexto do projeto Avante (vocabulário, etapas, papéis): `nucleo/contexto-ava
 - O produto fica em `prj-avante-analytics-adb/`, com Git próprio. Leia o `AGENTS.md` dele antes de trabalhar ali; ele prevalece nesse escopo.
 - Registros do harness ficam em `.execucoes/`, nunca nos arquivos do produto.
 - Leia `nucleo/contexto-avante.md` quando o pedido ou a fonte citar Mock, SIT, UAT, etapas do objeto, módulos SAP ou papéis (PO, Key User, etc.).
+- Consulte `memoria/` (índice em `memoria/indice.md`) quando o pedido tocar assunto ou caminho com nota. Nota é advisory: não é regra, autorização nem prova, e a fonte viva prevalece. `.execucoes/` guarda registros locais; `memoria/` guarda conhecimento revisado por PR (`memoria/README.md`).
 
 ## Caminho simples ou estruturado
 
@@ -32,4 +33,4 @@ Contexto do projeto Avante (vocabulário, etapas, papéis): `nucleo/contexto-ava
 
 ## Mudanças no próprio harness
 
-Verifique com `py -3 -m unittest discover -s testes -p teste_*.py -v` e `node testes/teste_opencode.mjs`.
+Verifique com `py -3 -m unittest discover -s testes -p teste_*.py -v`, `node testes/teste_opencode.mjs` e `py -3 adaptadores/memoria.py validar`. Em macOS/Linux, use `.venv/bin/python` no lugar de `py -3`.

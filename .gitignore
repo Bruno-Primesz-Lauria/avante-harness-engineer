@@ -4,3 +4,4 @@ __pycache__/
 /prj-avante-analytics-adb/
 testes/.fixtures/
 *.backup.*
+memoria/.obsidian/

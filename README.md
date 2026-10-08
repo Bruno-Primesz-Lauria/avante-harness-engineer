@@ -27,6 +27,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 | `.agents/skills/` | 10 skills Databricks (aitools v0.2.10); roteamento em [`trilhas/`](trilhas/README.md#skills-databricks). |
 | [`adaptadores/`](adaptadores/README.md) | Tradução dos eventos de cada runtime para a mesma guarda. |
 | [`avaliacao/`](avaliacao/README.md) | Oito cenários e métricas para medir a política. |
+| [`memoria/`](memoria/README.md) | Memória do time: decisões, aprendizados e padrões verificados, com fonte, revisados por PR. Advisory. |
 | `implementacao/`, `configuracao/`, `testes/` | Código da guarda e da prova, política de caminhos e testes. |
 | `.execucoes/` | Registros locais: provas, sessões e diagnósticos. Fora do Git. |
 
@@ -43,6 +44,8 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 **Só instrução** (depende do modelo): escolher o caminho e a trilha, iniciar a fatia antes de editar, perguntar pouco, preservar trabalho prévio, coordenar dados do sandbox, respeitar a fronteira do produto.
 
 **Fora da guarda**: terminal manual, MCP, SDK, REST, edição de arquivo e ferramentas que não são shell.
+
+**Memória do time** (Fase 1 de [`plano_memoria_harness.md`](plano_memoria_harness.md)): notas em `memoria/` com metadados, índice mantido à mão e `adaptadores/memoria.py validar`, que confere estrutura, links, fontes e índice. Todos os runtimes recebem a orientação condicional pelo `AGENTS.md`. No Claude Code, o `SessionStart` também entrega os itens do índice, limitados a 40 linhas e 4000 caracteres. Ainda não existem busca, índice gerado, aviso de revalidação nem `docs-distill`. Compartilhamento entre engenheiros não observado (piloto da Fase 3).
 
 **Skills Databricks**: as 10 de `.agents/skills/` valem para Cursor, Codex e OpenCode. O Claude Code recebe as 31 `databricks:databricks-*` pelo plugin `databricks` do projeto (CLI 2.1.289), inclusive no subagente.
 
@@ -70,7 +73,8 @@ py -3 -m venv .venv
 ```
 
 - Requisitos: Python 3.12+ com PyYAML (`requirements.txt`) e Node para o teste do OpenCode. O hook usa o Python do `.venv` quando ele existe.
-- Os hooks de Cursor, Claude Code e OpenCode já vêm no clone, no formato Windows (`py -3`). Em Linux/macOS, gere de novo com `python3 adaptadores/gerenciar.py <runtime> --instalar`.
+- Os hooks de Cursor, Claude Code e OpenCode já vêm no clone, no formato Windows (`py -3`). Em Linux/macOS, gere de novo com `python3 adaptadores/gerenciar.py <runtime> --instalar` e não commite a configuração gerada. Sem isso, no Claude Code a guarda fica desligada sem aviso ([nota](memoria/aprendizados/claude-code-hooks-windows-desligam-guarda-no-macos.md)).
+- Em macOS/Linux, crie o `.venv` com `python3.12` ou mais novo (`python3.14 -m venv .venv`; o executável fica em `.venv/bin/python`). O `python3` do Anaconda ou do sistema pode ser anterior e quebrar a prova ([nota](memoria/aprendizados/python-anterior-a-3-12-quebra-prova.md)).
 - Sem o clone do produto, a guarda nega toda chamada `databricks bundle`. Ela não procura outro checkout.
 - O `AGENTS.md` e o `CLAUDE.md` do produto não são versionados; um clone novo não os traz.
 - Versione mudanças de produto no repositório dele (`git -C prj-avante-analytics-adb ...`).
@@ -101,4 +105,7 @@ O layout implementado está em [`evidencia/layout.md`](evidencia/layout.md) e na
 ```powershell
 py -3 -m unittest discover -s testes -p teste_*.py -v
 node testes/teste_opencode.mjs
+py -3 adaptadores/memoria.py validar
 ```
+
+Em macOS/Linux, troque `py -3` por `.venv/bin/python` e coloque o padrão entre aspas (`-p 'teste_*.py'`).

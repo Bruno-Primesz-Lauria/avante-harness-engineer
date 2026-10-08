@@ -14,7 +14,7 @@ Escolha a trilha pelo objetivo. Ela roda em um de dois modos, pela chave `agente
 | `docs` | escrever ou atualizar documento | [docs.md](docs.md) |
 | `validacao` | verificar até um degrau, sem corrigir código | [validacao.md](validacao.md) |
 | `review` | revisar um recorte, sem reescrever | [review.md](review.md) |
-| `destilar` | transformar padrão recorrente em instrução com fonte | [destilar.md](destilar.md) |
+| `destilar` | transformar padrão recorrente em instrução com fonte, ou conhecimento verificado em nota de `memoria/` | [destilar.md](destilar.md) |
 
 ## Formato de cada trilha
 

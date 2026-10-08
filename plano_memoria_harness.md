@@ -1,6 +1,8 @@
 # Plano de implementação da memória compartilhada do harness
 
-Data: 2026-10-03. Estado: proposta revisada, não iniciada. Reconferida em 2026-10-05 contra a branch `feat/engenheiro-bruno-lauria` (commit `a0a5604`), depois de A1–A5, C1–C3 e P0.5 do plano de agentes.
+Data: 2026-10-03. Reconferida em 2026-10-05 contra a branch `feat/engenheiro-bruno-lauria` (commit `a0a5604`), depois de A1–A5, C1–C3 e P0.5 do plano de agentes.
+
+Estado em 2026-10-06: Fase 1 implementada na branch `feat/memoria-claude-macos` (`MEM-1`), executada no Claude Code em macOS. Por decisão humana, a entrega antecipou um item da Fase 4: o `SessionStart` do Claude Code entrega os itens do índice, com limite de volume. Fases 2 e 3 e o restante da Fase 4 não foram iniciados. Decisões registradas na seção 9.
 
 ## Intenção
 
@@ -183,7 +185,7 @@ Dependência: Fase 0.
 | `memoria/indice.md` | Índice por assunto com as notas iniciais. |
 | `memoria/modelos/nota.md` | Modelo com metadados e estrutura de conteúdo. |
 | `memoria/<tipo>/*.md` | Duas ou três notas reais. |
-| `implementacao/memoria.py` e `adaptadores/memoria.py` | Leitura de metadados e CLI `validar`: campos e enums; `id` igual ao nome e único; `tipo` coerente com a pasta; `substituida_por` existente; nota ativa presente no índice; links relativos e `fontes` locais resolvidos; wikilink e caminho absoluto recusados. Código de saída diferente de zero em erro. |
+| `implementacao/memorias.py` e `adaptadores/memoria.py` | O núcleo se chama `memorias.py` para não colidir em nome com o CLI no `sys.path`, como `provas.py` e `prova.py`. Leitura de metadados e CLI `validar`: campos e enums; `id` igual ao nome e único; `tipo` coerente com a pasta; `substituida_por` existente; nota ativa presente no índice; links relativos e `fontes` locais resolvidos; wikilink e caminho absoluto recusados. Código de saída diferente de zero em erro. |
 | `testes/teste_memoria.py` | Estado válido e uma falha real por regra. É descoberto pela suíte do `AGENTS.md`. |
 
 Aceite:
@@ -234,7 +236,7 @@ Dependência: piloto concluído e benefício demonstrado. O schema 3.2 (C1–C3)
 
 1. Conferir a documentação oficial atual e os eventos disponíveis nas versões usadas pelo time.
 2. Reutilizar a política e o CLI comuns; cada adaptador traduz somente os eventos do seu runtime.
-3. Priorizar consulta orientada à tarefa. No início da sessão, carregar no máximo a orientação ou o índice quando ainda não houver assunto suficiente para selecionar notas.
+3. Priorizar consulta orientada à tarefa. No início da sessão, carregar no máximo a orientação ou o índice quando ainda não houver assunto suficiente para selecionar notas. Já implementado no Claude Code em 2026-10-06, antes do piloto: `SessionStart` entrega os itens do índice, até 40 linhas e 4000 caracteres (`resumo_indice` em `implementacao/memorias.py`). Observação em sessão nova pendente.
 4. Implementar o `docs-distill` do acervo: no fechamento, sinalizar candidatos com fontes, sem gravar nota nem abrir PR. Atualizar sua situação em `acervo/README.md` só depois de observado.
 5. Registrar consultas e candidaturas em `.execucoes/`, com identificação das notas e da revisão usada, sem gravar no vault a cada chamada de ferramenta. Atualizar `evidencia/layout.md`.
 6. Ativar gradualmente por runtime e observar sessões reais antes de declarar a integração disponível.
@@ -289,16 +291,19 @@ O piloto manual pode começar após a entrega 1 e ser repetido depois da entrega
 
 Depois do piloto, ler o `AGENTS.md` e os documentos vigentes do produto, escolher uma pasta compatível com sua organização e adotar o mesmo protocolo de notas. Como o README do harness informa que as instruções do produto não vêm no clone, conferir como distribuir essa orientação aos engenheiros antes de prometer descoberta automática ali.
 
+Teste local em 2026-10-06 (`MEM-2`): a estrutura foi aplicada ao produto em `bundles/.claude/memoria/`, pasta que o `.gitignore` do produto já ignora, sem nada rastreado nem enviado ao remoto. O índice é por objeto e aponta primeiro para os documentos existentes (`bp/BASE-DE-CONHECIMENTO.md` e os READMEs de cada objeto). Há duas notas de teste, e as opcionais `modulo`, `objeto` e `etapa` chaveiam a nota. `adaptadores/memoria.py` ganhou `--raiz`, `--pasta` e `sessao`. Um hook `SessionStart` no `settings.local.json` do produto, também ignorado, entrega o índice ao abrir o Claude Code em `bundles/`. O teste revelou que hash de commit só com dígitos vira número no YAML; o validador agora explica o erro. Pendente: observar uma sessão nova do produto e decidir onde a memória será versionada (hoje `bundles/.claude/` não chega a outro clone).
+
 Conhecimento específico de negócio acompanha o produto. Conhecimento de ferramentas e processo permanece no harness. Referências entre repositórios identificam o projeto e a revisão; o índice aponta para a fonte canônica, evitando cópias divergentes.
 
 Busca semântica, serviço central, integração MCP ou uso da CLI do Obsidian são evoluções possíveis se o piloto revelar uma necessidade concreta. A base Markdown revisada no Git continua sendo a referência compartilhada.
 
 ## 9. Decisões pendentes
 
-| ID | Decisão | Proposta |
-|---|---|---|
-| DM-1 | Quem aprova PRs que tocam `memoria/`. | O mesmo revisor dos PRs do harness, registrado em `memoria/README.md`. CODEOWNERS é opcional. |
-| DM-2 | Runtime da fatia da Fase 1. | Cursor, para fechar `DONE` com prova do `validar` e das suítes. No Claude Code, fechar `BLOCKED` com o motivo (sem coleta) e pedir revisão do PR. |
-| DM-3 | Ordem em relação ao plano de agentes. | A proposta original (antes de A1/A5) ficou superada: A1–A5 foram concluídos em 2026-10-05. Nova proposta: a parte documental da Entrega 1 pode correr em paralelo com a onda B1/E0a/D-CC/D-CU, porque os arquivos são disjuntos, exceto `README.md` e o HTML; `memoria.py` e seus testes entram depois do G1, para não alterar o controle do manifesto durante a onda. Commits separados, com o ID `MEM-1`. |
+| ID | Decisão | Proposta | Decidido em 2026-10-06 |
+|---|---|---|---|
+| DM-1 | Quem aprova PRs que tocam `memoria/`. | O mesmo revisor dos PRs do harness, registrado em `memoria/README.md`. CODEOWNERS é opcional. | Proposta aceita. |
+| DM-2 | Runtime da fatia da Fase 1. | Cursor, para fechar `DONE` com prova do `validar` e das suítes. No Claude Code, fechar `BLOCKED` com o motivo (sem coleta) e pedir revisão do PR. | Claude Code em macOS, com hooks POSIX locais. A fatia fecha `BLOCKED` até o G2 do Claude Code, conforme o README do adaptador. |
+| DM-3 | Ordem em relação ao plano de agentes. | A proposta original (antes de A1/A5) ficou superada: A1–A5 foram concluídos em 2026-10-05. Nova proposta: a parte documental da Entrega 1 pode correr em paralelo com a onda B1/E0a/D-CC/D-CU, porque os arquivos são disjuntos, exceto `README.md` e o HTML; `memoria.py` e seus testes entram depois do G1, para não alterar o controle do manifesto durante a onda. Commits separados, com o ID `MEM-1`. | G1 aprovado em 2026-10-05; Entrega 1 em branch própria a partir de `feat/engenheiro-bruno-lauria`, com o ID `MEM-1`. |
+| DM-4 | Integração no Claude Code antes do piloto. | Seção 5, Fase 4: só depois do piloto. | Antecipar só a entrega do índice no `SessionStart`, limitada; consulta registrada e `docs-distill` continuam na Fase 4. |
 
 Referências externas consultadas para o desenho: [armazenamento de dados do Obsidian](https://obsidian.md/help/Files+and+folders/How+Obsidian+stores+data), [propriedades das notas](https://obsidian.md/help/properties) e [CLI do Obsidian](https://obsidian.md/help/cli). Revalidar requisitos de versão e instalação ao implementar uma integração opcional.
