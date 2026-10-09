@@ -1,5 +1,6 @@
 __pycache__/
 .execucoes/
+configuracao/perfil.local.json
 .venv/
 /prj-avante-analytics-adb/
 testes/.fixtures/
