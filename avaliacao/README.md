@@ -6,6 +6,8 @@ Observação dos agentes no Cursor (O-CU, gate G2): kit em [`observacao-cursor/`
 
 Observação dos agentes no Claude Code (O-CC, gate G2): kit em [`observacao-claude-code/`](observacao-claude-code/roteiro.md). Estado de cada observação: painel do [plano](../PLANO-AGENTES-TRILHAS.md#painel).
 
+Observação dos agentes no OpenCode (O-OC, gate G2): kit isolado em [observacao-opencode/roteiro.md](observacao-opencode/roteiro.md). O validador local simula as fatias; sessão real e aceite humano continuam pendentes. Estado no [painel](../PLANO-AGENTES-TRILHAS.md#painel).
+
 ## Como rodar
 
 Rode cada cenário duas vezes: com a política e sem a política adicional, mantendo os mesmos controles obrigatórios. Faça ao menos três repetições por cenário e por configuração (48 execuções). Fixe snapshot do harness, modelo, ferramentas e critérios, alterne a ordem e registre as versões. Execução simulada é registrada como simulação.
