@@ -30,6 +30,7 @@ A raiz é o checkout `user-harness-esteira/`. Abra sempre essa pasta, não a pas
 | `adaptadores/executar.py` | Lê UTF-8/JSON, carrega a política, chama a guarda, grava o diagnóstico e responde no protocolo nativo. Falha tratada sai com código 2. |
 | `adaptadores/protocolo.py` | Normaliza os quatro protocolos e traduz a decisão de volta. |
 | `adaptadores/gerenciar.py` | Mostra ou instala a configuração, preservando o que já existe. |
+| `adaptadores/gerar_agentes.py` | Gera e verifica os sete agentes nativos para Claude Code, Cursor e OpenCode; protege arquivos com edição manual. |
 | `adaptadores/prova.py` | CLI `iniciar`, `estado` e `fechar` da fatia. Uso: [evidencia/uso.md](../evidencia/uso.md). |
 | `adaptadores/cursor/prova.py` | Traduz os eventos de coleta do Cursor. |
 | `adaptadores/opencode/esteira.js` | Ponte do plugin. Chama Python sem shell, com timeout, e lança erro quando a guarda nega ou falha. |

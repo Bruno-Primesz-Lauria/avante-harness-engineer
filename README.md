@@ -9,7 +9,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 | Cursor (principal) | `AGENTS.md` | `.cursor/hooks.json` | Sim, observada em sessão real | `.cursor/agents/`, obrigatórios em `manutencao`, `correcao`, `novo`, `docs` e `review` |
 | Claude Code | `CLAUDE.md` → `@AGENTS.md` | `.claude/settings.json` | Sim, observada em sessão real | `.claude/agents/`, obrigatórios em `manutencao`, `correcao`, `novo`, `docs` e `review` |
 | Codex | `AGENTS.md` | Só após `gerenciar.py codex --instalar` | Não | Agente único |
-| OpenCode | `AGENTS.md` | `.opencode/plugins/esteira.js` | Não | Agente único |
+| OpenCode | `AGENTS.md` | `.opencode/plugins/esteira.js` | Não | Sete definições geradas em `.opencode/agents/`; observação G2 pendente |
 
 `AGENTS.md` é curto e traz as regras que mais importam. O resto é lido sob demanda. Detalhes por runtime: [adaptadores](adaptadores/README.md).
 
@@ -110,7 +110,7 @@ Prepare o clone (acima) uma vez. Depois:
 4. Na trilha `manutencao`, o agente coordena e delega aos papéis um de cada vez. O subagente pode rodar em segundo plano: o hook devolve `[esteira] Chamada <papel> ... agente_id=...` e registra a chamada quando ele termina, então o coordenador espera o fim antes do passo seguinte.
 5. Só conta como pronto o `DONE` aceito pelo `fechar`. Recusa vira nova verificação ou fecho `BLOCKED`, `FAILED` ou `DECIDE`, com motivo.
 
-**Codex e OpenCode**: guarda do shell apenas; agente único e sem prova de fatia.
+**Codex e OpenCode**: sem prova de fatia. Codex mantém agente único; OpenCode tem sete definições nativas geradas, ainda pendentes de observação e gate G2-OC. A integração de coleta de provas começa em D-OC.
 
 Em todos: nunca peça `deploy` ou `run` sem autorização explícita, e não contorne uma negação da guarda com outra ferramenta.
 

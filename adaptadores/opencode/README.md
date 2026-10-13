@@ -3,11 +3,15 @@
 Visão geral e tabela: [adaptadores](../README.md).
 
 - Configuração: `.opencode/plugins/esteira.js`, gerada com `py -3 adaptadores/gerenciar.py opencode --instalar`. Importa a ponte `esteira.js` desta pasta por caminho relativo, então o clone pode mudar de diretório. O instalador não sobrescreve um plugin diferente.
+- Agentes nativos: sete definições em `.opencode/agents/`, geradas de `agentes/` com `py -3 adaptadores/gerar_agentes.py --instalar opencode`. Para conferir as definições dos três runtimes, rode `py -3 adaptadores/gerar_agentes.py --verificar`.
+- O OpenCode carrega essas definições como `mode: subagent`; as permissões por papel derivam de `FERRAMENTAS_CLAUDE` e o modelo é herdado da sessão. Carregue skills pertinentes pela ferramenta nativa `skill`, usando os nomes `databricks-<skill>`.
+- `opencode.json` pede confirmação para `databricks bundle *`. É uma camada adicional; a guarda do harness continua decidindo cwd, target, perfil e operação.
 - `tool.execute.before` da ferramenta `bash`.
 - A ponte chama `adaptadores/entrada.py` sem shell, com timeout de 10 s. Lança erro e impede a chamada quando a guarda nega, falha, responde algo inválido ou demora demais.
 - O cwd vem de `args.workdir`, ou do prefixo literal. A ponte não altera argumentos.
 - Não coleta prova nem retoma fecho.
 - Em fatias estruturadas, informe `--runtime opencode` em cada comando `adaptadores/prova.py`; OpenCode não é detectado automaticamente nem pode ser incluído em `agentes_obrigatorios`.
+- As definições dos sete papéis estão geradas, mas a observação dos papéis em sessão real e a ativação em trilha aguardam o gate humano G2-OC. Coleta de provas e retomada de fecho continuam pendentes de D-OC.
 - Confira: inicie uma sessão nova para carregar o plugin. Teste da ponte: `node testes/teste_opencode.mjs`.
 
 ## Comportamento observado do runtime
