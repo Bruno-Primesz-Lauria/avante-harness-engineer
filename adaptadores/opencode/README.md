@@ -9,3 +9,17 @@ Visão geral e tabela: [adaptadores](../README.md).
 - Não coleta prova nem retoma fecho.
 - Em fatias estruturadas, informe `--runtime opencode` em cada comando `adaptadores/prova.py`; OpenCode não é detectado automaticamente nem pode ser incluído em `agentes_obrigatorios`.
 - Confira: inicie uma sessão nova para carregar o plugin. Teste da ponte: `node testes/teste_opencode.mjs`.
+
+## Comportamento observado do runtime
+
+Observado em 13/10/2026 no OpenCode CLI/TUI 1.18.35, Windows. Os registros da sonda temporária ficam em `.execucoes/sondagem-opencode/eventos.jsonl`; ela não integra o plugin de produção.
+
+- `tool.execute.before` recebe `input.tool`, `sessionID` e `callID`; `output.args` contém os argumentos. `tool.execute.after` recebe também `args` na entrada e devolve `title`, `output` e `metadata`. Bash concluído com falha teve `metadata.exit: 1`; timeout teve `metadata.exit: null` e a mensagem de timeout em `output`.
+- Em `task`, `args.subagent_type` identifica o papel. O retorno observado foi síncrono (`completed`) e trouxe em `metadata` `parentSessionId`, `sessionId` e o modelo. `session.created` do filho trouxe `info.parentID`; o Bash do filho usou o `sessionID` da sessão filha, igual ao `metadata.sessionId` do `task`.
+- `session.idle` trouxe `properties.sessionID`. Uma chamada a `client.session.prompt` nesse evento gerou a resposta seguinte no TUI. No `opencode run` headless, a mensagem foi aceita e apareceu no histórico, mas o processo encerrou antes de gerar a resposta; o follow-up foi confirmado no TUI.
+- `shell.env` recebeu `cwd`, `sessionID` e `callID`. Na sonda, os valores injetados `ESTEIRA_SESSAO=<sessionID>` e `ESTEIRA_RUNTIME=opencode` chegaram ao Python tanto no agente principal quanto no subagente.
+- `.opencode/agents/` carregou um agente Markdown temporário com `description`, `mode: subagent` e `permission`. Sem `model` no agente, `chat.params` mostrou o mesmo modelo escolhido na sessão principal (`db-anthropic-models/claude-haiku-4-5`). A resposta do subagente reproduziu o diretório de bundle de `AGENTS.md`; o prompt de sistema não é exposto pelo hook, então esse ponto é uma observação comportamental.
+- O subagente chamou a ferramenta nativa `skill` e carregou `databricks-core` de `.agents/skills/databricks-core/`.
+- Um `opencode.json` temporário de projeto, sem `provider` nem `model`, preservou a lista dos cinco modelos de `opencode models`; uma chamada ao modelo selecionado respondeu `OK`. A configuração global e suas credenciais não foram lidas nem alteradas.
+
+Esses resultados descrevem a versão observada. Timeout e erro foram exercitados; o comportamento de outros provedores/modelos não foi sondado.
