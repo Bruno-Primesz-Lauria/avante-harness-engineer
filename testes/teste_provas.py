@@ -102,11 +102,13 @@ class ProvasTestes(unittest.TestCase):
     def hook(self, nome, **extras):
         return tratar(self.evento(nome, **extras), self.politica, self.raiz)
 
-    def chamar_adaptador_prova(self, argumentos, claude_code_session_id=""):
+    def chamar_adaptador_prova(self, argumentos, claude_code_session_id="", esteira_runtime=None):
         saida = io.StringIO()
         erro = io.StringIO()
+        ambiente = {"CLAUDE_CODE_SESSION_ID": claude_code_session_id,
+                    "ESTEIRA_RUNTIME": esteira_runtime or ""}
         with patch.object(adaptador_prova, "RAIZ", self.raiz), \
-             patch.dict(os.environ, {"CLAUDE_CODE_SESSION_ID": claude_code_session_id}):
+             patch.dict(os.environ, ambiente):
             with redirect_stdout(saida), redirect_stderr(erro):
                 codigo = adaptador_prova.principal(argumentos)
         return codigo, saida.getvalue(), erro.getvalue()
@@ -608,6 +610,83 @@ class ProvasTestes(unittest.TestCase):
                 conferido = provas.conferir()
                 self.assertEqual(conferido["status"], "DONE")
                 self.assertTrue(conferido["fecho_valido"])
+
+    def test_opencode_aceita_chave_futura_e_cli_detecta_runtime_sem_ativar_producao(self):
+        politica_producao = ler(RAIZ / "configuracao/politica.json")["agentes_obrigatorios"]
+        self.assertNotIn("opencode", politica_producao)
+
+        self.politica["agentes_obrigatorios"]["opencode"] = ["manutencao"]
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        self.contrato["trilha"] = "manutencao"
+        contrato_path = self.raiz / "contrato-opencode.yaml"
+        contrato_path.write_text(json.dumps(self.contrato), encoding="utf-8")
+
+        sessao_opencode = "sessao-cli-opencode-detectado"
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--sessao", sessao_opencode, "iniciar", str(contrato_path)], esteira_runtime="opencode")
+        self.assertEqual(codigo, 0, erro)
+        provas_opencode = Provas(self.raiz, self.politica["registros_raiz"], sessao_opencode,
+                                 runtime="opencode")
+        estado = provas_opencode.estado(provas_opencode.pasta())
+        self.assertEqual(estado["runtime"], "opencode")
+        self.assertTrue(provas_opencode.ativada("manutencao", "opencode"))
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--sessao", sessao_opencode, "fechar", "--status", "BLOCKED",
+             "--resultado", "Deteccao pelo ambiente"], esteira_runtime="opencode")
+        self.assertEqual(codigo, 0, erro)
+        self.assertEqual(provas_opencode.conferir()["status"], "BLOCKED")
+
+        self.politica["agentes_obrigatorios"]["cursor"] = ["correcao"]
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        self.contrato["trilha"] = "correcao"
+        contrato_path.write_text(json.dumps(self.contrato), encoding="utf-8")
+        sessao_override = "sessao-cli-runtime-explicito"
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--runtime", "cursor", "--sessao", sessao_override, "iniciar", str(contrato_path)],
+            esteira_runtime="opencode")
+        self.assertEqual(codigo, 0, erro)
+        provas_override = Provas(self.raiz, self.politica["registros_raiz"], sessao_override,
+                                 runtime="cursor")
+        self.assertEqual(provas_override.estado(provas_override.pasta())["runtime"], "cursor")
+        codigo, _, erro = self.chamar_adaptador_prova(
+            ["--runtime", "cursor", "--sessao", sessao_override, "fechar", "--status", "BLOCKED",
+             "--resultado", "A opcao explicita prevaleceu sobre ESTEIRA_RUNTIME"], esteira_runtime="opencode")
+        self.assertEqual(codigo, 0, erro)
+
+    def test_manifesto_de_shell_opencode_inclui_controles_do_runtime(self):
+        self.politica["agentes_obrigatorios"]["opencode"] = ["manutencao"]
+        (self.raiz / "configuracao/politica.json").write_text(json.dumps(self.politica), encoding="utf-8")
+        self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-shell-opencode", runtime="opencode")
+        self.contrato["trilha"] = "manutencao"
+        self.iniciar()
+        inicio = datetime.now(timezone.utc).isoformat()
+        self.p.registrar_chamada("task-prep", "test", "opencode", [{"nome": "agente_id", "valor": "prep"}],
+                                 inicio, inicio, "concluida")
+        self.p.registrar_chamada("task-implement", "implement", "opencode",
+                                 [{"nome": "agente_id", "valor": "implement"}], inicio, inicio, "concluida")
+
+        pasta = self.p.pasta()
+        self.assertTrue(self.p.antes("bash-opencode", "python teste.py", str(self.raiz), "1.18.35",
+                                     "sessao-test-filho", runtime="opencode"))
+        manifesto = ler(pasta / "tentativas/001/manifesto.json")
+        self.assertIn(".opencode/plugins/esteira.js", manifesto["controle"])
+        self.assertIn("opencode.json", manifesto["controle"])
+        self.assertIn(".opencode/agents", manifesto["controle"])
+        resultado = self.p.depois("bash-opencode", "python teste.py", 0, "ok")
+        self.assertEqual(resultado["resultado"], "pass")
+        estado = self.p.estado(pasta)
+        prova = ler(pasta / estado["provas"]["c1"]["ref"])
+        self.assertEqual(prova["dados"]["agente_id"], "sessao-test-filho")
+
+    def test_manifesto_usa_runtime_da_sessao_sem_mudar_o_padrao_legado(self):
+        self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-shell-claude",
+                        runtime="claude_code")
+        self.iniciar()
+        pasta = self.p.pasta()
+        self.assertTrue(self.p.antes("bash-claude", "python teste.py", str(self.raiz), "claude_code"))
+        controles = ler(pasta / "tentativas/001/manifesto.json")["controle"]
+        self.assertIn(".claude/settings.json", controles)
+        self.assertNotIn(".cursor/hooks.json", controles)
 
     def test_runtime_ausente_e_chave_codex_na_politica_seguem_recusados(self):
         self.politica["agentes_obrigatorios"]["cursor"] = ["manutencao"]

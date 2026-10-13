@@ -60,6 +60,23 @@ def principal(runtime, caminho=None):
                     raise
             print(json.dumps(resposta, ensure_ascii=True))
             return 0
+        if runtime == "opencode":
+            from opencode.prova import tratar
+            entrada_opencode = evento.get("input") if isinstance(evento, dict) else None
+            before_bash = (
+                isinstance(evento, dict) and evento.get("evento") == "tool.execute.before" and
+                isinstance(entrada_opencode, dict) and entrada_opencode.get("tool") == "bash"
+            )
+            if before_bash:
+                resposta = tratar(evento, politica, RAIZ)
+            else:
+                try:
+                    resposta = tratar(evento, politica, RAIZ)
+                except Exception:
+                    # Somente before de Bash bloqueia; telemetria e retomada são best-effort.
+                    resposta = {}
+            print(json.dumps(resposta, ensure_ascii=True))
+            return 0
         operacao = normalizar(runtime, evento)
         decisao = avaliar_operacao(operacao, politica)
         if decisao.decisao != "nao_aplica":

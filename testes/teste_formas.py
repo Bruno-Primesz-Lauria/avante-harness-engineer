@@ -171,10 +171,14 @@ class FormasTestes(unittest.TestCase):
             "status": "concluida",
         }
         self.verificar(self.evento("chamada", dados))
+        for runtime in ("claude_code", "cursor", "opencode"):
+            with self.subTest(runtime=runtime):
+                self.verificar(self.evento("chamada", {**dados, "runtime": runtime}))
         for alterar in (
             lambda d: d.update(ids_observados=[]),
             lambda d: d.update(papel="coordenador"),
             lambda d: d.update(runtime="inexistente"),
+            lambda d: d.update(runtime="codex"),
             lambda d: d.update(status="pass"),
             lambda d: d.update(fim="2026-10-03T11:59:59+00:00"),
             lambda d: d.update(inicio="2026-10-03T12:00:00"),

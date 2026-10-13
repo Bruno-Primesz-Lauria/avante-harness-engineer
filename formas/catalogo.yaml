@@ -38,7 +38,7 @@ enums:
   caminho: [simples, estruturado]
   aceite_tipo: [teste, inspecao_documental, analise_codigo, ambiente, paridade, validacao_dados]
   papel_agente: [map, config, implement, test, refute, docs, dab]
-  runtime_agente: [claude_code, cursor]
+  runtime_agente: [claude_code, cursor, opencode]
   status_chamada: [concluida, falhou, bloqueada, cancelada, inconclusiva]
   decisao_triagem: [procedente, descartado]
   severidade_achado: [critica, alta, media, baixa]

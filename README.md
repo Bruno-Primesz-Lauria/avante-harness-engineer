@@ -9,7 +9,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 | Cursor (principal) | `AGENTS.md` | `.cursor/hooks.json` | Sim, observada em sessão real | `.cursor/agents/`, obrigatórios em `manutencao`, `correcao`, `novo`, `docs` e `review` |
 | Claude Code | `CLAUDE.md` → `@AGENTS.md` | `.claude/settings.json` | Sim, observada em sessão real | `.claude/agents/`, obrigatórios em `manutencao`, `correcao`, `novo`, `docs` e `review` |
 | Codex | `AGENTS.md` | Só após `gerenciar.py codex --instalar` | Não | Agente único |
-| OpenCode | `AGENTS.md` | `.opencode/plugins/esteira.js` | Não | Sete definições geradas em `.opencode/agents/`; observação G2 pendente |
+| OpenCode | `AGENTS.md` | `.opencode/plugins/esteira.js` | Ponte implementada e testada localmente; observação integrada pendente | Sete definições geradas em `.opencode/agents/`; observação G2 pendente |
 
 `AGENTS.md` é curto e traz as regras que mais importam. O resto é lido sob demanda. Detalhes por runtime: [adaptadores](adaptadores/README.md).
 
@@ -43,6 +43,7 @@ O que existe hoje. Gates, pendências e histórico: [painel do plano](PLANO-AGEN
 - Target `dev` só passa com autorização registrada na política. Hoje não há nenhuma.
 - SQL ad hoc pela CLI só lê; escrita é negada.
 - No Cursor e no Claude Code, `prova.py fechar` recusa `DONE` sem prova atual; o `stop` pede correção (no Cursor até duas vezes; no Claude Code uma vez por turno, e não enquanto um subagente roda).
+- No OpenCode, o plugin captura verificações Bash declaradas, relaciona Task e sessão filha e pede correção de fecho no `session.idle` por até dois follow-ups. A ponte está testada localmente; a observação integrada segue pendente.
 - Nas trilhas `manutencao`, `correcao`, `novo`, `docs` e `review`, no Cursor e no Claude Code (`agentes_obrigatorios`), `fechar` também exige as chamadas previstas dos papéis observadas, a revisão do refute e cada papel escrevendo só na sua superfície.
 
 **Só instrução** (depende do modelo): escolher o caminho e a trilha, iniciar a fatia antes de editar, perguntar pouco, preservar trabalho prévio, coordenar dados do sandbox, respeitar a fronteira do produto.
@@ -53,7 +54,7 @@ O que existe hoje. Gates, pendências e histórico: [painel do plano](PLANO-AGEN
 
 **Observado em sessão real**: no Cursor e no Claude Code, os sete papéis em série, guarda negando no subagente e fatias de manutenção e docs fechando `DONE` com prova.
 
-**Não implementado**: skills do projeto, conferência de identidade e destinos no deploy, coordenação de dados e `docs-distill`.
+**Não implementado**: coleta de provas integrada ao Codex, skills do projeto, conferência de identidade e destinos no deploy, coordenação de dados e `docs-distill`.
 
 ## Preparar um clone
 
@@ -110,7 +111,13 @@ Prepare o clone (acima) uma vez. Depois:
 4. Na trilha `manutencao`, o agente coordena e delega aos papéis um de cada vez. O subagente pode rodar em segundo plano: o hook devolve `[esteira] Chamada <papel> ... agente_id=...` e registra a chamada quando ele termina, então o coordenador espera o fim antes do passo seguinte.
 5. Só conta como pronto o `DONE` aceito pelo `fechar`. Recusa vira nova verificação ou fecho `BLOCKED`, `FAILED` ou `DECIDE`, com motivo.
 
-**Codex e OpenCode**: sem prova de fatia. Codex mantém agente único; OpenCode tem sete definições nativas geradas, ainda pendentes de observação e gate G2-OC. A integração de coleta de provas começa em D-OC.
+**Codex**: mantém agente único e ainda não coleta provas de shell.
+
+**OpenCode** (ponte implementada; observação integrada/G2-OC pendentes)
+
+1. Inicie uma sessão nova para carregar `.opencode/plugins/esteira.js`.
+2. `shell.env` injeta `ESTEIRA_SESSAO` e `ESTEIRA_RUNTIME=opencode`; em trabalho estruturado, inicie a fatia antes de editar, confira `estado` e feche com `fechar`. `--runtime` explícito continua disponível fora da sessão OpenCode.
+3. O plugin observa Bash e Task, associa o Bash da filha pelo `parentID` e cobra o fecho por no máximo dois follow-ups. A chave de agentes obrigatórios continua sem OpenCode até O-OC/G2-OC.
 
 Em todos: nunca peça `deploy` ou `run` sem autorização explícita, e não contorne uma negação da guarda com outra ferramenta.
 

@@ -6,13 +6,13 @@ Visão geral e tabela: [adaptadores](../README.md).
 - Agentes nativos: sete definições em `.opencode/agents/`, geradas de `agentes/` com `py -3 adaptadores/gerar_agentes.py --instalar opencode`. Para conferir as definições dos três runtimes, rode `py -3 adaptadores/gerar_agentes.py --verificar`.
 - O OpenCode carrega essas definições como `mode: subagent`; as permissões por papel derivam de `FERRAMENTAS_CLAUDE` e o modelo é herdado da sessão. Carregue skills pertinentes pela ferramenta nativa `skill`, usando os nomes `databricks-<skill>`.
 - `opencode.json` pede confirmação para `databricks bundle *`. É uma camada adicional; a guarda do harness continua decidindo cwd, target, perfil e operação.
-- `tool.execute.before` da ferramenta `bash`.
-- A ponte chama `adaptadores/entrada.py` sem shell, com timeout de 10 s. Lança erro e impede a chamada quando a guarda nega, falha, responde algo inválido ou demora demais.
-- O cwd vem de `args.workdir`, ou do prefixo literal. A ponte não altera argumentos.
-- Não coleta prova nem retoma fecho.
-- Em fatias estruturadas, informe `--runtime opencode` em cada comando `adaptadores/prova.py`; OpenCode não é detectado automaticamente nem pode ser incluído em `agentes_obrigatorios`.
-- As definições dos sete papéis estão geradas, mas a observação dos papéis em sessão real e a ativação em trilha aguardam o gate humano G2-OC. Coleta de provas e retomada de fecho continuam pendentes de D-OC.
-- Confira: inicie uma sessão nova para carregar o plugin. Teste da ponte: `node testes/teste_opencode.mjs`.
+- A ponte encaminha `tool.execute.before` e `tool.execute.after` para `bash` e `task`, além de `shell.env`, `session.created` e `session.idle`. Ela chama `adaptadores/entrada.py` sem shell, com timeout de 10 s.
+- Só o `before` de `bash` pode bloquear: negação, erro, timeout ou resposta inválida impedem a ferramenta. Os outros eventos são best-effort. Os argumentos originais não são alterados.
+- O cwd vem de `args.workdir`, ou do prefixo literal. Para um comando que coincide com a verificação do contrato, o `before` grava o manifesto e o `after` registra o exit e a saída observados; timeout ou metadados ausentes ficam inconclusivos.
+- `task` abre a janela da chamada. O vínculo entre `session.created.info.parentID`, `metadata.parentSessionId`/`metadata.sessionId` e o Bash da sessão filha registra o papel e seu `agente_id`. O status vem de `metadata.state` ou de `state` no texto de saída (`completed`, `failed`, `cancelled`); estado ausente ou desconhecido fica inconclusivo. Vínculo ausente ou ambíguo não cria chamada observada.
+- `shell.env` injeta `ESTEIRA_SESSAO` e `ESTEIRA_RUNTIME=opencode`. Assim, `prova.py` detecta OpenCode; `--runtime` explícito continua prevalecendo. Fora de uma sessão OpenCode, passe `--runtime opencode` manualmente.
+- `session.idle` confere a fatia principal e pede a correção do fecho por no máximo dois follow-ups. A coleta e o limite foram testados localmente; observação integrada dos agentes em sessão real e ativação em trilha aguardam O-OC/G2-OC. OpenCode segue fora da chave de produção `agentes_obrigatorios`.
+- Confira: inicie uma sessão nova para carregar o plugin. Testes: `py -3 -m unittest discover -s testes -p teste_adaptador_opencode.py -v` e `node testes/teste_opencode.mjs`.
 
 ## Comportamento observado do runtime
 

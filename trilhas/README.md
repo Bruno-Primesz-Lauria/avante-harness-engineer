@@ -5,6 +5,8 @@ Escolha a trilha pelo objetivo. Ela roda em um de dois modos, pela chave `agente
 - **Com agentes**, se a trilha está na chave: você coordena e os papéis de [`agentes/`](../agentes/) executam, conforme [Agentes](#agentes).
 - **Agente único**, fora da chave: você executa a trilha, com verificação objetiva. Não dependa de subagente nem de skill candidata do [acervo](../acervo/README.md).
 
+No OpenCode, a ponte de Bash, Task e fecho está implementada e testada localmente; o plugin também informa o runtime ao `prova.py`. Os sete agentes nativos ainda aguardam observação integrada e G2-OC, então OpenCode permanece fora de `agentes_obrigatorios`.
+
 | id | Use para | Arquivo |
 |---|---|---|
 | `novo` | criar ou migrar objeto, ou parte dele | [novo.md](novo.md) |

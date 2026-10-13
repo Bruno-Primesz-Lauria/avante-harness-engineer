@@ -9,7 +9,9 @@ Manual da prova estruturada: iniciar a fatia, rodar as verificações, fechar. O
 3. Rode pelo chat os comandos exatos do contrato, com o diretório absoluto no campo `cwd` da ferramenta Shell (Cursor 3.17.8; versões anteriores usavam `working_directory`). Sem diretório, a verificação declarada é negada. O `preToolUse` captura o estado; o `postToolUse` registra `exitCode` e saída; o `postToolUseFailure` registra o exit diferente de zero lido do texto `Command failed with exit code N`; negação, timeout ou texto inesperado ficam inconclusivos. Terminal manual não gera esses eventos. Só a ferramenta Shell é observada, e só o comando que casa com um critério do contrato (mesmo texto e mesmo cwd) vira prova.
 4. Consulte o estado e feche. Edição relevante depois da prova exige nova verificação.
 
-O runtime informa ao núcleo qual lista de `agentes_obrigatorios` consultar. Os valores aceitos são `claude_code`, `cursor`, `codex` e `opencode`. Passe `--runtime cursor` no Cursor. No Claude Code, `CLAUDE_CODE_SESSION_ID` detecta `claude_code`; `--runtime` explícito prevalece sobre a detecção. Codex e OpenCode não são detectados pelo `prova.py`: informe `--runtime codex` ou `--runtime opencode` em cada comando. Eles ficam fora da chave de agentes obrigatórios; essa seleção permite abrir e fechar uma fatia sem exigir chamadas de agente. Ela não instala coleta de provas de shell: os hooks desses runtimes continuam cobrindo apenas a guarda, então não produzem registros `teste` nem comprovam por si sós critérios de comando. A chave não aceita `codex` ou `opencode`. Com a chave vazia, a ausência de runtime preserva o fluxo atual. No Claude Code, quem coleta as provas são os hooks do adaptador próprio; até o G2 desse runtime, o `fechar` dele não comprova `DONE` (limite do `AGENTS.md`).
+O runtime informa ao núcleo qual lista de `agentes_obrigatorios` consultar. O CLI aceita `claude_code`, `cursor`, `codex` e `opencode`; a política de obrigatoriedade aceita `claude_code`, `cursor` e `opencode`. Passe `--runtime cursor` no Cursor. No Claude Code, `CLAUDE_CODE_SESSION_ID` detecta `claude_code`; no OpenCode, `shell.env` injeta `ESTEIRA_RUNTIME=opencode` e `ESTEIRA_SESSAO`. Em ambos, `--runtime` explícito prevalece sobre a detecção. Codex continua exigindo `--runtime codex` e permanece fora da chave.
+
+O adaptador OpenCode coleta localmente o Bash que coincide com um critério do contrato e relaciona chamadas Task à sessão filha. Apenas o evento `before` de Bash pode falhar fechado; eventos de resultado e sessão são best-effort. Essa ponte tem testes locais, mas a observação integrada dos agentes e o gate G2-OC ainda estão pendentes. OpenCode continua fora da chave de produção, embora a política e o CLI já aceitem o runtime para uma futura ativação. Com a chave vazia, a ausência de runtime preserva o fluxo atual. No Claude Code, quem coleta as provas são os hooks do adaptador próprio; até o G2 desse runtime, o `fechar` dele não comprova `DONE` (limite do `AGENTS.md`).
 
 ```powershell
 py -3 adaptadores/prova.py --sessao ID iniciar .execucoes/contrato.yaml
@@ -24,7 +26,7 @@ py -3 adaptadores/prova.py --runtime cursor --sessao ID iniciar .execucoes/contr
 py -3 adaptadores/prova.py --runtime cursor --sessao ID fechar --resultado "Critérios verificados"
 ```
 
-No Codex e no OpenCode, passe o runtime explicitamente em cada operação da fatia:
+Fora do OpenCode, passe o runtime explicitamente em cada operação da fatia. No OpenCode, o plugin injeta as variáveis usadas pelo CLI; o modo explícito também funciona:
 
 ```powershell
 py -3 adaptadores/prova.py --runtime codex --sessao ID iniciar .execucoes/contrato.yaml

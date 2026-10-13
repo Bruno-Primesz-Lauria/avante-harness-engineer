@@ -561,9 +561,9 @@ td.m, th.m { text-align: center; }
 <text class="t" x="485.0" y="571.5">Codex</text>
 <text class="s" x="485.0" y="591.5">PreToolUse</text>
 </g>
-<g class="ab  arq-hit" data-arq="h_opencode" tabindex="0" role="button" aria-pressed="false" aria-label="OpenCode — tool.execute.before"><rect x="381" y="626" width="208" height="70" rx="12"/>
+<g class="ab  arq-hit" data-arq="h_opencode" tabindex="0" role="button" aria-pressed="false" aria-label="OpenCode — hooks de Bash, Task e sessão"><rect x="381" y="626" width="208" height="70" rx="12"/>
 <text class="t" x="485.0" y="657.5">OpenCode</text>
-<text class="s" x="485.0" y="677.5">tool.execute.before</text>
+<text class="s" x="485.0" y="677.5">Bash · Task · sessão</text>
 </g>
 <g class="grp" data-grp="g_adapt"><rect x="670" y="310" width="270" height="480" rx="14"/></g>
 <g class="hd arq-hit" data-arq="g_adapt" tabindex="0" role="button" aria-pressed="false" aria-label="ADAPTADORES · adaptadores/"><rect class="hdr" x="678" y="320" width="276" height="24" rx="12"/><text class="gl" x="686" y="336">ADAPTADORES · adaptadores/</text><circle class="ii" cx="938" cy="332" r="8.5"/><text class="iit" x="938" y="336">i</text></g>
@@ -1236,7 +1236,7 @@ const ARQ = {
   nativos: { tipo: "Instalado", chip: "warn", t: ".claude/agents · .cursor/agents · .opencode/agents", onde: ".claude/agents/, .cursor/agents/, .opencode/agents/",
     oque: "As versões nativas dos papéis, no formato que cada runtime entende.",
     serve: "Permitir que o runtime ative de fato os subagentes da trilha.",
-    importa: "Cursor e Claude Code têm papéis observados em sessão real. As definições OpenCode estão geradas; a observação e o gate G2-OC seguem pendentes. Papel obrigatório indisponível fecha BLOCKED.",
+    importa: "Cursor e Claude Code têm papéis observados em sessão real. OpenCode tem sete definições geradas e coleta Bash/Task testada localmente; observação integrada e G2-OC seguem pendentes. Papel obrigatório indisponível fecha BLOCKED.",
     liga: ["gerar", "subagentes"] },
 
   g_runtime: { tipo: "Grupo", chip: "info", t: "Runtime", onde: "Cursor, Claude Code, Codex, OpenCode",
@@ -1257,7 +1257,7 @@ const ARQ = {
   runtimes: { tipo: "Runtimes", chip: "info", t: "Cursor · Claude Code · Codex · OpenCode", onde: "",
     oque: "Os quatro ambientes suportados. Todos leem o mesmo AGENTS.md.",
     serve: "Deixar o time usar a ferramenta que preferir sem mudar as regras.",
-    importa: "Prova observada em sessão real no Cursor e no Claude Code. Codex tem só a guarda; OpenCode tem guarda e sete definições geradas, com coleta de prova pendente de D-OC.",
+    importa: "Prova observada em sessão real no Cursor e no Claude Code. Codex tem só a guarda; OpenCode tem coleta Bash/Task implementada e testada localmente, mas a observação integrada e G2-OC seguem pendentes.",
     liga: ["h_cursor", "h_cc", "h_codex", "h_opencode"] },
 
   g_hooks: { tipo: "Grupo", chip: "info", t: "Hooks do runtime", onde: "configuração de cada runtime",
@@ -1280,8 +1280,9 @@ const ARQ = {
     importa: "Mesmo núcleo, mesmo resultado de negação: a regra não depende do runtime.",
     liga: ["entrada"] },
   h_opencode: { tipo: "Hook", chip: "neutral", t: "Hook do OpenCode", onde: "adaptadores/opencode/esteira.js",
-    oque: "tool.execute.before, via plugin JavaScript.", serve: "Encaminhar a chamada ao mesmo adaptador Python.",
-    importa: "Mostra que o desenho aceita runtimes de outras linguagens sem duplicar a guarda.",
+    oque: "tool.execute.before/after em Bash e Task, shell.env, session.created e session.idle.",
+    serve: "Encaminhar eventos e coletar prova; relacionar Task à sessão filha pelo parentID.",
+    importa: "Só before de Bash falha fechado; os outros eventos são best-effort. Idle solicita correção do fecho por até dois follow-ups.",
     liga: ["entrada"] },
 
   g_adapt: { tipo: "Grupo", chip: "info", t: "Adaptadores", onde: "adaptadores/",
