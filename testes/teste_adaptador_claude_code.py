@@ -104,10 +104,10 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.p = Provas(self.raiz, self.politica["registros_raiz"], SESSAO, runtime="claude_code")
         contrato = dict(objetivo="Traduzir uma prova", termino_fatia="Teste registrado",
                         trilha="validacao", superficie=["src/a.py"], artefatos_raiz=".execucoes/provas",
-                        fora=[], fontes=["src/a.py"], prazo=None,
+                        fora=[], fontes=["src/a.py"],
                         aceite=[dict(id="c1", tipo="teste", obrigatorio=True, esperado="Resultado do teste",
                                      verificacao=dict(comando=self.comando_teste, cwd=".", caminhos=["src"]))],
-                        orcamento={"ciclos_correcao_max": 3}, responsaveis={"coordenador": "agente"})
+                        responsaveis={"coordenador": "agente"})
         self.p.iniciar(contrato)
 
     def tratar_evento(self, evento):
@@ -178,11 +178,11 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.p = Provas(self.raiz, self.politica["registros_raiz"], SESSAO, runtime="claude_code")
         self.p.iniciar(dict(objetivo="Alterar codigo", termino_fatia="Superficie conferida",
                             trilha="manutencao", superficie=["src/a.py"], artefatos_raiz=".execucoes/provas",
-                            fora=[], fontes=["src/a.py"], prazo=None,
+                            fora=[], fontes=["src/a.py"],
                             aceite=[dict(id="c1", tipo="teste", obrigatorio=True, esperado="Teste verde",
                                          verificacao=dict(comando=self.comando("echo ok"), cwd=".",
                                                           caminhos=["src"]))],
-                            orcamento={"ciclos_correcao_max": 3}, responsaveis={"coordenador": "agente"}))
+                            responsaveis={"coordenador": "agente"}))
         antes = evento_real("PreToolUse_Agent")
         antes["tool_input"]["subagent_type"] = "implement"
         self.assertEqual(self.tratar_evento(antes), {})
@@ -223,10 +223,10 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         comando = f"Set-Location -LiteralPath '{bundle}' -ErrorAction Stop; {corpo}"
         self.p.iniciar(dict(objetivo="Registrar plan", termino_fatia="Recibo gravado", trilha="validacao",
                             superficie=["src/a.py"], artefatos_raiz=".execucoes/provas", fora=[],
-                            fontes=["src/a.py"], prazo=None,
+                            fontes=["src/a.py"],
                             aceite=[dict(id="c1", tipo="teste", obrigatorio=True, esperado="Plan verde",
                                          verificacao=dict(comando=comando, cwd="bundle", caminhos=["src"]))],
-                            orcamento={"ciclos_correcao_max": 3}, responsaveis={"coordenador": "agente"}))
+                            responsaveis={"coordenador": "agente"}))
         recibos = Path(self.politica["registros_raiz"]) / "plans"
         antes = evento_real("PreToolUse_Bash_principal")
         antes["tool_input"]["command"] = comando
@@ -321,8 +321,8 @@ class AdaptadorClaudeCodeTestes(unittest.TestCase):
         self.p = Provas(self.raiz, self.politica["registros_raiz"], SESSAO, runtime="claude_code")
         self.p.iniciar(dict(objetivo="Alterar codigo", termino_fatia="Criterios conferidos",
                             trilha="manutencao", superficie=["src/a.py"], artefatos_raiz=".execucoes/provas",
-                            fora=[], fontes=["src/a.py"], prazo=None, aceite=[aceite],
-                            orcamento={"ciclos_correcao_max": 3}, responsaveis={"coordenador": "agente"}))
+                            fora=[], fontes=["src/a.py"], aceite=[aceite],
+                            responsaveis={"coordenador": "agente"}))
 
     def test_registro_da_chamada_devolve_o_agente_id_observado_ao_coordenador(self):
         self.iniciar(ativada=True)

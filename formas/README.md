@@ -33,7 +33,7 @@ Validação sintática não atesta verdade. O armazenamento valida cada evento a
 
 ## Campos fechados
 
-- `contrato`: `fontes` é lista de strings; `prazo` é timestamp com fuso ou null. Em 3.2, `teste`, `ambiente`, `validacao_dados` e `paridade` exigem `comando`, `cwd` e `caminhos`; `inspecao_documental` e `analise_codigo` exigem `caminhos`, `checagens` e `produtor`, sem comando.
+- `contrato`: `fontes` é lista de strings. Em 3.2, `teste`, `ambiente`, `validacao_dados` e `paridade` exigem `comando`, `cwd` e `caminhos`; `inspecao_documental` e `analise_codigo` exigem `caminhos`, `checagens` e `produtor`, sem comando.
 - `guarda`: a chamada tem decisão `permitir`, `negar` ou `nao_aplica`. A decisão não amplia a autorização do runtime. `negar` impede a chamada dependente, não a tarefa inteira.
 - `teste`: log e estado ligados por hash; `agente_id` e `exit_code_origem` são opcionais.
 - `inspecao`: edição relevante em qualquer caminho a invalida, como acontece com o teste.

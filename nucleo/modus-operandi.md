@@ -47,13 +47,13 @@ Contexto do projeto ([`contexto-avante.md`](contexto-avante.md)): vocabulário (
 
 Confira autorização e efeito, recupere se for seguro, revalide e retome o nó interrompido, ou feche com pendência. Eventos de falha: [`guardas/README.md`](../guardas/README.md).
 
-Orçamento padrão. O contrato pode ajustá-lo antes da execução, dentro dos limites da ferramenta:
+Limite de tentativas, fixo para toda fatia:
 
 - até 3 ciclos de correção por fatia;
 - parar após 2 ciclos seguidos sem progresso;
 - até 2 repetições de leitura ou de operação idempotente.
 
-Um ciclo inclui diagnóstico, alteração, avaliação e triagem dos achados de revisão. Cada retorno de revisão conta no mesmo orçamento.
+Um ciclo inclui diagnóstico, alteração, avaliação e triagem dos achados de revisão. Cada retorno de revisão conta no mesmo limite.
 
 Progresso é evidência: um critério obrigatório passou sem regressão, uma hipótese foi descartada por observação, ou a causa localizada define a próxima ação. Mais texto de log não conta. Falha nova pode ser regressão.
 

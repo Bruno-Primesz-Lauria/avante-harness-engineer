@@ -52,9 +52,7 @@ class FormasTestes(unittest.TestCase):
             "artefatos_raiz": ".execucoes/provas",
             "fora": [],
             "fontes": ["PLANO-AGENTES-TRILHAS.md"],
-            "prazo": None,
             "aceite": [criterio],
-            "orcamento": {},
             "responsaveis": {},
         }
 
@@ -434,6 +432,20 @@ class FormasTestes(unittest.TestCase):
             validar_dados("contrato", self.contrato(inspecao_31), "3.1")
         inspecao_31["verificacao"].update(comando="py conferir.py", cwd=".")
         validar_dados("contrato", self.contrato(inspecao_31), "3.1")
+
+    def test_contrato_recusa_orcamento_e_prazo_removidos(self):
+        criterio = {
+            "id": "teste",
+            "tipo": "teste",
+            "obrigatorio": True,
+            "esperado": "Processo termina em zero",
+            "verificacao": {"comando": "py teste.py", "cwd": ".", "caminhos": ["implementacao/formas.py"]},
+        }
+        for campo, valor in (("orcamento", {"ciclos_correcao_max": 3}), ("prazo", None)):
+            contrato = self.contrato(criterio)
+            contrato[campo] = valor
+            with self.subTest(campo=campo), self.assertRaises(ValueError):
+                validar_dados("contrato", contrato, "3.1")
 
     def test_autorizacao_ref_so_e_aceita_em_ambiente_32_com_caminho_relativo(self):
         ambiente = {

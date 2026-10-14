@@ -40,10 +40,10 @@ class ProvasTestes(unittest.TestCase):
         self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-a")
         self.contrato = dict(objetivo="Verificar a mudanca", termino_fatia="Teste e fecho validos",
                              trilha="correcao", superficie=["src/a.py"], artefatos_raiz=".execucoes/provas",
-                             fora=[], fontes=["src/a.py"], prazo=None,
+                             fora=[], fontes=["src/a.py"],
                              aceite=[dict(id="c1", tipo="teste", obrigatorio=True, esperado="Processo termina em 0",
                                           verificacao=dict(comando="python teste.py", cwd=".", caminhos=["src"]))],
-                             orcamento={"ciclos_correcao_max": 3}, responsaveis={"coordenador": "agente"})
+                             responsaveis={"coordenador": "agente"})
 
     def limpar_fixture(self):
         raiz_fixtures = (RAIZ / "testes/.fixtures/provas").resolve()

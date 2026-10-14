@@ -116,7 +116,6 @@ superficie: [implementacao, adaptadores, formas/catalogo.yaml]
 artefatos_raiz: .execucoes/provas
 fora: [deploy, run]
 fontes: [AGENTS.md, evidencia/uso.md]
-prazo: null
 aceite:
   - id: regressao
     tipo: teste
@@ -126,10 +125,6 @@ aceite:
       comando: py -3 -m unittest discover -s testes -p teste_*.py -v
       cwd: .
       caminhos: [implementacao, adaptadores, formas/catalogo.yaml, testes]
-orcamento:
-  ciclos_correcao_max: 3
-  ciclos_sem_progresso_max: 2
-  repeticoes_operacao_max: 2
 responsaveis:
   coordenador: agente
   executor: agente
@@ -140,7 +135,7 @@ Regras do validador:
 
 - O arquivo contém os dados do contrato. O núcleo acrescenta o envelope 3.1 e rejeita campo extra, tipo inválido, identificador de aceite repetido e contrato sem critério obrigatório.
 - `artefatos_raiz` deve ser `.execucoes/provas`.
-- `fontes` é lista de referências. `prazo` é data com fuso ou `null`. O núcleo não agenda tarefas nem concede permissão.
+- `fontes` é lista de referências. O núcleo não agenda tarefas nem concede permissão.
 - Todo critério leva `verificacao` com `comando`, `cwd` e `caminhos` (ao menos um). Cada par comando e cwd é único.
 - Todo item de `superficie` precisa estar coberto por algum caminho de `verificacao`.
 - Caminhos usam `/` e são relativos à raiz do harness. `cwd: .` é a raiz. Aceitam arquivo e diretório; diretório inclui arquivos novos. Arquivo ainda inexistente fica com hash `null` até ser criado. Link simbólico é recusado.

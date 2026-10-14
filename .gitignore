@@ -5,3 +5,4 @@ configuracao/perfil.local.json
 /prj-avante-analytics-adb/
 testes/.fixtures/
 *.backup.*
+.mcp.json

@@ -121,7 +121,6 @@ formas:
       artefatos_raiz: {tipo: string, obrigatorio: true}
       fora: {tipo: lista, item: string, obrigatorio: true}
       fontes: {tipo: lista, item: string, obrigatorio: true}
-      prazo: {tipo: timestamp, anulavel: true, obrigatorio: true}
       aceite:
         tipo: lista
         obrigatorio: true
@@ -146,13 +145,6 @@ formas:
                   id: {tipo: string, obrigatorio: true}
                   esperado: {tipo: string, obrigatorio: true}
               produtor: {tipo: enum, enum: produtor_inspecao}
-      orcamento:
-        tipo: objeto
-        obrigatorio: true
-        campos:
-          ciclos_correcao_max: {tipo: int}
-          ciclos_sem_progresso_max: {tipo: int}
-          repeticoes_operacao_max: {tipo: int}
       responsaveis:
         tipo: objeto
         obrigatorio: true

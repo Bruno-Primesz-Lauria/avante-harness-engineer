@@ -98,13 +98,11 @@ class CursorSubagenteTestes(unittest.TestCase):
             "artefatos_raiz": ".execucoes/provas",
             "fora": [],
             "fontes": ["src/a.py"],
-            "prazo": None,
             "aceite": [{
                 "id": "c1", "tipo": "teste", "obrigatorio": True,
                 "esperado": "Processo termina em 0",
                 "verificacao": {"comando": "python teste.py", "cwd": ".", "caminhos": ["src"]},
             }],
-            "orcamento": {"ciclos_correcao_max": 3},
             "responsaveis": {"coordenador": "agente"},
         })
 

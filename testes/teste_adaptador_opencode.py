@@ -46,7 +46,6 @@ class AdaptadorOpenCodeTestes(unittest.TestCase):
             "artefatos_raiz": ".execucoes/provas",
             "fora": [],
             "fontes": ["src/a.py"],
-            "prazo": None,
             "aceite": [{
                 "id": "teste_local",
                 "tipo": "teste",
@@ -54,7 +53,6 @@ class AdaptadorOpenCodeTestes(unittest.TestCase):
                 "esperado": "O processo termina com exit code zero",
                 "verificacao": {"comando": COMANDO, "cwd": ".", "caminhos": ["src/a.py"]},
             }],
-            "orcamento": {"ciclos_correcao_max": 3},
             "responsaveis": {"coordenador": "agente"},
         }
         self.provas.iniciar(self.contrato)

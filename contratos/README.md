@@ -14,9 +14,8 @@ No caminho simples o contrato é o escopo no chat, quando houver escrita. No est
 | Fontes | Caminhos que sustentam a resposta ou a alteração. | Instruções aplicáveis, código, documentos vivos e o irmão da etapa. |
 | Aceite | Verificação adequada ao resultado. | Critérios com `tipo` (`teste`, `inspecao_documental`, `analise_codigo`, `ambiente`, `paridade`, `validacao_dados`), `esperado` e `verificacao` (comando, cwd, caminhos). Fatia que publica dado usa `validacao_dados` para conferir schema e conteúdo da saída. |
 | Responsabilidades | O agente executa; a prova objetiva valida. | Quem executa, quem verifica e quem coordena. |
-| Orçamento e prazo | Limites do runtime. | Ciclos e repetições no registro, ajustando o [orçamento padrão](../nucleo/modus-operandi.md). `prazo` é data com fuso ou `null`. |
 
-O aceite de cada trilha (superfície, critério e fecho) está no arquivo da trilha.
+O aceite de cada trilha (superfície, critério e fecho) está no arquivo da trilha. O contrato não tem orçamento nem prazo: o limite de tentativas é fixo e está em [`nucleo/modus-operandi.md`](../nucleo/modus-operandi.md#recuperação).
 
 ## Fechado quando
 

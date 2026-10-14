@@ -75,10 +75,10 @@ Candidato (`docs-distill`, sem código): ao mudar documento com padrão recorren
 |---|---|---|
 | Diretório incorreto | Negue a chamada. Resolva o bundle correto, confira a identidade e repita a operação já autorizada. | Não muda target nem amplia escopo. |
 | Teste ausente ou prova obsoleta | Impeça `DONE`. Execute de novo a verificação necessária e autorizada. | A execução que o agente pode fazer fica com o agente. |
-| Falha transitória de leitura ou operação idempotente | Registre o diagnóstico e repita dentro do orçamento, com os mesmos argumentos e o mesmo destino. | No máximo duas repetições por operação, respeitando prazo e limite externos. |
+| Falha transitória de leitura ou operação idempotente | Registre o diagnóstico e repita dentro do limite de tentativas, com os mesmos argumentos e o mesmo destino. | No máximo duas repetições por operação, respeitando limites externos. |
 | Timeout em operação com efeito externo | Consulte o resultado real por ID antes de tentar de novo. | Se não der para confirmar se a ação ocorreu: `BLOCKED`. Evite `run` ou deploy duplicado. |
 | Falta de acesso, ferramenta ou decisão externa | Continue o trabalho independente e nomeie a dependência exata. | `DECIDE` quando falta decisão humana. `BLOCKED` quando falta capacidade ou acesso. |
-| Avaliação executada e reprovada | Na trilha de escrita, corrija dentro do orçamento. Em validação, emita `FAILED` sem editar produto. | Orçamento esgotado com resultado conclusivo negativo: `FAILED`. |
+| Avaliação executada e reprovada | Na trilha de escrita, corrija dentro do limite de tentativas. Em validação, emita `FAILED` sem editar produto. | Limite de tentativas esgotado com resultado conclusivo negativo: `FAILED`. |
 | Achado de revisão | Confira a evidência. Corrija achado procedente no escopo e revalide. Descarte falso positivo com fundamento. | Mudança de escopo pede decisão. Achado obrigatório aberto impede `DONE`. |
 
 ## Degraus de operação
