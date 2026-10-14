@@ -4,24 +4,31 @@ import { fileURLToPath } from "node:url";
 
 const TEMPO_LIMITE = 10000;
 
+// Diagnóstico curto: sem ele, a falha do subprocesso no runtime real fica indistinguível.
+function indisponivel(inicio, detalhe) {
+  return new Error("[cwd-bundle] Guarda ou prova indisponível; a chamada não rodou. Confira a instalação. " +
+    `(${detalhe}; ms=${Date.now() - inicio})`);
+}
+
 function criar_chamada(python, script, politica, executar, prefixo) {
   const args = [...prefixo, script, "opencode", ...(politica ? [politica] : [])];
   return (evento, falhaFechada = false) => {
     let resultado;
+    const inicio = Date.now();
     try {
       resultado = executar(python, args, {
         input: JSON.stringify(evento), encoding: "utf8", timeout: TEMPO_LIMITE,
         maxBuffer: 1024 * 1024, windowsHide: true, shell: false,
       });
-    } catch {
-      if (falhaFechada) {
-        throw new Error("[cwd-bundle] Guarda ou prova indisponível; a chamada não rodou. Confira a instalação.");
-      }
+    } catch (erro) {
+      if (falhaFechada) throw indisponivel(inicio, `lançou=${erro?.code ?? erro?.message ?? erro}`);
       return null;
     }
     if (resultado.error || resultado.status !== 0) {
       if (falhaFechada) {
-        throw new Error("[cwd-bundle] Guarda ou prova indisponível; a chamada não rodou. Confira a instalação.");
+        const stderr = String(resultado.stderr ?? "").trim().slice(0, 300);
+        throw indisponivel(inicio, `erro=${resultado.error?.code ?? resultado.error?.message ?? "nenhum"}; ` +
+          `status=${resultado.status}; sinal=${resultado.signal ?? "nenhum"}; stderr=${stderr}`);
       }
       return null;
     }

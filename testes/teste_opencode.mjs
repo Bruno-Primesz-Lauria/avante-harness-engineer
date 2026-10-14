@@ -83,16 +83,17 @@ resposta = { decisao: "negar", motivo: "bundle fora do escopo" };
 await assert.rejects(() => plugin["tool.execute.before"](
   { tool: "bash", sessionID: "ses-main", callID: "call-denied" }, bashOutput,
 ), /bundle fora do escopo/);
-for (const resultado of [
-  { status: 2, stdout: "" },
-  { status: null, error: new Error("timeout") },
-  { status: 0, stdout: "nao-json" },
-  { status: 0, stdout: JSON.stringify({ decisao: "desconhecida" }) },
+const erroSpawn = Object.assign(new Error("spawnSync py EINVAL"), { code: "EINVAL" });
+for (const [resultado, detalhe] of [
+  [{ status: 2, stdout: "", stderr: "Traceback: falhou\n" }, /status=2.*stderr=Traceback: falhou/],
+  [{ status: null, signal: "SIGTERM", error: erroSpawn }, /erro=EINVAL.*status=null.*sinal=SIGTERM/],
+  [{ status: 0, stdout: "nao-json" }, /Resposta inválida/],
+  [{ status: 0, stdout: JSON.stringify({ decisao: "desconhecida" }) }, /Decisão desconhecida/],
 ]) {
   falhaExecucao = resultado;
   await assert.rejects(() => plugin["tool.execute.before"](
     { tool: "bash", sessionID: "ses-main", callID: "call-failed" }, bashOutput,
-  ));
+  ), detalhe);
 }
 
 falhaExecucao = { status: 2, stdout: "" };
@@ -110,7 +111,7 @@ await assert.doesNotReject(() => plugin["shell.env"](
 await assert.doesNotReject(() => plugin.event({ event: idle }));
 await assert.rejects(() => plugin["tool.execute.before"](
   { tool: "bash", sessionID: "ses-main", callID: "call-before-throws" }, bashOutput,
-));
+), /lançou=spawnSync falhou.*ms=\d+/);
 lancarExecucao = false;
 assert.deepEqual(bashOutput, { args: bashArgs }, "a ponte não pode alterar os argumentos da ferramenta");
 console.log("OpenCode: eventos, ambiente, follow-up limitado e fail-closed somente antes de bash passaram.");

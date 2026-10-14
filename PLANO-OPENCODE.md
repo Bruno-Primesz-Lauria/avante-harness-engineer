@@ -14,7 +14,7 @@ Regra do próprio plano: nada é declarado equivalente antes de observado em ses
 - **B2-OC -- concluído** (`b606ad5`): sete agentes nativos e configuração do projeto; verificação do gerador: 21 `OK`.
 - **D-OC -- concluído** (`33143dd`): coleta de provas e roteamento de eventos implementados; suíte Python (247 testes) e Node aprovados.
 - **O-OC -- concluído** (`aad290b`): kit local validado. Contrato `74344cd5438841538a4770d8903d55e9` fechado como `DONE`; cópia preparada em `../.execucoes/observacao-opencode-20261013T162540Z`.
-- **G2-OC -- pendente**: falta abrir uma sessão real nova e obter o aceite humano. O executável OpenCode não estava disponível no ambiente da preparação (`PREPARO.json` registra versão nula); portanto, os papéis continuam `observado: pendente`.
+- **G2-OC -- pendente**: falta abrir uma sessão real nova e obter o aceite humano. O `PREPARO.json` das cópias de 13/10 registra versão nula por falha do `preparar.py` em achar o `opencode.cmd` do npm no Windows (corrigido; a versão é registrada, não exigida). Os papéis continuam `observado: pendente`.
 - **E0-OC -- pendente**: depende da decisão humana após G2. `configuracao/politica.json` permanece sem ativação do runtime OpenCode.
 
 ## O que cada dev precisa configurar (uso)
@@ -23,7 +23,7 @@ Regra do próprio plano: nada é declarado equivalente antes de observado em ses
 2. Provedor/modelo: nada a configurar. As API keys e os modelos já vêm da empresa em `C:\Users\<usuário>\.config\opencode\opencode.json`. Basta conferir com `opencode models` e escolher o modelo na sessão. O harness não lê nem altera esse arquivo.
 3. `configuracao/perfil.local.json` com `databricks_perfil` (já existe o mecanismo; vale igual para OpenCode).
 4. Abrir o OpenCode **na raiz do harness** (carrega `AGENTS.md`, `opencode.json`, `.opencode/plugins/` e `.opencode/agents/`).
-5. Conferir numa sessão nova: plugin carregado, `/agents` (ou Tab) mostra os 7 papéis, e uma negação real da guarda.
+5. Conferir numa sessão nova: plugin carregado, `opencode agent list` (ou `@` no TUI) mostra os 7 papéis como `subagent` — Tab e `/agents` só listam agentes primários —, e uma negação real da guarda.
 
 ## Pacotes
 

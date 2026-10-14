@@ -8,6 +8,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -432,8 +433,13 @@ def adaptar(destino):
 
 
 def versao_opencode():
+    """Registra a versao instalada pelo dev; nao exige uma versao fixa."""
+    # No Windows o npm instala opencode.cmd, que o subprocess so acha pelo caminho completo.
+    executavel = shutil.which("opencode")
+    if executavel is None:
+        return None
     try:
-        resultado = subprocess.run(["opencode", "--version"], capture_output=True, text=True, timeout=30)
+        resultado = subprocess.run([executavel, "--version"], capture_output=True, text=True, timeout=30)
         return resultado.stdout.strip() or resultado.stderr.strip() or None
     except (OSError, subprocess.SubprocessError):
         return None
