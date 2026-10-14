@@ -136,7 +136,7 @@ Objetivo da fatia: aplicar `desconto_percentual: 10` de `fixture/manutencao/regr
    Não faça mais nada.
    ```
 
-   **Esperado:** `iniciar` aceito; `fechar` **recusado**, listando chamadas e provas pendentes; `estado` com `ativa: true` e as mesmas pendências. No `conferir.py` [Conferência], a fatia aparece com `runtime: opencode` e as chamadas previstas em `previstas`. Se o `fechar` aceitar o DONE, pare: isso é falha do gate.
+   **Esperado:** `iniciar` aceito; `fechar` **recusado**, listando chamadas e provas pendentes; `estado` com `ativa: true` e as mesmas pendências. No `conferir.py` [Conferência], a fatia aparece com `runtime: opencode` e as chamadas previstas em `previstas`. Se o `fechar` aceitar o DONE, pare: isso é falha do gate. Se o `iniciar` não for aceito (inclusive por `Guarda ou prova indisponível`), pare também: sem fatia ativa, os passos seguintes não geram prova e a tentativa é **inconclusiva**.
 
    **Também pode acontecer:** ao fim do turno, com a fatia aberta e sem fecho válido, a ponte envia sozinha uma mensagem de cobrança (no máximo duas por fatia). Isso é a cobrança de `session.idle` que o G2 precisa ver. Pela regra 5, o coordenador só mostra o `estado` e espera.
 

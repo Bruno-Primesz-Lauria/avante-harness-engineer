@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { criar_ponte } from "../adaptadores/opencode/esteira.js";
+import { criar_ponte, executar_assincrono } from "../adaptadores/opencode/esteira.js";
 
 const comandos = [];
 let resposta = { decisao: "permitir" };
@@ -114,4 +114,15 @@ await assert.rejects(() => plugin["tool.execute.before"](
 ), /lançou=spawnSync falhou.*ms=\d+/);
 lancarExecucao = false;
 assert.deepEqual(bashOutput, { args: bashArgs }, "a ponte não pode alterar os argumentos da ferramenta");
+const opcoesReais = { input: "{\"eco\":\"ç\"}", encoding: "utf8", timeout: 10000, maxBuffer: 1024 * 1024, windowsHide: true, shell: false };
+const eco = await executar_assincrono(process.execPath, ["-e",
+  "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{process.stdout.write(d);process.stderr.write('aviso');process.exit(3)})"],
+  opcoesReais);
+assert.deepEqual([eco.status, eco.stdout, eco.stderr, eco.error], [3, "{\"eco\":\"ç\"}", "aviso", undefined]);
+const lento = await executar_assincrono(process.execPath, ["-e", "setTimeout(()=>{}, 5000)"], { ...opcoesReais, timeout: 200 });
+assert.equal(lento.error?.code, "ETIMEDOUT");
+assert.equal(lento.status, null);
+const ausente = await executar_assincrono("executavel-que-nao-existe-esteira", [], opcoesReais);
+assert.equal(ausente.status, null);
+assert.ok(ausente.error, "falha ao iniciar deve virar erro, não exceção");
 console.log("OpenCode: eventos, ambiente, follow-up limitado e fail-closed somente antes de bash passaram.");
