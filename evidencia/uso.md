@@ -54,6 +54,21 @@ py -3 adaptadores/prova.py --sessao ID triar .execucoes/triagem.yaml
 
 - `inspecionar`: `criterio_id`, `checagens` (`id` e `resultado`: `pass`, `fail` ou `inconclusivo`) e, opcional, `produtor`. Com a chave vazia, critério de inspeção fecha `DONE` sem comando. Com a trilha ativada, as chamadas previstas continuam exigidas.
 - `revisar`: a forma `ataque` (intenção, aceite, baseline, provas, veredito, tentativas, achados, cobertura) com `agente_id` opcional, protegido pelo hash do evento. Com a trilha ativada, o ID precisa casar com uma chamada `refute` concluída; sem esse vínculo o fecho aponta `revisao:fora_do_refute`. Cada chamada `refute` concluída precisa da sua própria revisão registrada, com o `agente_id` dela; sem isso o fecho aponta `revisao:sem_registro:<chamada>`. Chamar o refute de novo não descarta o que o anterior achou: achado de revisão anterior precisa de triagem (`achado:<id>:sem_triagem`). Com a chave vazia, o vínculo não é exigido.
+
+  ```yaml
+  agente_id: <ID da chamada refute>
+  entrada:
+    intencao_ref: contrato.yaml
+    aceite_ref: contrato.yaml
+    baseline_ref: baseline.json
+    provas_refs: [<ref da prova>]
+  veredito: nao_quebrei   # ou com_achados (exige achados) ou inconclusivo
+  tentativas: [{id: t1, procedimento: '<procedimento>', resultado: pass}]   # pass, fail, info ou inconclusivo
+  achados: []   # cada um: id, categoria, severidade (critica, alta, media ou baixa), local, evidencia_ref
+  cobertura: [{criterio_id: <id do critério>, coberto: true}]
+  ```
+
+  Valor fora da lista é recusado, e a mensagem traz os aceitos, por exemplo `dados.veredito: valor invalido; use um de: com_achados, nao_quebrei, inconclusivo`.
 - `triar`: a forma `triagem` (`revisao_ref`, `achado_id`, `decisao`, `responsavel`, e `evidencia_resolucao_ref` ou `motivo_descarte` conforme a decisão).
 
 ### Superfície por papel

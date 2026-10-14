@@ -13,7 +13,7 @@ permission:
     "*": allow
     "databricks bundle *": ask
 ---
-<!-- esteira-agentes source=6ed73be96440550e4de7918df0b215f5aa4973337d693b2f37ced90201a7d42c payload=b789f07c7db04de3127ab26baf66fc48d0ef34bfb87f84097e04e6dc263fc10c -->
+<!-- esteira-agentes source=630133a60f02f60d1b71231d42c787970878cb6149cd75a0c62a5eeed58056c3 payload=c60a40ba325ab0cff244f47bd7974b0e98398b6f0d283e96862ee1a626c5736f -->
 # refute
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -48,7 +48,7 @@ Sem capacidade obrigatória própria. A seleção de skills depende do artefato 
 
 ## Saída
 
-Veredito, tentativas de refutação, achados com severidade e localização, evidências e limites; incluir achados `simplificacao` quando houver versão realmente mais simples que preserve o comportamento e o aceite. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir achado confirmado de hipótese. Use os campos da forma `ataque` (veredito, tentativas, achados, cobertura), para o coordenador registrar com `revisar`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
+Veredito, tentativas de refutação, achados com severidade e localização, evidências e limites; incluir achados `simplificacao` quando houver versão realmente mais simples que preserve o comportamento e o aceite. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir achado confirmado de hipótese. Use os campos da forma `ataque` (veredito, tentativas, achados, cobertura), para o coordenador registrar com `revisar`. O veredito da forma `ataque` é um destes: `nao_quebrei` (tentativas sem quebra; exige tentativas e cobertura), `com_achados` (exige ao menos um achado com evidência) ou `inconclusivo` (não aprova critério obrigatório). Ele não é o veredito do artefato declarado na trilha `review`, que é outro campo ([dois vereditos](../formas/README.md#dois-vereditos)). A severidade de cada achado é `critica`, `alta`, `media` ou `baixa`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 

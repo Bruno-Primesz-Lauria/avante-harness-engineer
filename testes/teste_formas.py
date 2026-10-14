@@ -93,6 +93,12 @@ class FormasTestes(unittest.TestCase):
                          self.evento("ataque", self.ataque()))
         self.verificar(self.evento("ataque", self.ataque("nao_quebrei")))
 
+    def test_enum_invalido_lista_valores_aceitos_na_ordem_do_catalogo(self):
+        with self.assertRaises(ValueError) as erro:
+            self.verificar(self.evento("ataque", self.ataque("aprovado")))
+        self.assertIn("dados.veredito: valor invalido; use um de: com_achados, nao_quebrei, inconclusivo",
+                      str(erro.exception))
+
     def test_ataque_exige_evidencia_tentativas_e_cobertura_condicionais(self):
         dados = self.ataque()
         dados["achados"] = []

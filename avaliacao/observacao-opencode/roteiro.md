@@ -163,7 +163,7 @@ Envie cada prompt abaixo **só depois** de o anterior terminar, e rode `conferir
     **Esperado:** o comando é `py -3 -m unittest discover -s fixture/manutencao -p teste_calc.py` e termina com exit 0. No `conferir.py`, a fatia mostra `provas.teste` com `exit_code` 0 e `agente_id` da sessão filha do `test`, não do coordenador.
 
 14. ```text
-    Chame o papel refute para revisar, sem Bash, o contrato observacao/contrato-manutencao.yaml, os três arquivos da fixture/manutencao alterados e a prova do critério teste. O veredito deve ser um destes valores: nao_quebrei, com_achados ou inconclusivo. Mostre o veredito, as tentativas e os achados que ele devolver. Pare ao terminar.
+    Chame o papel refute para revisar, sem Bash, o contrato observacao/contrato-manutencao.yaml, os três arquivos da fixture/manutencao alterados e a prova do critério teste. Mostre o veredito, as tentativas e os achados que ele devolver. Pare ao terminar.
     ```
 
 15. Envie o prompt abaixo. Ele busca os dois valores que a revisão precisa:
@@ -187,9 +187,9 @@ Envie cada prompt abaixo **só depois** de o anterior terminar, e rode `conferir
       aceite_ref: contrato.yaml
       baseline_ref: baseline.json
       provas_refs: [<ref da prova teste>]
-    veredito: <nao_quebrei, com_achados ou inconclusivo, o que o refute devolveu>
+    veredito: <veredito devolvido pelo refute>
     tentativas: [{id: t1, procedimento: '<procedimento real>', resultado: pass}]
-    achados: []
+    achados: <achados reais devolvidos pelo refute; [] se não houver>
     cobertura:
       - {criterio_id: teste, coberto: true}
       - {criterio_id: ambiente_local, coberto: false, motivo: 'dab ainda não foi chamado'}
@@ -199,7 +199,7 @@ Envie cada prompt abaixo **só depois** de o anterior terminar, e rode `conferir
     Rode `py -3 adaptadores/prova.py revisar observacao/revisao-manutencao.yaml` e mostre a saída. Pare.
     ```
 
-    **Esperado:** revisão aceita. Se der `dados.veredito: valor invalido`, o veredito gravado não é `nao_quebrei`, `com_achados` nem `inconclusivo`: peça para corrigir só esse campo com o que o refute devolveu e rode `revisar` de novo. Não feche sem revisão aceita, nem inicie a fatia docs com a manutenção aberta.
+    **Esperado:** revisão aceita. Se der `dados.veredito: valor invalido`, anote a recusa como achado da observação: ela mostra que o harness não comunicou os valores aceitos. Depois peça ao coordenador para escolher, entre os valores listados na mensagem, o que corresponde ao resultado do refute, corrigir só esse campo e rodar `revisar` de novo. Não feche sem revisão aceita, nem inicie a fatia docs com a manutenção aberta.
 
 18. ```text
     Chame o papel dab: execute uma vez e literalmente o comando do critério ambiente_local de observacao/contrato-manutencao.yaml, com workdir na raiz do projeto. Ele roda somente fixture/manutencao/ambiente_local.py; não use Databricks. Pare ao terminar.
@@ -237,7 +237,7 @@ Objetivo da fatia: trocar o TODO de `fixture/docs/guia.md` pela regra de descont
     **Esperado:** valores iguais (10) e inspeção aceita. Se forem diferentes, não rode o `inspecionar`.
 
 23. ```text
-    Chame o papel refute para revisar, sem Bash, o contrato observacao/contrato-docs.yaml e fixture/docs/guia.md. O veredito deve ser um destes valores: nao_quebrei, com_achados ou inconclusivo. Mostre o veredito, as tentativas e os achados que ele devolver. Pare.
+    Chame o papel refute para revisar, sem Bash, o contrato observacao/contrato-docs.yaml e fixture/docs/guia.md. Mostre o veredito, as tentativas e os achados que ele devolver. Pare.
     ```
 
 24. Envie:
@@ -251,9 +251,9 @@ Objetivo da fatia: trocar o TODO de `fixture/docs/guia.md` pela regra de descont
       aceite_ref: contrato.yaml
       baseline_ref: baseline.json
       provas_refs: []
-    veredito: <nao_quebrei, com_achados ou inconclusivo, o que o refute devolveu>
+    veredito: <veredito devolvido pelo refute>
     tentativas: [{id: t1, procedimento: '<procedimento real>', resultado: pass}]
-    achados: []
+    achados: <achados reais devolvidos pelo refute; [] se não houver>
     cobertura: [{criterio_id: guia, coberto: true}]
     ```
 
@@ -265,7 +265,7 @@ Objetivo da fatia: trocar o TODO de `fixture/docs/guia.md` pela regra de descont
     Pare.
     ```
 
-    **Esperado:** revisão aceita, `estado` sem pendências e `DONE` aceito.
+    **Esperado:** revisão aceita, `estado` sem pendências e `DONE` aceito. Se o `revisar` recusar o veredito, siga o mesmo procedimento do passo 17 antes de fechar.
 
 26. **[Conferência]** Rode `py -3 observacao/conferir.py` uma última vez. **Esperado:** duas fatias (`manutencao` e `docs`), ambas com `fecho.status` = `DONE`, e alterações de `fixture` só nos arquivos pedidos.
 

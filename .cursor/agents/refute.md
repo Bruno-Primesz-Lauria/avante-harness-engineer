@@ -3,7 +3,7 @@ name: refute
 description: Revisar de forma independente e somente leitura; receber intenção e aceite, sem o racional persuasivo do autor.
 model: inherit
 ---
-<!-- esteira-agentes source=6ed73be96440550e4de7918df0b215f5aa4973337d693b2f37ced90201a7d42c payload=d6794115aae4f6fb417236bb216b2bd8499402b9ea478c0c54281be323373c34 -->
+<!-- esteira-agentes source=630133a60f02f60d1b71231d42c787970878cb6149cd75a0c62a5eeed58056c3 payload=c4d43aba30433b09c79591294eb133b36679c52f7594fd5f430f6742f8499466 -->
 # refute
 
 Definição neutra do papel. O roteamento, a ordem e os gatilhos vêm exclusivamente de [`roteamento.yaml`](roteamento.yaml); esta definição não solicita nem agenda a própria chamada.
@@ -38,7 +38,7 @@ Sem capacidade obrigatória própria. A seleção de skills depende do artefato 
 
 ## Saída
 
-Veredito, tentativas de refutação, achados com severidade e localização, evidências e limites; incluir achados `simplificacao` quando houver versão realmente mais simples que preserve o comportamento e o aceite. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir achado confirmado de hipótese. Use os campos da forma `ataque` (veredito, tentativas, achados, cobertura), para o coordenador registrar com `revisar`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
+Veredito, tentativas de refutação, achados com severidade e localização, evidências e limites; incluir achados `simplificacao` quando houver versão realmente mais simples que preserve o comportamento e o aceite. Identificar execução, fatia, tentativa, chamada, papel e estado quando disponíveis. Distinguir achado confirmado de hipótese. Use os campos da forma `ataque` (veredito, tentativas, achados, cobertura), para o coordenador registrar com `revisar`. O veredito da forma `ataque` é um destes: `nao_quebrei` (tentativas sem quebra; exige tentativas e cobertura), `com_achados` (exige ao menos um achado com evidência) ou `inconclusivo` (não aprova critério obrigatório). Ele não é o veredito do artefato declarado na trilha `review`, que é outro campo ([dois vereditos](../formas/README.md#dois-vereditos)). A severidade de cada achado é `critica`, `alta`, `media` ou `baixa`. Termine com a linha `Skills: <nomes carregados>` ou `Skills: nenhuma`.
 
 ## Término
 
