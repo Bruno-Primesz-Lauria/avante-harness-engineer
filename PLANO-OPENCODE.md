@@ -15,6 +15,7 @@ Regra do próprio plano: nada é declarado equivalente antes de observado em ses
 - **D-OC -- concluído** (`33143dd`): coleta de provas e roteamento de eventos implementados; suíte Python (247 testes) e Node aprovados.
 - **O-OC -- concluído** (`aad290b`): kit local validado. Contrato `74344cd5438841538a4770d8903d55e9` fechado como `DONE`; cópia preparada em `../.execucoes/observacao-opencode-20261013T162540Z`.
 - **G2-OC -- pendente**: falta abrir uma sessão real nova e obter o aceite humano. O `PREPARO.json` das cópias de 13/10 registra versão nula por falha do `preparar.py` em achar o `opencode.cmd` do npm no Windows (corrigido; a versão é registrada, não exigida). Os papéis continuam `observado: pendente`.
+- **Tentativa `observacao-opencode-20261014T162302Z` (HEAD `7f34e65`, DeepSeek V4 Flash) -- inconclusiva.** O coordenador não delegou do passo 8 ao 13: rodou o `databricks bundle validate` e o `unittest` no próprio Bash e editou `teste_calc.py` e `regras.yaml` com `edit`; o bruto só tem `task` de `map` e `refute`. O `refute` foi chamado e vinculado à sessão filha, mas `registrar_chamada` recusou com `Chamada fora da ordem prevista` (as etapas anteriores não estavam feitas), e `adaptadores/opencode/prova.py:279-280` engoliu o erro; o `estado` mostrou só `chamada:refute`. O coordenador também fechou `BLOCKED` duas vezes, seguindo o texto da cobrança, contra a regra 5 do roteiro. Com o mesmo modelo e roteiro, as cópias `20261014T122436Z` e `20261014T132049Z` delegaram os papéis, e nada nas instruções mudou entre `a1054c8` e `7f34e65`: a deriva é do modelo, e o harness deixou passar. Daí os pacotes D2-OC e O2-OC antes de nova tentativa.
 - **E0-OC -- pendente**: depende da decisão humana após G2. `configuracao/politica.json` permanece sem ativação do runtime OpenCode.
 
 ## O que cada dev precisa configurar (uso)
@@ -54,6 +55,39 @@ Saída: seção "Comportamento observado do runtime" em `adaptadores/opencode/RE
 ### O-OC · Kit de observação
 `avaliacao/observacao-opencode/` (`preparar.py`, `roteiro.md`, `validar.py`) copiado de `avaliacao/observacao-claude-code/`, com as fatias de manutenção e docs, negação da guarda no `dab` por `cwd_incorreto` e falso `DONE` recusado.
 
+### D2-OC · Coordenador sem mãos durante a fatia (só OpenCode)
+Objetivo: com fatia ativa numa trilha de `agentes_obrigatorios.opencode`, o coordenador não consegue fazer pelo caminho direto o trabalho de um papel; a negação diz qual papel chamar. Instrução não garante delegação (tentativa `20261014T162302Z`); a ponte garante. Fora da fatia, fora da chave ou em sessão filha, nada muda: o caminho simples continua editando.
+
+Escopo: só o runtime OpenCode. Claude Code e Cursor têm a mesma brecha (matchers `Bash|PowerShell|Agent` e `Shell|Task`; `Provas.antes` aceita verificação de qualquer sessão), mas ficam para decisão posterior. Nenhum comportamento deles muda neste pacote: a regra nova fica no núcleo como função pura e só o adaptador OpenCode a chama; `Provas.antes()` e `registrar_chamada()` mantêm a semântica atual.
+
+0. **Sondagem curta (1.18.35, fora do commit).** Confirmar no `tool.execute.before` os nomes e `args` das ferramentas de escrita (`edit` e `write` trazem `filePath`, como na sessão exportada; conferir `patch`/`apply_patch`/`multiedit` e o campo de caminho de cada uma) e que lançar erro no `before` bloqueia a escrita como bloqueia o `bash`. Registrar em `adaptadores/opencode/README.md` (seção de comportamento observado), com a versão.
+1. **Núcleo (`implementacao/provas.py`).** Função pura, sem efeito, que recebe estado, contrato, runtime e caminho (ou critério) e devolve o papel exigido ou `None`:
+   - escrita: `None` se não há fatia ativa, se `self.ativada(trilha, runtime)` é falso ou se o caminho não está em `self.vigiados(contrato)`; senão, os papéis do plano (`chamadas_previstas`) que escrevem aquela extensão (`EXTENSOES`; `.py` de teste também cabe ao `test`), para compor a mensagem;
+   - verificação: critério de `TIPOS_TESTE` exige `test` quando `test` está no plano; `ambiente` exige `dab`. É a mesma regra que hoje só aparece no fecho (`teste_fora_do_test`, l. 813-829), antecipada.
+   - Novo método para anotar recusa de registro de chamada no estado (pendência `chamada_recusada:<papel>:<motivo>`), visível no `estado` e no `fechar`; sai quando uma chamada válida do mesmo papel for registrada.
+2. **Adaptador (`adaptadores/opencode/prova.py`).**
+   - `tool.execute.before` de `edit`/`write`/(as da sondagem): sessão sem `_arquivo_filho` (coordenador) e papel exigido → `{"decisao": "negar", "motivo": "[esteira] <arquivo> pertence à superfície da fatia; delegue com task, subagent_type: <papéis>. Não edite como coordenador."}`. Sessão filha → `nao_aplica` (as permissões do papel já restringem). Caminho relativo resolvido contra a raiz; fora da raiz → `nao_aplica`.
+   - `_bash_antes` (l. 93-121): verificação declarada vinda do coordenador cujo critério exige `test`/`dab` → negar com `[esteira] O critério <id> é verificado pelo papel <papel>; delegue com task, subagent_type: <papel>.`, antes de `provas.antes`, sem gravar tentativa.
+   - `_task_depois` (l. 276-280): em `ValueError` de `registrar_chamada`, além de `encerrar_chamada`, anotar a recusa com a mensagem do núcleo (por exemplo `Chamada fora da ordem prevista`).
+   - `tratar` (l. 308-326): rotear as ferramentas de escrita.
+3. **Ponte (`adaptadores/opencode/esteira.js`, l. 94-113).** Encaminhar o `before` das ferramentas de escrita com `input` e `args` mínimos (`filePath`, nunca o conteúdo) e aplicar a decisão como no `bash`: `negar` lança o erro com o motivo; falha da ponte é fail-closed (mesma regra do `bash`; documentar que, com a ponte quebrada, a edição também para).
+4. **Kit (`avaliacao/observacao-opencode/preparar.py`).** Plugin de captura passa a registrar o `before` e a decisão das ferramentas de escrita só com `filePath`, sem conteúdo; `eventos_capturados` do `PREPARO.json` inclui a escrita. `conferir.py` passa a contar `negacoes_escrita` e a mostrar `chamada_recusada:*`.
+5. **Reforço opcional (fora do aceite deste pacote, decidir depois):** agente primário `coordenador` (`mode: primary`) com permissões restritas, para quem escolhe modelos menores.
+
+Testes:
+- `testes/teste_adaptador_opencode.py`: edição do coordenador na superfície com fatia ativada é negada e cita o papel; a mesma edição numa sessão filha passa; sem fatia, fora da chave ou fora da superfície (`observacao/revisao-*.yaml`) passa; verificação de `teste` e `ambiente_local` pelo coordenador é negada sem gravar tentativa e pelo filho segue como hoje; `refute` antes das etapas anteriores deixa `chamada_recusada:refute:...` no `estado`.
+- `testes/teste_provas.py`: a função pura nos casos acima.
+- `node testes/teste_opencode.mjs`: encaminhamento da escrita, negação lançada, fail-closed e ausência de conteúdo no payload.
+- Sem regressão: `teste_adaptador_claude_code.py` e `teste_adaptador_cursor*.py` passam sem alteração.
+- `py -3 avaliacao/observacao-opencode/validar.py`: acrescentar uma edição do coordenador negada e uma verificação do coordenador negada antes do fluxo simulado.
+
+### O2-OC · Roteiro e fixture para a nova tentativa
+- `preparar.py:28-34`: `calc.py` inicial devolve `valor` sem desconto, para o `implement` ter trabalho real; `validar.py` acompanha.
+- `roteiro.md`: prompts dos passos 8 a 21 em linguagem natural de uso (por exemplo "acrescente em `teste_calc.py` o caso `preco_final(200) == 180`"), sem dizer "use task" nem o papel; a observação passa a conferir se a ponte forçou a delegação. Acrescentar um passo que espera a negação de edição do coordenador quando ele tentar editar direto (anotar se o modelo delegou de primeira ou após a negação).
+- Regra 5 do roteiro: deixar explícito que vale mesmo quando a cobrança da ponte sugerir `BLOCKED`; não mudar o texto da cobrança, que é o comportamento de uso.
+- Critérios do G2-OC: acrescentar "edição e verificação do coordenador na superfície negadas com o papel indicado" e "nenhuma recusa silenciosa de chamada (`chamada_recusada:*` visível quando houver)".
+- Nova tentativa com cópia nova (`preparar.py`), preservando `observacao-opencode-20261014T162302Z` para análise.
+
 ### G2-OC · Gate (humano)
 Sessão real nova; aceite pelos mesmos critérios do G2 do Claude Code. Atualiza `metadados.opencode.*.observado` no roteamento.
 
@@ -75,4 +109,5 @@ Cada pacote é uma fatia estruturada com contrato via `py -3 adaptadores/prova.p
 ## Riscos
 - API de plugins do OpenCode muda entre versões: tudo que depender de campo de evento só entra depois do P0-OC e fica registrado com a versão.
 - `session.idle` não bloqueia: o fecho é cobrado por follow-up, não por veto (mesma ressalva do Cursor).
-- Provedor por dev: modelos diferentes podem variar no cumprimento dos papéis; a prova observada continua sendo o critério, não o relato.
+- Provedor por dev: modelos diferentes podem variar no cumprimento dos papéis; a prova observada continua sendo o critério, não o relato. Observado em 14/10 com DeepSeek V4 Flash; o D2-OC bloqueia o caminho direto, e o indireto (escrita pelo Bash) continua barrado só no fecho (`edicao_fora_do_papel`).
+- D2-OC é fail-closed na escrita: com a ponte quebrada, o coordenador não edita nada. É o mesmo custo já aceito para o `bash`.
