@@ -52,9 +52,7 @@ class FormasTestes(unittest.TestCase):
             "artefatos_raiz": ".execucoes/provas",
             "fora": [],
             "fontes": ["PLANO-AGENTES-TRILHAS.md"],
-            "prazo": None,
             "aceite": [criterio],
-            "orcamento": {},
             "responsaveis": {},
         }
 
@@ -92,6 +90,12 @@ class FormasTestes(unittest.TestCase):
         self.assertEqual(self.verificar(self.evento("ataque", self.ataque())),
                          self.evento("ataque", self.ataque()))
         self.verificar(self.evento("ataque", self.ataque("nao_quebrei")))
+
+    def test_enum_invalido_lista_valores_aceitos_na_ordem_do_catalogo(self):
+        with self.assertRaises(ValueError) as erro:
+            self.verificar(self.evento("ataque", self.ataque("aprovado")))
+        self.assertIn("dados.veredito: valor invalido; use um de: com_achados, nao_quebrei, inconclusivo",
+                      str(erro.exception))
 
     def test_ataque_exige_evidencia_tentativas_e_cobertura_condicionais(self):
         dados = self.ataque()
@@ -171,10 +175,14 @@ class FormasTestes(unittest.TestCase):
             "status": "concluida",
         }
         self.verificar(self.evento("chamada", dados))
+        for runtime in ("claude_code", "cursor", "opencode"):
+            with self.subTest(runtime=runtime):
+                self.verificar(self.evento("chamada", {**dados, "runtime": runtime}))
         for alterar in (
             lambda d: d.update(ids_observados=[]),
             lambda d: d.update(papel="coordenador"),
             lambda d: d.update(runtime="inexistente"),
+            lambda d: d.update(runtime="codex"),
             lambda d: d.update(status="pass"),
             lambda d: d.update(fim="2026-10-03T11:59:59+00:00"),
             lambda d: d.update(inicio="2026-10-03T12:00:00"),
@@ -424,6 +432,20 @@ class FormasTestes(unittest.TestCase):
             validar_dados("contrato", self.contrato(inspecao_31), "3.1")
         inspecao_31["verificacao"].update(comando="py conferir.py", cwd=".")
         validar_dados("contrato", self.contrato(inspecao_31), "3.1")
+
+    def test_contrato_recusa_orcamento_e_prazo_removidos(self):
+        criterio = {
+            "id": "teste",
+            "tipo": "teste",
+            "obrigatorio": True,
+            "esperado": "Processo termina em zero",
+            "verificacao": {"comando": "py teste.py", "cwd": ".", "caminhos": ["implementacao/formas.py"]},
+        }
+        for campo, valor in (("orcamento", {"ciclos_correcao_max": 3}), ("prazo", None)):
+            contrato = self.contrato(criterio)
+            contrato[campo] = valor
+            with self.subTest(campo=campo), self.assertRaises(ValueError):
+                validar_dados("contrato", contrato, "3.1")
 
     def test_autorizacao_ref_so_e_aceita_em_ambiente_32_com_caminho_relativo(self):
         ambiente = {

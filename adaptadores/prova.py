@@ -17,7 +17,9 @@ import yaml
 def principal(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sessao", default=os.environ.get("ESTEIRA_SESSAO"))
-    runtime_detectado = "claude_code" if os.environ.get("CLAUDE_CODE_SESSION_ID") else None
+    runtime_detectado = "claude_code" if os.environ.get("CLAUDE_CODE_SESSION_ID") else (
+        "opencode" if os.environ.get("ESTEIRA_RUNTIME") == "opencode" else None
+    )
     parser.add_argument("--runtime", choices=("claude_code", "cursor", "codex", "opencode"),
                         default=runtime_detectado)
     comandos = parser.add_subparsers(dest="acao", required=True)

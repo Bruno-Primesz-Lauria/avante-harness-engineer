@@ -44,8 +44,10 @@ class GerarAgentesTestes(unittest.TestCase):
     def test_geracao_usa_apenas_frontmatter_observado_por_runtime(self):
         claude = gerar_agentes.gerar(self.raiz, "claude_code")
         cursor = gerar_agentes.gerar(self.raiz, "cursor")
+        opencode = gerar_agentes.gerar(self.raiz, "opencode")
         self.assertEqual(7, len(claude))
         self.assertEqual(7, len(cursor))
+        self.assertEqual(7, len(opencode))
         frontmatter_claude = {}
         for caminho, texto in claude.items():
             correspondencia = FRONTMATTER.search(texto)
@@ -71,6 +73,53 @@ class GerarAgentesTestes(unittest.TestCase):
         for skill in ("core", "dabs", "jobs", "pipelines"):
             self.assertIn(f".agents/skills/databricks-{skill}/SKILL.md", dab_cursor)
 
+        for caminho, texto in opencode.items():
+            correspondencia = FRONTMATTER.search(texto)
+            self.assertIsNotNone(correspondencia)
+            dados = yaml.safe_load(correspondencia.group(1))
+            self.assertEqual({"name", "description", "mode", "permission"}, set(dados))
+            self.assertEqual("subagent", dados["mode"])
+            permissoes = dados["permission"]
+            self.assertEqual("deny", permissoes["*"])
+            self.assertEqual("allow", permissoes["read"])
+            self.assertEqual("allow", permissoes["grep"])
+            self.assertEqual("allow", permissoes["glob"])
+            self.assertEqual("allow", permissoes["skill"])
+            papel = Path(caminho).stem
+            if papel in {"map", "refute", "dab"}:
+                self.assertEqual("deny", permissoes["edit"], papel)
+            else:
+                self.assertEqual("allow", permissoes["edit"], papel)
+            if "Bash" in gerar_agentes.FERRAMENTAS_CLAUDE[papel]:
+                self.assertEqual("allow", permissoes["bash"]["*"], papel)
+                self.assertEqual("ask", permissoes["bash"]["databricks bundle *"], papel)
+            else:
+                self.assertEqual("deny", permissoes["bash"], papel)
+            self.assertIn("pela ferramenta nativa `skill`", texto)
+            self.assertIn("`databricks-", texto)
+            self.assertNotIn("model:", texto)
+
+    def test_roteamento_opencode_e_configuracao_de_projeto_sem_provedor(self):
+        rota = yaml.safe_load(
+            (self.raiz / "agentes/roteamento.yaml").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            ".agents/skills/databricks-<nome>/SKILL.md",
+            rota["runtimes"]["opencode"]["skill_ref"],
+        )
+        self.assertEqual(
+            ".opencode/agents/", rota["runtimes"]["opencode"]["instalacao_agentes"]
+        )
+        for papel in gerar_agentes.PAPEIS:
+            meta = rota["agentes"][papel]["metadados"]["opencode"]
+            self.assertFalse(meta["instalado"], papel)
+            self.assertEqual("pendente", meta["observado"], papel)
+        config = yaml.safe_load((RAIZ / "opencode.json").read_text(encoding="utf-8"))
+        self.assertEqual("https://opencode.ai/config.json", config["$schema"])
+        self.assertEqual({"databricks bundle *": "ask"}, config["permission"]["bash"])
+        self.assertNotIn("provider", config)
+        self.assertNotIn("model", config)
+
     def test_so_o_refute_do_cursor_roda_shell_para_vincular_o_id(self):
         # O refute do Claude Code fica sem Bash: lá o ID vem do hook.
         cursor = gerar_agentes.gerar(self.raiz, "cursor")
@@ -80,7 +129,7 @@ class GerarAgentesTestes(unittest.TestCase):
                          [".cursor/agents/refute.md"])
 
     def test_nome_e_descricao_sem_aspas_porque_o_cursor_as_mantem_no_nome(self):
-        for runtime in ("claude_code", "cursor"):
+        for runtime in ("claude_code", "cursor", "opencode"):
             for caminho, texto in gerar_agentes.gerar(self.raiz, runtime).items():
                 papel = Path(caminho).stem
                 self.assertIn(f"\nname: {papel}\n", texto, caminho)
@@ -104,22 +153,24 @@ class GerarAgentesTestes(unittest.TestCase):
             gerar_agentes.gerar(self.raiz, "claude_code")
 
     def test_segunda_instalacao_fica_estavel_e_verificar_e_repetivel(self):
-        gerar_agentes.instalar("claude_code", self.raiz)
-        antes = {
-            caminho.relative_to(self.raiz): caminho.read_bytes()
-            for caminho in (self.raiz / ".claude/agents").glob("*.md")
-        }
-        gerar_agentes.instalar("claude_code", self.raiz)
-        depois = {
-            caminho.relative_to(self.raiz): caminho.read_bytes()
-            for caminho in (self.raiz / ".claude/agents").glob("*.md")
-        }
-        self.assertEqual(antes, depois)
-        self.assertEqual([], list((self.raiz / ".claude/agents").glob("*.backup.*")))
+        for runtime, destino in gerar_agentes.DESTINOS.items():
+            gerar_agentes.instalar(runtime, self.raiz)
+            antes = {
+                caminho.relative_to(self.raiz): caminho.read_bytes()
+                for caminho in (self.raiz / destino).glob("*.md")
+            }
+            gerar_agentes.instalar(runtime, self.raiz)
+            depois = {
+                caminho.relative_to(self.raiz): caminho.read_bytes()
+                for caminho in (self.raiz / destino).glob("*.md")
+            }
+            self.assertEqual(antes, depois, runtime)
+            self.assertEqual([], list((self.raiz / destino).glob("*.backup.*")), runtime)
         primeira = gerar_agentes.verificar(self.raiz)
         segunda = gerar_agentes.verificar(self.raiz)
         self.assertEqual(primeira, segunda)
         self.assertTrue(primeira[0])
+        self.assertEqual(21, len(primeira[1]))
 
     def test_edicao_manual_e_detectada_e_nunca_sobrescrita(self):
         gerar_agentes.instalar("cursor", self.raiz)
@@ -164,8 +215,10 @@ class GerarAgentesTestes(unittest.TestCase):
         self.assertEqual(0, retorno)
         self.assertIn("# .claude/agents/map.md", saida.getvalue())
         self.assertIn("# .cursor/agents/map.md", saida.getvalue())
+        self.assertIn("# .opencode/agents/map.md", saida.getvalue())
         self.assertFalse((self.raiz / ".claude/agents").exists())
         self.assertFalse((self.raiz / ".cursor/agents").exists())
+        self.assertFalse((self.raiz / ".opencode/agents").exists())
 
 
 if __name__ == "__main__":

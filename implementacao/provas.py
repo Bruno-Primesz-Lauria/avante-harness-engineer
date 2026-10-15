@@ -28,6 +28,12 @@ CRITERIOS_TESTE = {
 }
 # A implementacao/configuracao que interpreta a prova tambem faz parte dela.
 CONTROLE = ["implementacao", "adaptadores", "configuracao", "formas/catalogo.yaml", "agentes/roteamento.yaml"]
+CONTROLE_RUNTIME = {
+    "claude_code": [".claude/settings.json"],
+    "cursor": [".cursor/hooks.json"],
+    "codex": [".codex/hooks.json"],
+    "opencode": [".opencode/plugins/esteira.js", "opencode.json", ".opencode/agents"],
+}
 EXTENSOES = {
     "config": {".yaml", ".yml"},
     "implement": {".ipynb", ".py", ".sql"},
@@ -291,10 +297,10 @@ class Provas:
 
     def politica(self):
         if not self.politica_path.is_file():
-            return {"agentes_obrigatorios": {"claude_code": [], "cursor": []}}
+            return {"agentes_obrigatorios": {"claude_code": [], "cursor": [], "opencode": []}}
         dados = ler(self.politica_path)
         ativacao = dados.get("agentes_obrigatorios", {"claude_code": [], "cursor": []})
-        exigir(isinstance(ativacao, dict) and set(ativacao) <= {"claude_code", "cursor"},
+        exigir(isinstance(ativacao, dict) and set(ativacao) <= {"claude_code", "cursor", "opencode"},
                "agentes_obrigatorios deve ser configurado por runtime")
         for runtime, trilhas in ativacao.items():
             exigir(isinstance(trilhas, list) and all(t in {"novo", "manutencao", "correcao", "docs",
@@ -453,7 +459,7 @@ class Provas:
         pasta = self.pasta()
         exigir(pasta is not None, "Nenhuma fatia ativa")
         exigir(papel in PAPEIS and papel != "map", "Papel nao roteado como obrigatorio")
-        exigir(runtime in {"claude_code", "cursor"}, "Runtime invalido")
+        exigir(runtime in {"claude_code", "cursor", "opencode"}, "Runtime invalido")
         with trava(pasta):
             estado = self.estado(pasta)
             exigir(estado["runtime"] in (None, runtime), "Chamada observada em outro runtime")
@@ -685,7 +691,7 @@ class Provas:
             self.atualizar(pasta, estado)
             return {"resultado": resultado, "evidencia_ref": ref}
 
-    def antes(self, chamada, comando, cwd, versao_runtime, agente_id=None):
+    def antes(self, chamada, comando, cwd, versao_runtime, agente_id=None, runtime=None):
         pasta = self.pasta()
         if pasta is None:
             return False
@@ -706,8 +712,9 @@ class Provas:
             tentativa = estado["tentativa"]
             manifesto = f"tentativas/{tentativa:03d}/manifesto.json"
             caminhos = criterio["verificacao"]["caminhos"]
+            controle_runtime = CONTROLE_RUNTIME.get(runtime or self.runtime, [".cursor/hooks.json"])
             dados = dict(versao=1, registrado_em=agora(), caminhos=caminhos, arquivos=retrato(self.raiz, caminhos),
-                         controle=retrato(self.raiz, CONTROLE + [".cursor/hooks.json"]),
+                         controle=retrato(self.raiz, CONTROLE + controle_runtime),
                          runtime=versao_runtime, contrato_sha256=estado["contrato_sha256"])
             gravar(dentro(pasta, manifesto), dados)
             estado["pendente"] = dict(chamada=chamada, comando_sha256=hash_bytes(comando.encode()),

@@ -25,6 +25,10 @@ runtimes:
     skill_ref: ".agents/skills/databricks-<nome>/SKILL.md"
     instalacao_agentes: .cursor/agents/
     observacao_habilidades_em_subagente: observada
+  opencode:
+    skill_ref: ".agents/skills/databricks-<nome>/SKILL.md"
+    instalacao_agentes: .opencode/agents/
+    observacao_habilidades_em_subagente: observada
 
 regras:
   carregamento_skills: "Carregar apenas a skill pertinente ao gatilho; registrar a referência usada; não presumir que a skill do coordenador foi carregada no subagente."
@@ -103,6 +107,7 @@ agentes:
     metadados:
       claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      opencode: {politica: aprovada, instalado: false, observado: pendente}
 
   config:
     responsabilidade: "Alterar somente a superfície YAML atribuída pelo contrato."
@@ -113,6 +118,7 @@ agentes:
     metadados:
       claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      opencode: {politica: aprovada, instalado: false, observado: pendente}
 
   implement:
     responsabilidade: "Alterar somente a superfície de notebook, Python ou SQL atribuída; não mudar o aceite unilateralmente."
@@ -123,6 +129,7 @@ agentes:
     metadados:
       claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      opencode: {politica: aprovada, instalado: false, observado: pendente}
 
   test:
     responsabilidade: "Executar o esperado contratado; pode preparar casos apenas no escopo roteado e não corrige produto."
@@ -137,6 +144,7 @@ agentes:
     metadados:
       claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      opencode: {politica: aprovada, instalado: false, observado: pendente}
 
   refute:
     responsabilidade: "Revisar de forma independente e somente leitura; receber intenção e aceite, sem o racional persuasivo do autor."
@@ -147,6 +155,7 @@ agentes:
     metadados:
       claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      opencode: {politica: aprovada, instalado: false, observado: pendente}
 
   docs:
     responsabilidade: "Escrever ou destilar somente os documentos atribuídos, com fontes verificáveis."
@@ -157,6 +166,7 @@ agentes:
     metadados:
       claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      opencode: {politica: aprovada, instalado: false, observado: pendente}
 
   dab:
     responsabilidade: "Executar somente operação de ambiente explicitamente contratada e autorizada; registrar resultado, IDs, logs e destinos observados."
@@ -173,6 +183,7 @@ agentes:
     metadados:
       claude_code: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "2.1.292", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
       cursor: {politica: aprovada, instalado: true, observado: {estado: observado, versao: "3.19.19", referencia: "PLANO-AGENTES-TRILHAS.md#painel"}}
+      opencode: {politica: aprovada, instalado: false, observado: pendente}
 
 trilhas:
   novo:

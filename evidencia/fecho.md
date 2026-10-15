@@ -31,7 +31,7 @@ Review é uma tarefa: pode estar `DONE` mesmo quando o artefato revisado tem blo
 | `REVIEW` | O aceite técnico fechou e o acordo prevê revisão humana. | Indique exatamente o que revisar. |
 | `DECIDE` | Duas opções concretas, ou autorização ou coordenação ausente, dependem de decisão humana. | Uma pergunta suficiente para a dependência. O trabalho independente continua. |
 | `BLOCKED` | Acesso, capacidade, conflito concorrente ou estado externo impede continuar ou verificar, depois da recuperação possível. | Nomeie impedimento, evidência e condição de retomada. A negação isolada de um comando não basta. |
-| `FAILED` | A verificação rodou e reprovou o aceite, e a trilha não corrige ou esgotou o orçamento. | Resultado negativo localizável. Preserve o trabalho e nomeie o critério. |
+| `FAILED` | A verificação rodou e reprovou o aceite, e a trilha não corrige ou esgotou o limite de tentativas. | Resultado negativo localizável. Preserve o trabalho e nomeie o critério. |
 
 ## Resultado de checagem
 

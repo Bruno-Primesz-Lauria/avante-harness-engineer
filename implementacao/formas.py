@@ -63,7 +63,8 @@ def campos(dados, esquema, enums, nome="dados"):
                  "bool": bool, "int": int, "lista": list, "objeto": dict}
         exigir(type(valor) is tipos[tipo], f"{nome}.{chave}: tipo invalido")
         if tipo == "enum":
-            exigir(valor in enums[regra["enum"]], f"{nome}.{chave}: valor invalido")
+            aceitos = enums[regra["enum"]]
+            exigir(valor in aceitos, f"{nome}.{chave}: valor invalido; use um de: {', '.join(aceitos)}")
         elif tipo == "caminho":
             relativo(valor)
         elif tipo == "timestamp":

@@ -50,9 +50,7 @@ FIXTURE = {
 
 CONTRATO_BASE = """\
 artefatos_raiz: .execucoes/provas
-prazo: null
 fora: [prj-avante-analytics-adb, databricks, deploy, run]
-orcamento: {ciclos_correcao_max: 3, ciclos_sem_progresso_max: 2, repeticoes_operacao_max: 2}
 responsaveis: {coordenador: agente, executor: agente, verificador: suite_local}
 """
 

@@ -30,9 +30,11 @@ A raiz é o checkout `user-harness-esteira/`. Abra sempre essa pasta, não a pas
 | `adaptadores/executar.py` | Lê UTF-8/JSON, carrega a política, chama a guarda, grava o diagnóstico e responde no protocolo nativo. Falha tratada sai com código 2. |
 | `adaptadores/protocolo.py` | Normaliza os quatro protocolos e traduz a decisão de volta. |
 | `adaptadores/gerenciar.py` | Mostra ou instala a configuração, preservando o que já existe. |
+| `adaptadores/gerar_agentes.py` | Gera e verifica os sete agentes nativos para Claude Code, Cursor e OpenCode; protege arquivos com edição manual. |
 | `adaptadores/prova.py` | CLI `iniciar`, `estado` e `fechar` da fatia. Uso: [evidencia/uso.md](../evidencia/uso.md). |
 | `adaptadores/cursor/prova.py` | Traduz os eventos de coleta do Cursor. |
-| `adaptadores/opencode/esteira.js` | Ponte do plugin. Chama Python sem shell, com timeout, e lança erro quando a guarda nega ou falha. |
+| `adaptadores/opencode/esteira.js` | Ponte do plugin. Encaminha Bash, Task, ambiente de shell e eventos de sessão; só lança erro no `before` de Bash. |
+| `adaptadores/opencode/prova.py` | Relaciona eventos OpenCode a verificações contratadas e chamadas de subagentes observadas. |
 
 ## Protocolo
 
@@ -43,10 +45,10 @@ A raiz é o checkout `user-harness-esteira/`. Abra sempre essa pasta, não a pas
 | Codex | `permissionDecision: deny` ou exit 2 | `tool_input.workdir`, ou prefixo literal |
 | OpenCode | Exceção antes da execução | `args.workdir`, ou prefixo literal |
 
-- Decisão positiva não amplia permissão do runtime. Cursor recebe `allow`; Claude Code e Codex recebem só contexto; OpenCode não altera argumentos.
+- Decisão positiva não amplia permissão do runtime. Cursor recebe `allow`; Claude Code e Codex recebem só contexto; OpenCode não altera argumentos. No OpenCode, apenas o `before` de Bash falha fechado; a coleta de provas nos outros eventos é best-effort.
 - Prefixos aceitos: `Set-Location -LiteralPath 'absoluto' -ErrorAction Stop;` (PowerShell) e `cd -- 'absoluto' &&` (Bash). Target: `DATABRICKS_BUNDLE_TARGET=valor` logo antes de `databricks`, `databricks.exe` ou `databricks.cmd`.
 - O adaptador não converte o shell, não troca o target e não repete a chamada. A recuperação é do coordenador, dentro da autorização original.
-- Diagnóstico: `.execucoes/<runtime>/cwd_bundle/<evento_id>.json` (versão 2, sem comando nem perfil). Coleta de prova do Cursor: `.execucoes/provas/` (versão 3.1).
+- Diagnóstico: `.execucoes/<runtime>/cwd_bundle/<evento_id>.json` (versão 2, sem comando nem perfil). Coleta de prova do Cursor e do OpenCode: `.execucoes/provas/`; OpenCode vincula Task à sessão filha e registra o exit observado do Bash.
 - Hooks usam `py -3` no Windows e `python3` no POSIX (`--plataforma windows|posix`). Trocar a plataforma substitui só a definição gerada por nós.
 
 ## Limites reais

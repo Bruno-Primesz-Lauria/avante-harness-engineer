@@ -9,7 +9,9 @@ Manual da prova estruturada: iniciar a fatia, rodar as verificações, fechar. O
 3. Rode pelo chat os comandos exatos do contrato, com o diretório absoluto no campo `cwd` da ferramenta Shell (Cursor 3.17.8; versões anteriores usavam `working_directory`). Sem diretório, a verificação declarada é negada. O `preToolUse` captura o estado; o `postToolUse` registra `exitCode` e saída; o `postToolUseFailure` registra o exit diferente de zero lido do texto `Command failed with exit code N`; negação, timeout ou texto inesperado ficam inconclusivos. Terminal manual não gera esses eventos. Só a ferramenta Shell é observada, e só o comando que casa com um critério do contrato (mesmo texto e mesmo cwd) vira prova.
 4. Consulte o estado e feche. Edição relevante depois da prova exige nova verificação.
 
-O runtime informa ao núcleo qual lista de `agentes_obrigatorios` consultar. Os valores aceitos são `claude_code`, `cursor`, `codex` e `opencode`. Passe `--runtime cursor` no Cursor. No Claude Code, `CLAUDE_CODE_SESSION_ID` detecta `claude_code`; `--runtime` explícito prevalece sobre a detecção. Codex e OpenCode não são detectados pelo `prova.py`: informe `--runtime codex` ou `--runtime opencode` em cada comando. Eles ficam fora da chave de agentes obrigatórios; essa seleção permite abrir e fechar uma fatia sem exigir chamadas de agente. Ela não instala coleta de provas de shell: os hooks desses runtimes continuam cobrindo apenas a guarda, então não produzem registros `teste` nem comprovam por si sós critérios de comando. A chave não aceita `codex` ou `opencode`. Com a chave vazia, a ausência de runtime preserva o fluxo atual. No Claude Code, quem coleta as provas são os hooks do adaptador próprio; até o G2 desse runtime, o `fechar` dele não comprova `DONE` (limite do `AGENTS.md`).
+O runtime informa ao núcleo qual lista de `agentes_obrigatorios` consultar. O CLI aceita `claude_code`, `cursor`, `codex` e `opencode`; a política de obrigatoriedade aceita `claude_code`, `cursor` e `opencode`. Passe `--runtime cursor` no Cursor. No Claude Code, `CLAUDE_CODE_SESSION_ID` detecta `claude_code`; no OpenCode, `shell.env` injeta `ESTEIRA_RUNTIME=opencode` e `ESTEIRA_SESSAO`. Em ambos, `--runtime` explícito prevalece sobre a detecção. Codex continua exigindo `--runtime codex` e permanece fora da chave.
+
+O adaptador OpenCode coleta localmente o Bash que coincide com um critério do contrato e relaciona chamadas Task à sessão filha. Apenas o evento `before` de Bash pode falhar fechado; eventos de resultado e sessão são best-effort. Essa ponte tem testes locais, mas a observação integrada dos agentes e o gate G2-OC ainda estão pendentes. OpenCode continua fora da chave de produção, embora a política e o CLI já aceitem o runtime para uma futura ativação. Com a chave vazia, a ausência de runtime preserva o fluxo atual. No Claude Code, quem coleta as provas são os hooks do adaptador próprio; até o G2 desse runtime, o `fechar` dele não comprova `DONE` (limite do `AGENTS.md`).
 
 ```powershell
 py -3 adaptadores/prova.py --sessao ID iniciar .execucoes/contrato.yaml
@@ -24,7 +26,7 @@ py -3 adaptadores/prova.py --runtime cursor --sessao ID iniciar .execucoes/contr
 py -3 adaptadores/prova.py --runtime cursor --sessao ID fechar --resultado "Critérios verificados"
 ```
 
-No Codex e no OpenCode, passe o runtime explicitamente em cada operação da fatia:
+Fora do OpenCode, passe o runtime explicitamente em cada operação da fatia. No OpenCode, o plugin injeta as variáveis usadas pelo CLI; o modo explícito também funciona:
 
 ```powershell
 py -3 adaptadores/prova.py --runtime codex --sessao ID iniciar .execucoes/contrato.yaml
@@ -52,6 +54,21 @@ py -3 adaptadores/prova.py --sessao ID triar .execucoes/triagem.yaml
 
 - `inspecionar`: `criterio_id`, `checagens` (`id` e `resultado`: `pass`, `fail` ou `inconclusivo`) e, opcional, `produtor`. Com a chave vazia, critério de inspeção fecha `DONE` sem comando. Com a trilha ativada, as chamadas previstas continuam exigidas.
 - `revisar`: a forma `ataque` (intenção, aceite, baseline, provas, veredito, tentativas, achados, cobertura) com `agente_id` opcional, protegido pelo hash do evento. Com a trilha ativada, o ID precisa casar com uma chamada `refute` concluída; sem esse vínculo o fecho aponta `revisao:fora_do_refute`. Cada chamada `refute` concluída precisa da sua própria revisão registrada, com o `agente_id` dela; sem isso o fecho aponta `revisao:sem_registro:<chamada>`. Chamar o refute de novo não descarta o que o anterior achou: achado de revisão anterior precisa de triagem (`achado:<id>:sem_triagem`). Com a chave vazia, o vínculo não é exigido.
+
+  ```yaml
+  agente_id: <ID da chamada refute>
+  entrada:
+    intencao_ref: contrato.yaml
+    aceite_ref: contrato.yaml
+    baseline_ref: baseline.json
+    provas_refs: [<ref da prova>]
+  veredito: nao_quebrei   # ou com_achados (exige achados) ou inconclusivo
+  tentativas: [{id: t1, procedimento: '<procedimento>', resultado: pass}]   # pass, fail, info ou inconclusivo
+  achados: []   # cada um: id, categoria, severidade (critica, alta, media ou baixa), local, evidencia_ref
+  cobertura: [{criterio_id: <id do critério>, coberto: true}]
+  ```
+
+  Valor fora da lista é recusado, e a mensagem traz os aceitos, por exemplo `dados.veredito: valor invalido; use um de: com_achados, nao_quebrei, inconclusivo`.
 - `triar`: a forma `triagem` (`revisao_ref`, `achado_id`, `decisao`, `responsavel`, e `evidencia_resolucao_ref` ou `motivo_descarte` conforme a decisão).
 
 ### Superfície por papel
@@ -99,7 +116,6 @@ superficie: [implementacao, adaptadores, formas/catalogo.yaml]
 artefatos_raiz: .execucoes/provas
 fora: [deploy, run]
 fontes: [AGENTS.md, evidencia/uso.md]
-prazo: null
 aceite:
   - id: regressao
     tipo: teste
@@ -109,10 +125,6 @@ aceite:
       comando: py -3 -m unittest discover -s testes -p teste_*.py -v
       cwd: .
       caminhos: [implementacao, adaptadores, formas/catalogo.yaml, testes]
-orcamento:
-  ciclos_correcao_max: 3
-  ciclos_sem_progresso_max: 2
-  repeticoes_operacao_max: 2
 responsaveis:
   coordenador: agente
   executor: agente
@@ -123,7 +135,7 @@ Regras do validador:
 
 - O arquivo contém os dados do contrato. O núcleo acrescenta o envelope 3.1 e rejeita campo extra, tipo inválido, identificador de aceite repetido e contrato sem critério obrigatório.
 - `artefatos_raiz` deve ser `.execucoes/provas`.
-- `fontes` é lista de referências. `prazo` é data com fuso ou `null`. O núcleo não agenda tarefas nem concede permissão.
+- `fontes` é lista de referências. O núcleo não agenda tarefas nem concede permissão.
 - Todo critério leva `verificacao` com `comando`, `cwd` e `caminhos` (ao menos um). Cada par comando e cwd é único.
 - Todo item de `superficie` precisa estar coberto por algum caminho de `verificacao`.
 - Caminhos usam `/` e são relativos à raiz do harness. `cwd: .` é a raiz. Aceitam arquivo e diretório; diretório inclui arquivos novos. Arquivo ainda inexistente fica com hash `null` até ser criado. Link simbólico é recusado.

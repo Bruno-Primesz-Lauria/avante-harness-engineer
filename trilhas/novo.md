@@ -4,7 +4,7 @@ Usar quando: criar ou migrar um objeto, ou parte dele, dentro da fronteira, com 
 
 ## Passos
 
-1. **Delimitar.** Identifique irmão, arquivos, etapas, efeitos e critérios. Feito quando: o contrato tem escopo e orçamento.
+1. **Delimitar.** Identifique irmão, arquivos, etapas, efeitos e critérios. Feito quando: o contrato tem escopo e aceite.
 2. **Implementar.** Configure o YAML e crie o notebook a partir do template da etapa e de um irmão vivo. Inclua recurso, `include` e task quando o objeto pede. Feito quando: cada responsabilidade tem etapa dona.
 3. **Verificar e revisar.** Entre no [laço comum](README.md). Feito quando: cada critério tem prova atual e nenhum achado obrigatório está aberto.
 4. **Ambiente**, só se o contrato pede. Execute só o degrau autorizado; `validate` não publica. Comando `databricks bundle` de critério `ambiente` leva o registro `registrar-sandbox` ([uso](../evidencia/uso.md#diagnóstico-ambiente-e-paridade)). Feito quando: há `plan` atual antes de deploy, e coordenação antes de ingestão ou espinha. Se o ambiente falha, feche com `DECIDE`, `BLOCKED` ou `FAILED`.

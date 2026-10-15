@@ -14,7 +14,11 @@ import yaml
 
 RAIZ = Path(__file__).resolve().parents[1]
 PAPEIS = {"map", "config", "implement", "test", "refute", "docs", "dab"}
-DESTINOS = {"claude_code": ".claude/agents", "cursor": ".cursor/agents"}
+DESTINOS = {
+    "claude_code": ".claude/agents",
+    "cursor": ".cursor/agents",
+    "opencode": ".opencode/agents",
+}
 SECOES_OBRIGATORIAS = (
     "Responsabilidade",
     "Gatilho",
@@ -96,7 +100,7 @@ def _carregar_fontes(raiz):
         definicoes[papel] = texto.rstrip() + "\n"
     runtimes = rota.get("runtimes", {})
     if any(runtime not in runtimes for runtime in DESTINOS):
-        raise ValueError("O roteamento deve declarar Claude Code e Cursor")
+        raise ValueError("O roteamento deve declarar Claude Code, Cursor e OpenCode")
     return rota, definicoes
 
 
@@ -141,6 +145,29 @@ def _yaml_simples(valor):
     return valor
 
 
+def _permissoes_opencode(papel):
+    """Traduz a lista Claude aprovada para as permissÃµes de ferramenta do OpenCode."""
+    ferramentas = set(FERRAMENTAS_CLAUDE[papel])
+    linhas = [
+        "permission:",
+        "  \"*\": deny",
+        f"  read: {'allow' if 'Read' in ferramentas else 'deny'}",
+        f"  grep: {'allow' if 'Grep' in ferramentas else 'deny'}",
+        f"  glob: {'allow' if 'Glob' in ferramentas else 'deny'}",
+        f"  edit: {'allow' if {'Edit', 'Write'} & ferramentas else 'deny'}",
+        "  skill: allow",
+    ]
+    if "Bash" in ferramentas:
+        linhas.extend([
+            "  bash:",
+            "    \"*\": allow",
+            "    \"databricks bundle *\": ask",
+        ])
+    else:
+        linhas.append("  bash: deny")
+    return linhas
+
+
 def _frontmatter(rota, papel, runtime):
     agente = rota["agentes"][papel]
     linhas = [
@@ -154,6 +181,9 @@ def _frontmatter(rota, papel, runtime):
         skills = _skills_fixos(agente)
         linhas.append("skills:")
         linhas.extend(f"  - {_yaml_string('databricks:databricks-' + skill)}" for skill in skills)
+    elif runtime == "opencode":
+        linhas.append("mode: subagent")
+        linhas.extend(_permissoes_opencode(papel))
     else:
         linhas.append("model: inherit")
     linhas.append("---\n")
@@ -165,6 +195,17 @@ def _corpo(rota, papel, runtime, definicao):
         return definicao
     skills = _skills_cursor(rota["agentes"][papel])
     linhas = [definicao.rstrip(), ""]
+    if runtime == "opencode":
+        linhas += [
+            "## Skills no OpenCode",
+            "",
+            "Carregue somente as skills pertinentes ao gatilho pela ferramenta nativa `skill`, usando o nome exato da lista abaixo. Não presuma que skills do agente principal foram herdadas.",
+        ]
+        linhas.extend(f"- `databricks-{skill}`" for skill in skills)
+        linhas.append(
+            "- Skills variáveis ficam disponíveis pela ferramenta `skill` quando descobertas no workspace."
+        )
+        return "\n".join(linhas) + "\n"
     if papel in VINCULO_CURSOR:
         linhas.extend([VINCULO_CURSOR[papel], ""])
     linhas += [

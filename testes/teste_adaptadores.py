@@ -43,8 +43,9 @@ class AdaptadoresTestes(unittest.TestCase):
         if runtime == "cursor":
             return {"hook_event_name": "beforeShellExecution", "command": comando, "cwd": str(cwd)}
         if runtime == "opencode":
-            return {"evento": "tool.execute.before", "tool": "bash",
-                    "args": {"command": comando, "workdir": str(cwd)}}
+            argumentos = {"command": comando, "workdir": str(cwd)}
+            return {"evento": "tool.execute.before", "tool": "bash", "args": argumentos,
+                    "input": {"tool": "bash", "sessionID": "sessao-opencode", "callID": "call-opencode"}}
         if runtime == "claude_code":
             comando = f"cd -- '{cwd}' && {comando}"
         return {"hook_event_name": "PreToolUse", "tool_name": "Bash", "cwd": str(self.local),
@@ -76,7 +77,8 @@ class AdaptadoresTestes(unittest.TestCase):
 
     def test_falha_bloqueante_em_todos_os_protocolos(self):
         for runtime in RUNTIMES:
-            self.assertEqual(self.executar(runtime, []).returncode, 2)
+            esperado = 0 if runtime == "opencode" else 2
+            self.assertEqual(self.executar(runtime, []).returncode, esperado)
 
     def test_claude_subagentstop_com_erro_avisa_sem_prender_o_subagente(self):
         # Exit 2 no SubagentStop faria o subagente continuar; o erro vira aviso com exit 0.
