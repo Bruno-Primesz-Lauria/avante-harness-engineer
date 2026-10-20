@@ -13,9 +13,9 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import re
-from uuid import uuid4
 
 from guarda_cwd import Decisao, negar
+from nomes import nome_arquivo, nome_plan
 
 
 EXECUTAVEIS = {"databricks", "databricks.exe", "databricks.cmd"}
@@ -251,7 +251,7 @@ def observar_resultado_plan(politica: dict, *, cwd: str, comando: str, caminhos=
                        for arquivo in arquivos],
             "observado_em": datetime.now(timezone.utc).isoformat(),
         }
-        destino = pasta / f"{uuid4().hex}.json"
+        destino = pasta / f"{nome_arquivo(pasta, nome_plan(chamada.target, chamada.selecao), '.json')}.json"
         with destino.open("x", encoding="utf-8") as arquivo:
             json.dump(recibo, arquivo, ensure_ascii=True, indent=2, sort_keys=True)
             arquivo.write("\n")

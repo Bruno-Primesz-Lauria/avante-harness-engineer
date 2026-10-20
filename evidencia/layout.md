@@ -1,9 +1,12 @@
 # Estado e retomada
 
-Layout dos artefatos do harness, separados dos arquivos de produto, do PR e do deploy. O núcleo grava esta árvore em `.execucoes/provas/`. O conteúdo de cada registro, os schemas e os limites estão em [`uso.md`](uso.md).
+Layout dos artefatos do harness, separados dos arquivos de produto, do PR e do deploy. O núcleo grava `provas/` e `sessoes/` em `.execucoes/`. `entradas/` é o rascunho e `provas/` é a cópia imutável; `indice.md` é gerado pelo `prova.py`. O conteúdo de cada registro, os schemas e os limites estão em [`uso.md`](uso.md).
 
 ```text
-.execucoes/provas/<execucao_id>/principal/
+.execucoes/entradas/<assunto>/
+.execucoes/indice.md
+.execucoes/plans/<data>-plan-<target>-<selecao>.json
+.execucoes/provas/<data>-<trilha>-<assunto>/principal/
   baseline.json
   contrato.yaml
   estado.json
@@ -12,8 +15,11 @@ Layout dos artefatos do harness, separados dos arquivos de produto, do PR e do d
     eventos/<evento_id>.yaml
     logs/resultado.txt
   fechos/<fecho_id>.yaml
-.execucoes/sessoes/<hash_da_sessao>/ativa.json
+.execucoes/sessoes/<data>-<trilha>-<assunto>/ativa.json
+.execucoes/sessoes/mapa.json
 ```
+
+O nome da prova, do recibo de plan e da sessão leva a data e o assunto. `sessoes/mapa.json` liga o identificador da sessão do runtime a essa pasta. Cada evento dentro da fatia conserva o identificador da gravação: o `estado.json` confere o arquivo por esse nome.
 
 ## Propriedade
 

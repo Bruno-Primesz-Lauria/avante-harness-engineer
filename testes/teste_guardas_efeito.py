@@ -2,6 +2,7 @@
 
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 import shutil
 import subprocess
@@ -118,6 +119,8 @@ class GuardasEfeitoTestes(unittest.TestCase):
     def test_select_igual_com_ordem_diferente_e_hash_que_cai(self):
         self.assertEqual(self.observar().codigo, "plan_registrado")
         recibo = next((self.raiz / "registros/plans").glob("*.json"))
+        dia = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        self.assertEqual(recibo.name, f"{dia}-plan-sandbox-etapa.json")
         dados = json.loads(recibo.read_text(encoding="utf-8"))
         self.assertNotIn("perfil", dados)
         self.assertNotIn("teste", dados["perfil_sha256"])

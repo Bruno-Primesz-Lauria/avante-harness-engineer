@@ -75,9 +75,9 @@ class FormasTestes(unittest.TestCase):
         cobertura = [{"criterio_id": "c1", "coberto": True}]
         return {
             "entrada": {
-                "intencao_ref": "PLANO-AGENTES-TRILHAS.md",
+                "intencao_ref": "README.md",
                 "aceite_ref": "formas/catalogo.yaml",
-                "baseline_ref": "PLANO-AGENTES-TRILHAS.md",
+                "baseline_ref": "README.md",
                 "provas_refs": ["implementacao/formas.py"],
             },
             "veredito": veredito,

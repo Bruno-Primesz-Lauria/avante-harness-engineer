@@ -29,7 +29,7 @@ Regras, guardas e registro de provas para agentes de IA que trabalham na esteira
 | [`avaliacao/`](avaliacao/README.md) | Cenários, métricas e kits de observação dos agentes por runtime. |
 | [`agentes/`](agentes/roteamento.yaml) | Sete papéis (map, config, implement, test, refute, docs, dab) e o roteamento por trilha. |
 | `implementacao/`, `configuracao/`, `testes/` | Código da guarda e da prova, política de caminhos e testes. |
-| `.execucoes/` | Registros locais: provas, sessões e diagnósticos. Fora do Git; pode ser apagada entre ciclos de teste. |
+| `.execucoes/` | Registros locais: entradas, provas, sessões, plans e `indice.md`. Fora do Git; pode ser apagada entre ciclos de teste. |
 | [`PLANO-AGENTES-TRILHAS.md`](PLANO-AGENTES-TRILHAS.md) | Plano, gates e histórico. É o único lugar com estado e histórico do harness. |
 
 ## Estado
@@ -99,7 +99,7 @@ Prepare o clone (acima) uma vez. Depois:
 
 1. Abra `avante-harness-engineer/` como raiz e confie nos hooks. Em Settings → Hooks aparecem os comandos de `adaptadores/entrada.py`; em Settings → Subagents, os sete papéis.
 2. Cada tarefa começa em **chat novo** (Ctrl+N). O contexto inicial traz `Sessao para --sessao: <ID>`. Sem essa linha, os hooks não estão ativos: pare e confira.
-3. Pergunta ou mudança pequena: peça direto. Trabalho de várias etapas: o agente escreve o contrato ([modelo](evidencia/uso.md)), roda `py -3 adaptadores/prova.py --runtime cursor --sessao <ID> iniciar <contrato.yaml>` antes de editar e fecha com `fechar`.
+3. Pergunta ou mudança pequena: peça direto. Trabalho de várias etapas: o agente escreve o contrato ([modelo](evidencia/uso.md)), roda `py -3 adaptadores/prova.py --runtime cursor --sessao <ID> iniciar .execucoes/entradas/<assunto>/<arquivo>.yaml` antes de editar e fecha com `fechar`.
 4. Na trilha `manutencao`, o agente coordena e delega aos papéis (test, config, implement, refute, dab) um de cada vez. Se o chat mostrar `[esteira] A fatia ativa nao tem fecho valido...`, é o hook pedindo para terminar a trilha.
 5. Só conta como pronto o `DONE` aceito pelo `fechar`. Recusa vira nova verificação ou fecho `BLOCKED`, `FAILED` ou `DECIDE`, com motivo.
 
@@ -107,7 +107,7 @@ Prepare o clone (acima) uma vez. Depois:
 
 1. Rode `claude` na raiz do clone e confie nos hooks. Confira `/hooks` (inclui `SubagentStop`) e `/agents` (sete papéis).
 2. Cada tarefa começa em sessão nova (`/clear` ou `claude` de novo). O contexto inicial traz `Sessao Claude Code para a esteira: <ID>`. Sem essa linha, os hooks não estão ativos: pare e confira.
-3. Pergunta ou mudança pequena: peça direto. Trabalho de várias etapas: o agente escreve o contrato ([modelo](evidencia/uso.md)), roda `py -3 adaptadores/prova.py --sessao <ID> iniciar <contrato.yaml>` antes de editar e fecha com `fechar`. O runtime vem de `CLAUDE_CODE_SESSION_ID`.
+3. Pergunta ou mudança pequena: peça direto. Trabalho de várias etapas: o agente escreve o contrato ([modelo](evidencia/uso.md)), roda `py -3 adaptadores/prova.py --sessao <ID> iniciar .execucoes/entradas/<assunto>/<arquivo>.yaml` antes de editar e fecha com `fechar`. O runtime vem de `CLAUDE_CODE_SESSION_ID`.
 4. Na trilha `manutencao`, o agente coordena e delega aos papéis um de cada vez. O subagente pode rodar em segundo plano: o hook devolve `[esteira] Chamada <papel> ... agente_id=...` e registra a chamada quando ele termina, então o coordenador espera o fim antes do passo seguinte.
 5. Só conta como pronto o `DONE` aceito pelo `fechar`. Recusa vira nova verificação ou fecho `BLOCKED`, `FAILED` ou `DECIDE`, com motivo.
 

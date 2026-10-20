@@ -14,7 +14,7 @@ O runtime informa ao núcleo qual lista de `agentes_obrigatorios` consultar. O C
 O adaptador OpenCode coleta localmente o Bash que coincide com um critério do contrato e relaciona chamadas Task à sessão filha. Apenas o evento `before` de Bash pode falhar fechado; eventos de resultado e sessão são best-effort. Essa ponte tem testes locais, mas a observação integrada dos agentes e o gate G2-OC ainda estão pendentes. OpenCode continua fora da chave de produção, embora a política e o CLI já aceitem o runtime para uma futura ativação. Com a chave vazia, a ausência de runtime preserva o fluxo atual. No Claude Code, quem coleta as provas são os hooks do adaptador próprio; até o G2 desse runtime, o `fechar` dele não comprova `DONE` (limite do `AGENTS.md`).
 
 ```powershell
-py -3 adaptadores/prova.py --sessao ID iniciar .execucoes/contrato.yaml
+py -3 adaptadores/prova.py --sessao ID iniciar .execucoes/entradas/<assunto>/contrato.yaml
 py -3 adaptadores/prova.py --sessao ID estado
 py -3 adaptadores/prova.py --sessao ID fechar --resultado "Critérios verificados"
 ```
@@ -22,16 +22,16 @@ py -3 adaptadores/prova.py --sessao ID fechar --resultado "Critérios verificado
 Quando a trilha estiver habilitada para o runtime, declare-o em cada comando:
 
 ```powershell
-py -3 adaptadores/prova.py --runtime cursor --sessao ID iniciar .execucoes/contrato.yaml
+py -3 adaptadores/prova.py --runtime cursor --sessao ID iniciar .execucoes/entradas/<assunto>/contrato.yaml
 py -3 adaptadores/prova.py --runtime cursor --sessao ID fechar --resultado "Critérios verificados"
 ```
 
 Fora do OpenCode, passe o runtime explicitamente em cada operação da fatia. No OpenCode, o plugin injeta as variáveis usadas pelo CLI; o modo explícito também funciona:
 
 ```powershell
-py -3 adaptadores/prova.py --runtime codex --sessao ID iniciar .execucoes/contrato.yaml
+py -3 adaptadores/prova.py --runtime codex --sessao ID iniciar .execucoes/entradas/<assunto>/contrato.yaml
 py -3 adaptadores/prova.py --runtime codex --sessao ID fechar --resultado "Critérios verificados"
-py -3 adaptadores/prova.py --runtime opencode --sessao ID iniciar .execucoes/contrato.yaml
+py -3 adaptadores/prova.py --runtime opencode --sessao ID iniciar .execucoes/entradas/<assunto>/contrato.yaml
 ```
 
 - Com `ESTEIRA_SESSAO` no shell, `--sessao` é dispensável. Não copie o ID de outra conversa.
@@ -44,12 +44,12 @@ py -3 adaptadores/prova.py --runtime opencode --sessao ID iniciar .execucoes/con
 
 ### Inspeção, revisão e triagem
 
-Três subcomandos leem um YAML (`.execucoes/`) e chamam o núcleo da fatia ativa:
+Três subcomandos leem um YAML em `.execucoes/entradas/<assunto>/` e chamam o núcleo da fatia ativa:
 
 ```powershell
-py -3 adaptadores/prova.py --sessao ID inspecionar .execucoes/inspecao.yaml
-py -3 adaptadores/prova.py --sessao ID revisar .execucoes/revisao.yaml
-py -3 adaptadores/prova.py --sessao ID triar .execucoes/triagem.yaml
+py -3 adaptadores/prova.py --sessao ID inspecionar .execucoes/entradas/<assunto>/inspecao.yaml
+py -3 adaptadores/prova.py --sessao ID revisar .execucoes/entradas/<assunto>/revisao.yaml
+py -3 adaptadores/prova.py --sessao ID triar .execucoes/entradas/<assunto>/triagem.yaml
 ```
 
 - `inspecionar`: `criterio_id`, `checagens` (`id` e `resultado`: `pass`, `fail` ou `inconclusivo`) e, opcional, `produtor`. Com a chave vazia, critério de inspeção fecha `DONE` sem comando. Com a trilha ativada, as chamadas previstas continuam exigidas.
@@ -89,9 +89,9 @@ Chamada de subagente depois do `DONE` entra na fatia ainda ativa e anula o fecho
 Três subcomandos registram as formas `diagnostico`, `sandbox` e `paridade` (3.2, aditivas). Leem um YAML, validam a forma e gravam o registro na tentativa; o agente não escreve registro à mão. O que o núcleo observa não é declarado: se vier no YAML, precisa coincidir, senão o registro é recusado (`Campo X diverge do observado`).
 
 ```powershell
-py -3 adaptadores/prova.py --sessao ID diagnosticar .execucoes/diagnostico.yaml
-py -3 adaptadores/prova.py --sessao ID registrar-sandbox .execucoes/sandbox.yaml
-py -3 adaptadores/prova.py --sessao ID registrar-paridade .execucoes/paridade.yaml
+py -3 adaptadores/prova.py --sessao ID diagnosticar .execucoes/entradas/<assunto>/diagnostico.yaml
+py -3 adaptadores/prova.py --sessao ID registrar-sandbox .execucoes/entradas/<assunto>/sandbox.yaml
+py -3 adaptadores/prova.py --sessao ID registrar-paridade .execucoes/entradas/<assunto>/paridade.yaml
 ```
 
 - `diagnosticar`: `sintoma`, `hipotese_causa`, `base` (`direct`, `derived` ou `reported`), `evidencia_ref` (dentro da fatia: log de verificação, `baseline.json` ou `contrato.yaml`), `criterio_reproducao` (ID de um critério de teste do contrato) e `proximo_passo`; `produtor` opcional (`coordenador`, padrão, ou `map`). Na correção com a trilha ativada, o fecho aponta `diagnostico:ausente` sem um diagnóstico íntegro. Se config ou implement abrir a janela antes dele, a fatia guarda `escrita_sem_diagnostico:<papel>:<chamada>`: registrar depois não desfaz a escrita, e o caminho é fechar com `BLOCKED` e abrir fatia nova, como nas pendências de superfície. Fora da chave, nada disso vale.
@@ -105,6 +105,8 @@ Pendências no fecho, por critério `ambiente` ou `paridade` provado pelo teste:
 Pergunta simples não usa contrato. Só a fatia iniciada entra neste fluxo.
 
 ## Contrato de entrada
+
+O rascunho que o agente entrega ao `prova.py` (contrato, inspeção, revisão, triagem, diagnóstico, sandbox, paridade) fica em `.execucoes/entradas/<assunto>/<arquivo>.yaml`. `<assunto>` é uma pasta por objeto de trabalho. Arquivo fora de `.execucoes` continua sendo só lido. Se o arquivo resolvido está dentro de `.execucoes` e não está exatamente nesse caminho, `prova.py` recusa com `[prova]` e o texto `entradas/<assunto>/`.
 
 Exemplo para verificar o próprio harness. O agente ajusta caminhos, comando e resultado esperado à tarefa.
 
@@ -143,7 +145,7 @@ Regras do validador:
 
 ## Registros
 
-Ficam em `.execucoes/provas/<execucao_id>/principal/`, locais e ignorados pelo Git. Arquivos `.yaml` usam JSON, que é um subconjunto de YAML.
+Ficam em `.execucoes/provas/<data>-<trilha>-<assunto>/principal/`, locais e ignorados pelo Git. Arquivos `.yaml` usam JSON, que é um subconjunto de YAML.
 
 | Registro | Conteúdo |
 |---|---|
@@ -155,7 +157,7 @@ Ficam em `.execucoes/provas/<execucao_id>/principal/`, locais e ignorados pelo G
 | `fechos/*.yaml` | Eventos 3.1 `brief`. Um fecho novo preserva os anteriores. |
 | `estado.json` | Versão 1, sessão, execução, revisão, tentativa, chamada pendente, IDs de chamada já usados, referências e hashes das provas, do contrato e do último fecho. |
 
-Um índice por sessão (`.execucoes/sessoes/`) aponta a fatia ativa. Escrita exclusiva preserva os eventos; lock e revisão protegem a troca atômica do estado.
+Cada sessão fica em `.execucoes/sessoes/<data>-<trilha>-<assunto>/ativa.json` e aponta a fatia ativa. `sessoes/mapa.json` liga o identificador da sessão do runtime a essa pasta. Escrita exclusiva preserva os eventos; lock e revisão protegem a troca atômica do estado.
 
 Lock deixado por processo interrompido: confira que o processo terminou e remova **aquele** lock. Não há expiração automática, porque ela permitiria duas gravações concorrentes.
 

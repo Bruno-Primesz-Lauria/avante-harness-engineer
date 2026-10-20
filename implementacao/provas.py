@@ -9,6 +9,7 @@ import re
 from uuid import uuid4
 
 from formas import dentro, exigir, nao_verificados_sandbox, relativo, validar, validar_dados
+from nomes import nome_de_pasta, nome_fatia, nome_livre, reservar_diretorio
 import yaml
 
 IGNORADOS = {".git", ".venv", ".execucoes", ".fixtures", "__pycache__", ".pytest_cache"}
@@ -174,10 +175,47 @@ class Provas:
         exigir(isinstance(sessao, str) and 0 < len(sessao) <= 300, "Sessao ausente")
         exigir(runtime is None or runtime in {"claude_code", "cursor", "codex", "opencode"},
                "Runtime invalido")
+        self.sessao_bruta = sessao
         self.sessao = hash_bytes(sessao.encode())
-        self.indice = self.registros / "sessoes" / self.sessao
+        self.indice = self._indice_resolvido()
         self.runtime = runtime
         self.politica_path = self.raiz / "configuracao/politica.json"
+
+    def _caminho_mapa(self):
+        return self.registros / "sessoes" / "mapa.json"
+
+    def _ler_mapa(self):
+        caminho = self._caminho_mapa()
+        if not caminho.is_file():
+            return {}
+        try:
+            dados = ler(caminho)
+        except (OSError, json.JSONDecodeError, ValueError):
+            return {}
+        return dados if isinstance(dados, dict) else {}
+
+    def _indice_resolvido(self):
+        mapa = self._ler_mapa()
+        for chave in (self.sessao_bruta, self.sessao):
+            nome = nome_de_pasta(mapa.get(chave))
+            if nome is None:
+                continue
+            pasta = self.registros / "sessoes" / nome
+            if pasta.is_dir():
+                return pasta
+        return self.registros / "sessoes" / self.sessao
+
+    def _publicar_sessao(self, nome_fatia_escolhido):
+        nome = nome_livre(self.registros / "sessoes", nome_fatia_escolhido, self.indice)
+        destino = self.registros / "sessoes" / nome
+        mapa = self._ler_mapa()
+        mapa[self.sessao] = nome
+        mapa[self.sessao_bruta] = nome
+        gravar(self._caminho_mapa(), mapa, substituir=True)
+        if self.indice.exists() and self.indice.resolve() != destino.resolve():
+            self.indice.rename(destino)
+        if destino.is_dir():
+            self.indice = destino
 
     def pasta(self):
         ponteiro = self.indice / "ativa.json"
@@ -356,7 +394,9 @@ class Provas:
             anterior = self.pasta()
             if anterior:
                 exigir(self.estado(anterior)["fecho"] is not None, "Feche a fatia ativa antes de iniciar outra")
-            execucao = uuid4().hex
+            execucao = reservar_diretorio(
+                self.registros / "provas",
+                nome_fatia(contrato["trilha"], contrato["objetivo"]))
             pasta = self.registros / "provas" / execucao / "principal"
             estado = dict(versao=1, schema_versao=schema_versao, sessao=self.sessao, execucao_id=execucao,
                           runtime=self.runtime, trilha=contrato["trilha"],
@@ -378,7 +418,9 @@ class Provas:
             estado["contrato_sha256"] = hash_arquivo(pasta / "contrato.yaml")
             gravar(pasta / "estado.json", estado)
             gravar(self.indice / "ativa.json", {"fatia": pasta.relative_to(self.registros).as_posix()}, substituir=True)
-            return {"execucao_id": execucao, "fatia": str(pasta), "revisao": 0}
+            resultado = {"execucao_id": execucao, "fatia": str(pasta), "revisao": 0}
+        self._publicar_sessao(execucao)
+        return resultado
 
     def vigiados(self, contrato):
         return sorted(set(contrato["superficie"]) |

@@ -8,14 +8,14 @@ Contexto do projeto Avante (vocabulário, etapas, papéis): `nucleo/contexto-ava
 - Busque o fato no repositório antes de perguntar. Pergunte só o que muda escopo, resultado ou autorização.
 - Faça a menor mudança que resolve o pedido. Preserve alterações que já existiam.
 - O produto fica em `prj-avante-analytics-adb/`, com Git próprio e sem instruções de agente próprias: as regras para trabalhar nele são as deste harness. A documentação do bundle (`README.md`, `GUIA-DESENVOLVIMENTO.md`, `PLANO-DE-EXECUCAO.md`) é fonte de fato, não de regra.
-- Registros do harness ficam em `.execucoes/`, nunca nos arquivos do produto.
+- Registros do harness ficam em `.execucoes/`, nunca nos arquivos do produto. Isso inclui comentário, docstring, célula `%md` e `description`/`descricao` de YAML: descrevem o código e o porquê técnico, nunca fase, decisão ou estado de plano ou de execução (`P3a`, `S1a`, "falta o run"). Fase e estado vivem no plano e em `.execucoes/`.
 - Leia `nucleo/contexto-avante.md` quando o pedido ou a fonte citar Mock, SIT, UAT, etapas do objeto, módulos SAP ou papéis (PO, Key User, etc.).
 
 ## Caminho simples ou estruturado
 
 - **Simples**: pergunta delimitada ou mudança pequena e reversível. Responda com fontes ou altere e verifique. Sem contrato.
 - **Estruturado**: várias etapas, impacto relevante, ambiguidade ou retomada. Siga a trilha em `trilhas/` e, **antes de editar**, inicie a fatia:
-  `py -3 adaptadores/prova.py iniciar <contrato.yaml>` — modelo do contrato em `evidencia/uso.md`.
+  `py -3 adaptadores/prova.py iniciar .execucoes/entradas/<assunto>/<arquivo>.yaml` — `contratos/` descreve os campos; a instância não fica nessa pasta. Modelo do contrato em `evidencia/uso.md`.
   Rode as verificações pelo chat, consulte com `estado` e feche com `fechar`.
   Só escreva `DONE` se `fechar` aceitar. Se recusar, verifique de novo ou feche com `BLOCKED`, `FAILED` ou `DECIDE` (`evidencia/fecho.md`).
 - **Agentes obrigatórios**: se a trilha estiver em `agentes_obrigatorios` do seu runtime (`configuracao/politica.json`), você coordena e delega aos papéis de `agentes/` na ordem de [`trilhas/README.md`](trilhas/README.md#agentes). Não faça em silêncio o trabalho de um papel obrigatório: papel indisponível fecha `BLOCKED`. Fora da chave, um único agente executa a trilha.

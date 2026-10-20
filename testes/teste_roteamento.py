@@ -164,7 +164,7 @@ class ConsistenciaRoteamentoTestes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.rota = yaml.safe_load((RAIZ / "agentes/roteamento.yaml").read_text(encoding="utf-8"))
-        cls.html = (RAIZ / "user-harness-esteira-v4.html").read_text(encoding="utf-8")
+        cls.html = (RAIZ / "user-harness-esteira-v5.html").read_text(encoding="utf-8")
         cls.dados = _html_constante(cls.html, "DADOS")
 
     def test_rotas_papeis_gatilhos_e_fluxos_coincidem(self):

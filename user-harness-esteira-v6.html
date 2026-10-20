@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Proposta v6 do harness de engenharia: continuidade entre CLIs, provas locais e segurança por efeito.">
+<title>User-Harness Engenharia · Proposta v6</title>
+<style>
+:root {
+  --blue:#221F52; --pink:#ED0973; --red:#FF1229; --yellow:#FFB400;
+  --green:#42CE95; --cyan:#14B6EF; --white:#FFFFFF;
+  --ink:var(--blue); --muted:#5b5972; --line:#e3e2e9; --paper:#f4f4f8;
+  --pink-soft:#fef0f7; --green-soft:#e1f7ee; --yellow-soft:#fff4dc; --cyan-soft:#eff9fe;
+  --sans:"TT Supermolot","Saira","Segoe UI",system-ui,sans-serif;
+  --mono:"Cascadia Code",Consolas,monospace; --max:1220px;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:90px; }
+body { margin:0; background:var(--white); color:var(--ink); font:16px/1.6 var(--sans); }
+h1,h2,h3,p { margin:0; }
+h1,h2,h3 { line-height:1.17; letter-spacing:-.025em; }
+h1 { font-size:clamp(38px,6vw,70px); max-width:850px; font-weight:800; }
+h2 { font-size:clamp(26px,3.5vw,38px); margin-bottom:12px; }
+h3 { font-size:19px; margin-bottom:10px; }
+a { color:#176b90; text-underline-offset:3px; }
+a:hover { color:var(--pink); }
+button,input,select { font:inherit; }
+button { cursor:pointer; }
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,[tabindex]:focus-visible { outline:3px solid var(--cyan); outline-offset:4px; }
+button,select { touch-action:manipulation; }
+code,pre,.mono { font-family:var(--mono); font-size:.88em; overflow-wrap:anywhere; }
+code { background:var(--paper); padding:2px 5px; border-radius:4px; }
+pre { margin:12px 0 0; padding:18px; background:var(--blue); color:#fff; border-radius:12px; white-space:pre-wrap; }
+pre code { padding:0; background:transparent; }
+ul,ol { margin:12px 0 0; padding-left:22px; }
+li+li { margin-top:7px; }
+small { font-size:13px; }
+.wrap { max-width:var(--max); margin:auto; padding:0 32px; }
+.brand { background:var(--blue); color:white; }
+.brand .wrap { min-height:76px; display:flex; gap:18px; align-items:center; }
+.brand svg { width:65px; height:30px; flex:none; }
+.brand-name { font-size:15px; font-weight:700; }
+.brand small { display:block; color:#c9c8de; font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
+.brand-version { margin-left:auto; border:1px solid #77749c; padding:4px 12px; border-radius:24px; font-size:12px; white-space:nowrap; }
+.skip { position:absolute; top:8px; left:8px; z-index:100; padding:10px; background:white; transform:translateY(-150%); }
+.skip:focus { transform:none; }
+.tabs { position:sticky; top:0; z-index:20; border-bottom:1px solid var(--line); background:#fffffff5; backdrop-filter:blur(10px); }
+.tabs .wrap { display:flex; overflow-x:auto; gap:3px; scrollbar-width:thin; }
+.tabs a { flex:none; padding:17px 14px; border-bottom:3px solid transparent; font-size:13px; font-weight:650; text-decoration:none; color:var(--muted); }
+.tabs a[aria-selected="true"] { color:var(--blue); border-color:var(--pink); }
+.tab-no { display:inline-grid; place-items:center; width:20px; height:20px; margin-right:7px; border-radius:50%; font:11px var(--mono); background:var(--paper); }
+.tabs a[aria-selected="true"] .tab-no { background:var(--pink); color:white; }
+main { padding-bottom:64px; }
+.panel { padding-top:38px; }
+.panel[hidden] { display:none; }
+.eyebrow { color:var(--pink); font-weight:750; letter-spacing:.15em; font-size:11px; text-transform:uppercase; margin-bottom:12px; }
+.intro { font-size:18px; color:var(--muted); max-width:830px; margin-top:20px; }
+.sub { color:var(--muted); max-width:850px; margin-top:8px; }
+.proposal-bar { display:flex; align-items:flex-start; gap:14px; border:1px solid #efd897; background:var(--yellow-soft); border-radius:12px; padding:16px 20px; font-size:14px; margin-bottom:32px; }
+.proposal-bar b { flex:none; font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+.badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:750; letter-spacing:.035em; background:var(--paper); }
+.badge.proposed { color:#704200; background:var(--yellow-soft); }
+.badge.observed { color:#12583d; background:var(--green-soft); }
+.badge.limited { color:#7b303e; background:#ffe1e4; }
+.hero { padding:8px 0 28px; }
+.hero em { color:var(--pink); font-style:normal; }
+.hero-links { display:flex; gap:12px; flex-wrap:wrap; margin-top:26px; }
+.button { display:inline-flex; align-items:center; gap:16px; border:1px solid var(--line); border-radius:8px; padding:10px 17px; font-size:14px; font-weight:650; text-decoration:none; background:white; color:var(--blue); }
+.button.primary { color:white; background:var(--pink); border-color:var(--pink); }
+.button:hover { text-decoration:none; border-color:var(--pink); }
+.button.primary:hover { background:#c3075e; color:white; }
+.section { margin-top:44px; }
+.section-title { display:flex; gap:12px; align-items:center; margin-bottom:16px; }
+.section-title h3 { margin:0; }
+.section-title .rule { flex:1; height:1px; background:var(--line); }
+.grid { display:grid; gap:18px; }
+.two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.four { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.card { border:1px solid var(--line); border-radius:15px; padding:24px; background:white; min-width:0; }
+.card p,.card li { color:var(--muted); font-size:14px; }
+.card h3 { margin-top:10px; }
+.metric { font-size:34px; font-weight:800; letter-spacing:-.04em; line-height:1.1; margin-bottom:12px; }
+.metric-label { font-size:11px; font-weight:750; letter-spacing:.08em; text-transform:uppercase; color:var(--pink); margin-bottom:12px; }
+.tint { background:var(--paper); }
+.accent-card { background:var(--blue); color:white; border-color:var(--blue); }
+.accent-card p,.accent-card li { color:#e0dfef; }
+.accent-card code { color:white; background:#ffffff15; }
+.accent-card .metric-label { color:#fa9ac7; }
+.callout { border-left:3px solid var(--pink); padding:15px 20px; background:var(--pink-soft); border-radius:0 10px 10px 0; margin-top:22px; font-size:14px; }
+.callout.info { border-color:var(--cyan); background:var(--cyan-soft); }
+.callout.warning { border-color:var(--yellow); background:var(--yellow-soft); }
+.table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:13px; }
+table { border-collapse:collapse; width:100%; font-size:14px; }
+th { background:var(--paper); font-size:11px; text-transform:uppercase; letter-spacing:.07em; text-align:left; color:var(--muted); }
+td,th { padding:15px 18px; vertical-align:top; border-bottom:1px solid var(--line); }
+tr:last-child td { border-bottom:0; }
+td:first-child { font-weight:650; min-width:150px; }
+td p { margin-top:5px; }
+.cli-strip { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.cli { border:1px solid var(--line); border-radius:10px; padding:15px; text-align:center; font-weight:700; }
+.cli small { display:block; font-weight:400; color:var(--muted); margin-top:3px; }
+.flow-line { text-align:center; color:var(--muted); font-size:12px; padding:12px; }
+.core { border:2px solid var(--pink); border-radius:18px; padding:25px; background:var(--pink-soft); }
+.core-head { display:flex; justify-content:space-between; gap:20px; margin-bottom:18px; }
+.core-head h3 { font-size:23px; margin:0; }
+.core .card { padding:18px; }
+.store { border-radius:12px; padding:20px 25px; background:var(--blue); color:white; }
+.store code { background:#ffffff15; color:inherit; }
+.store small { color:#dad8ef; }
+.extension { border:1px dashed #a6a4b2; background:var(--paper); }
+.step-list { list-style:none; margin:0; padding:0; counter-reset:step; }
+.step-list li { position:relative; padding:0 0 22px 48px; margin:0; min-height:48px; }
+.step-list li:before { counter-increment:step; content:counter(step,decimal-leading-zero); position:absolute; top:0; left:0; width:32px; height:32px; background:var(--pink-soft); border:1px solid #f3c4d9; color:var(--pink); font:12px/30px var(--mono); text-align:center; border-radius:50%; }
+.step-list li:not(:last-child):after { content:""; position:absolute; top:36px; bottom:4px; left:16px; border-left:1px solid var(--line); }
+.step-list b { display:block; font-size:15px; }
+.step-list p { font-size:14px; color:var(--muted); margin-top:4px; }
+.status { display:inline-block; font:700 11px var(--mono); border-radius:5px; padding:4px 7px; background:var(--paper); }
+.status.good { background:var(--green-soft); color:#12583d; }
+.status.warn { background:var(--yellow-soft); color:#704200; }
+.status.bad { background:#ffe1e4; color:#8b2334; }
+.simulator { border:1px solid var(--line); border-radius:18px; overflow:hidden; margin-top:28px; }
+.sim-head { background:var(--blue); color:white; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.sim-head h3 { margin:0; }
+.sim-head small { color:#d5d2e9; font-size:11px; }
+.sim-body { display:grid; grid-template-columns:340px minmax(0,1fr); }
+.sim-controls { padding:24px; background:var(--paper); border-right:1px solid var(--line); }
+.sim-result { padding:28px; min-width:0; }
+.field { margin-bottom:16px; }
+.field label { display:block; font-size:12px; font-weight:750; margin-bottom:6px; }
+select { width:100%; background:white; color:var(--blue); border:1px solid #bdbbc9; border-radius:7px; padding:9px 10px; }
+fieldset { border:0; padding:0; margin:22px 0 0; min-width:0; }
+legend { font-size:12px; font-weight:750; margin-bottom:8px; }
+.check { display:flex; align-items:flex-start; gap:9px; padding:8px 0; font-size:13px; cursor:pointer; }
+.check input { width:16px; height:16px; accent-color:var(--pink); flex:none; margin-top:3px; }
+.presets { display:flex; gap:7px; flex-wrap:wrap; margin-top:18px; }
+.presets button { border:1px solid #bbb9c9; color:var(--blue); border-radius:18px; padding:5px 10px; font-size:11px; background:white; }
+.presets button:hover { border-color:var(--pink); color:var(--pink); }
+.sim-id { font-size:12px; padding-bottom:18px; border-bottom:1px solid var(--line); margin-bottom:24px; overflow-wrap:anywhere; }
+.sim-result h3 { font-size:23px; margin:10px 0; }
+.sim-result p { color:var(--muted); font-size:14px; }
+.sim-result .step-list { margin-top:23px; }
+.sim-result .step-list li { padding-bottom:17px; }
+.sim-result .step-list b { font-size:14px; }
+.sim-result .step-list p { font-size:13px; }
+.sim-footer { margin-top:16px; padding-top:16px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); }
+.command-label { font-size:11px; font-weight:750; text-transform:uppercase; letter-spacing:.07em; color:#835100; }
+details { border:1px solid var(--line); border-radius:12px; margin-top:12px; padding:0 20px; }
+summary { cursor:pointer; font-size:14px; font-weight:650; padding:17px 0; }
+details>div { padding:0 0 20px; font-size:14px; color:var(--muted); }
+.source-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.source-list a { display:block; padding:14px 17px; border:1px solid var(--line); border-radius:9px; text-decoration:none; font-size:13px; }
+.source-list a span { display:block; color:var(--muted); font-size:12px; margin-top:3px; }
+.footer { border-top:1px solid var(--line); padding:24px 0; color:var(--muted); font-size:12px; }
+.footer .wrap { display:flex; justify-content:space-between; gap:20px; }
+.panel-link { margin-top:30px; display:flex; justify-content:flex-end; }
+@media(max-width:950px) {
+  .four { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .three { grid-template-columns:1fr; }
+  .sim-body { grid-template-columns:290px minmax(0,1fr); }
+  .tabs .wrap { padding:0 18px; }
+}
+@media(max-width:680px) {
+  .wrap { padding:0 20px; }
+  .brand .wrap { min-height:66px; gap:10px; }
+  .brand-version { padding:4px 8px; font-size:10px; }
+  .brand small { font-size:9px; }
+  .brand-name { font-size:13px; }
+  .brand svg { width:48px; }
+  .proposal-bar { display:block; padding:14px 16px; }
+  .proposal-bar b { display:block; margin-bottom:6px; }
+  .panel { padding-top:24px; }
+  .two,.four,.source-list { grid-template-columns:1fr; }
+  .cli-strip { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .card { padding:20px; }
+  .core { padding:17px; }
+  .core-head { display:block; }
+  .core-head .badge { margin-top:10px; }
+  .sim-body { grid-template-columns:1fr; }
+  .sim-controls { border-right:0; border-bottom:1px solid var(--line); }
+  .sim-head { display:block; }
+  .sim-head small { display:block; margin-top:7px; }
+  .sim-result { padding:22px; }
+  td,th { padding:12px; }
+  .footer .wrap { display:block; }
+  .footer a { display:inline-block; margin-top:10px; }
+}
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+@media print {
+  .tabs,.hero-links,.panel-link,.sim-controls,.skip { display:none!important; }
+  .panel[hidden] { display:block!important; }
+  .panel { break-before:page; }
+  .panel:first-child { break-before:auto; }
+  .wrap { max-width:none; padding:0 12px; }
+  .brand,.accent-card,.store,.sim-head,pre { color:var(--blue); background:white; border:1px solid var(--line); }
+  .brand small,.accent-card p,.store small,.sim-head small { color:var(--muted); }
+  .accent-card code { color:var(--blue); background:var(--paper); }
+  .sim-body { display:block; }
+  .card,.step-list li { break-inside:avoid; }
+  h2,h3 { break-after:avoid; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo">Ir para o conteúdo</a>
+<header class="brand">
+  <div class="wrap">
+    <svg viewBox="0 0 395.5 156" fill="white" role="img" aria-label="DB">
+      <path d="M140.85 110.93 C128.12 110.93 117.77 100.57 117.77 87.85 C117.77 75.12 128.12 64.77 140.85 64.77 C153.57 64.77 163.92 75.12 163.92 87.85 C163.92 100.57 153.57 110.93 140.85 110.93 M191.42 7.02 C191.42 3.14 188.27 -0.01 184.39 -0.01 L170.96 -0.01 C167.07 -0.01 163.92 3.14 163.92 7.02 L163.92 42.90 C154.79 38.19 144.09 36.12 132.78 37.91 C110.74 41.40 93.32 59.43 90.65 81.58 C86.87 112.86 111.84 139.45 142.61 138.39 C150.37 138.13 157.61 136.02 164.05 132.59 C164.62 135.90 167.48 138.42 170.96 138.42 L184.39 138.42 C188.27 138.42 191.42 135.28 191.42 131.39 Z"/>
+      <path d="M254.65 110.93 C267.37 110.93 277.72 100.57 277.72 87.85 C277.72 75.12 267.37 64.77 254.65 64.77 C241.92 64.77 231.57 75.12 231.57 87.85 C231.57 100.57 241.92 110.93 254.65 110.93 M204.07 7.02 C204.07 3.14 207.22 -0.01 211.10 -0.01 L224.53 -0.01 C228.42 -0.01 231.57 3.14 231.57 7.02 L231.57 42.90 C240.70 38.19 251.40 36.12 262.71 37.91 C284.75 41.40 302.17 59.43 304.84 81.58 C308.62 112.86 283.65 139.45 252.88 138.39 C245.13 138.13 237.89 136.02 231.45 132.59 C230.87 135.90 228.01 138.42 224.53 138.42 L211.10 138.42 C207.22 138.42 204.07 135.28 204.07 131.39 Z"/>
+      <path d="M81.82 133.78 L35.91 87.87 L81.82 41.96 C84.62 39.16 84.62 34.61 81.82 31.81 L72.53 22.52 C69.72 19.72 65.18 19.72 62.37 22.52 L2.09 82.78 C-.7 85.59 -.7 90.14 2.09 92.95 L62.38 153.22 C65.18 156.03 69.73 156.03 72.53 153.22 L81.82 143.93 C84.63 141.13 84.63 136.58 81.82 133.78"/>
+      <path d="M313.67 133.78 L359.58 87.87 L313.67 41.96 C310.87 39.16 310.87 34.61 313.67 31.81 L322.96 22.52 C325.77 19.72 330.31 19.72 333.12 22.52 L393.40 82.78 C396.20 85.59 396.20 90.14 393.40 92.95 L333.11 153.22 C330.31 156.03 325.76 156.03 322.96 153.22 L313.67 143.93 C310.86 141.13 310.86 136.58 313.67 133.78"/>
+    </svg>
+    <div><small>Projeto Avante · Engenharia</small><div class="brand-name">User-Harness</div></div>
+    <span class="brand-version">v6 · proposta de evolução</span>
+  </div>
+</header>
+<nav class="tabs" aria-label="Seções da proposta">
+  <div class="wrap" id="tabs">
+    <a id="tab-proposta" href="#proposta" data-panel="proposta"><span class="tab-no">01</span>Proposta</a>
+    <a id="tab-arquitetura" href="#arquitetura" data-panel="arquitetura"><span class="tab-no">02</span>Arquitetura</a>
+    <a id="tab-operacao" href="#operacao" data-panel="operacao"><span class="tab-no">03</span>Como operar</a>
+    <a id="tab-retomada" href="#retomada" data-panel="retomada"><span class="tab-no">04</span>Trocar de CLI</a>
+    <a id="tab-garantias" href="#garantias" data-panel="garantias"><span class="tab-no">05</span>Garantias e riscos</a>
+    <a id="tab-adocao" href="#adocao" data-panel="adocao"><span class="tab-no">06</span>Estado e adoção</a>
+  </div>
+</nav>
+<main class="wrap" id="conteudo" tabindex="-1">
+  <section class="panel" id="proposta" aria-labelledby="titulo-proposta">
+    <div class="proposal-bar"><b>Proposta · não implementada</b><span>Esta v6 descreve o funcionamento desejado. Criar este guia não altera o núcleo, os hooks ou a política vigente. As regras atuais do <a href="AGENTS.md">AGENTS.md</a> continuam valendo.</span></div>
+    <header class="hero">
+      <p class="eyebrow">Continuidade entre ferramentas</p>
+      <h1 id="titulo-proposta">Uma execução.<br><em>Continua na próxima CLI.</em></h1>
+      <p class="intro">Começar no Claude Code, continuar no Cursor e verificar no Codex ou no OpenCode. O trabalho conserva identidade, contexto e provas ao longo da troca.</p>
+      <p class="sub">Um fluxo básico com agente único, executável em uma CLI ou IDE que leia o repositório e consiga rodar Python. Hooks e subagentes acrescentam capacidades onde estiverem disponíveis.</p>
+      <div class="hero-links"><a class="button primary" href="#retomada">Simular uma retomada <span aria-hidden="true">→</span></a><a class="button" href="#arquitetura">Ver o desenho</a><a class="button" href="user-harness-esteira-v5.html">Consultar a v5</a></div>
+    </header>
+    <div class="grid three">
+      <article class="card"><p class="metric-label">Identidade</p><div class="metric">Execução</div><p>O identificador do trabalho permanece. Sessão e runtime registram de onde veio cada ação.</p></article>
+      <article class="card"><p class="metric-label">Caminho normal</p><div class="metric">1 agente</div><p>O agente assume as responsabilidades da trilha. Delegação é usada quando traz benefício e existe suporte.</p></article>
+      <article class="card accent-card"><p class="metric-label">Aceite</p><div class="metric">Prova atual</div><p>A conclusão depende dos critérios, do estado verificado e das autorizações aplicáveis.</p></article>
+    </div>
+    <div class="section">
+      <div class="section-title"><h3>O que muda na experiência</h3><span class="rule"></span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Ponto</th><th scope="col">Hoje, neste repositório</th><th scope="col">Na proposta v6</th></tr></thead>
+        <tbody>
+          <tr><td>Troca de sessão</td><td>O estado exige a sessão original; outra conversa não assume a fatia.</td><td>Retomada explícita por <code>execucao_id</code>, com conferência e transferência da coordenação.</td></tr>
+          <tr><td>Teste local</td><td>A prova depende da coleta dos eventos do runtime.</td><td>Executor comum roda o critério e captura a prova; o hook pode automatizar essa integração.</td></tr>
+          <tr><td>Subagente ausente</td><td>Em trilha ativada, papel obrigatório indisponível impede seu trabalho dependente.</td><td>O agente principal continua o trabalho local permitido. Revisão independente exigida permanece pendente.</td></tr>
+          <tr><td>Segurança</td><td>Parte do aceite de ambiente e paridade acompanha a ativação dos agentes.</td><td>Requisitos próprios da operação e do contrato, preservados em qualquer modo de execução.</td></tr>
+          <tr><td>Retomada humana</td><td>Próximo passo pode ficar apenas no chat ou fecho.</td><td>Checkpoint pequeno com próximo passo, provas, achados, autorizações e operações pendentes.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="callout">O ganho esperado é reduzir bloqueios causados pela integração com a ferramenta, preservando o aceite técnico. A implementação deve separar segurança e orquestração antes de remover exigências de agentes.</p>
+    </div>
+    <div class="panel-link"><a class="button" href="#arquitetura">Próximo: arquitetura <span aria-hidden="true">→</span></a></div>
+  </section>
+
+  <section class="panel" id="arquitetura" aria-labelledby="titulo-arquitetura">
+    <header><p class="eyebrow">Desenho proposto</p><h2 id="titulo-arquitetura">Um núcleo comum. Integrações pequenas.</h2><p class="sub">Regras, execução e evidência ficam no repositório. As particularidades de cada ferramenta permanecem nos adaptadores.</p></header>
+    <div class="section" role="group" aria-label="Diagrama da arquitetura proposta">
+      <div class="cli-strip"><div class="cli">Claude Code<small>origem de ações</small></div><div class="cli">Cursor<small>origem de ações</small></div><div class="cli">Codex<small>origem de ações</small></div><div class="cli">OpenCode<small>origem de ações</small></div></div>
+      <div class="flow-line">↓ &nbsp; Mesma entrada: objetivo, fontes e regras do repositório &nbsp; ↓</div>
+      <div class="core">
+        <div class="core-head"><h3>Núcleo portátil do harness</h3><span class="badge proposed">Evolução proposta</span></div>
+        <div class="grid three">
+          <article class="card"><h3>Orientar</h3><p>Escolher caminho, seguir a trilha, delimitar escopo e definir critérios. O agente busca o fato antes de perguntar.</p></article>
+          <article class="card"><h3>Verificar</h3><p>Executar critérios locais e vincular saída, exit code e manifesto ao conteúdo testado.</p></article>
+          <article class="card"><h3>Continuar e fechar</h3><p>Retomar pela execução, conferir pendências e aceitar a conclusão somente com os requisitos atendidos.</p></article>
+        </div>
+      </div>
+      <div class="flow-line">↓ &nbsp; Checkpoints, tentativas e eventos preservados &nbsp; ↓</div>
+      <div class="store"><strong><code>.execucoes/</code> · memória do trabalho</strong><br><small>Contrato · baseline · participantes · provas · revisão · achados · próximo passo · fechos</small></div>
+      <div class="grid two" style="margin-top:18px">
+        <article class="card extension"><span class="badge">Integração opcional</span><h3>Hooks</h3><p>Automatizam observação, aplicam a guarda nas chamadas cobertas e lembram o fecho. O núcleo não depende deles para produzir a prova de um teste local.</p></article>
+        <article class="card extension"><span class="badge">Delegação opcional</span><h3>Subagentes</h3><p>Dividem trabalho ou realizam revisão independente quando houver suporte. A responsabilidade continua definida mesmo sem um processo filho.</p></article>
+      </div>
+    </div>
+    <div class="callout warning"><strong>Fronteira operacional.</strong> O executor local observa o que ele executa. Ele não intercepta comandos diretos de toda IDE, nem chamadas SDK, REST ou MCP. Operação externa que exige um controle indisponível continua impedida.</div>
+    <div class="section"><div class="section-title"><h3>Três responsabilidades separadas</h3><span class="rule"></span></div>
+      <div class="grid three">
+        <article class="card"><p class="metric-label">Instrução</p><h3>Como trabalhar</h3><p><code>AGENTS.md</code>, núcleo e trilhas orientam a conduta. Arquivos específicos da IDE apontam para essa fonte comum.</p></article>
+        <article class="card"><p class="metric-label">Evidência</p><h3>O que foi verificado</h3><p>Logs, critérios, origem e hashes sustentam o aceite. A afirmação de um agente, sozinha, não comprova o teste.</p></article>
+        <article class="card"><p class="metric-label">Controle</p><h3>O que pode executar</h3><p>Permissões da plataforma e guardas aplicáveis limitam o efeito. Nenhum papel ou adaptador concede autorização adicional.</p></article>
+      </div>
+    </div>
+    <div class="panel-link"><a class="button" href="#operacao">Próximo: como operar <span aria-hidden="true">→</span></a></div>
+  </section>
+
+  <section class="panel" id="operacao" aria-labelledby="titulo-operacao">
+    <header><p class="eyebrow">Rotina na proposta v6</p><h2 id="titulo-operacao">O tamanho do processo acompanha o trabalho.</h2><p class="sub">Uma pergunta ou alteração pequena tem um fluxo curto. Trabalho com várias etapas, impacto ou retomada recebe uma execução persistida.</p></header>
+    <div class="grid two section">
+      <article class="card"><span class="badge observed">Caminho simples</span><h3>Entender, fazer e verificar</h3><p>Pergunta delimitada ou mudança pequena e reversível, com resultado claro.</p><ol><li>Buscar a fonte e delimitar a alteração no chat.</li><li>Responder ou fazer a menor mudança necessária.</li><li>Executar a verificação adequada.</li><li>Fechar em prosa com resultado, prova e limite.</li></ol><p style="margin-top:16px">Sem contrato YAML obrigatório e sem chamada obrigatória de subagente. Se aparecer impacto maior, formalizar a execução e preservar o que já foi feito.</p></article>
+      <article class="card"><span class="badge proposed">Caminho estruturado</span><h3>Persistir o trabalho e seu aceite</h3><p>Várias etapas, dependências relevantes, revisão exigida ou continuidade entre sessões.</p><ol><li>Preparar contrato e registrar o baseline.</li><li>Iniciar a execução e seguir a trilha.</li><li>Editar no escopo e salvar checkpoints.</li><li>Verificar critérios e tratar achados.</li><li>Registrar revisão e fechar com prova atual.</li></ol><p style="margin-top:16px">O agente principal pode executar as etapas permitidas. A quantidade de agentes não define a exigência de autorização ou o resultado do teste.</p></article>
+    </div>
+    <div class="section"><div class="section-title"><h3>Uma fatia, uma trilha, um próximo passo</h3><span class="rule"></span></div>
+      <div class="grid three">
+        <article class="card tint"><h3>Fatia</h3><p>Recorte com término verificável. Seus critérios descrevem o que precisa ficar verdadeiro.</p></article>
+        <article class="card tint"><h3>Trilha</h3><p>Sequência adequada ao objetivo: novo, manutenção, correção, entendimento, docs, validação, review ou destilação.</p></article>
+        <article class="card tint"><h3>Checkpoint</h3><p>O suficiente para a próxima sessão continuar: estado, evidências, pendências e ação seguinte.</p></article>
+      </div>
+    </div>
+    <div class="section"><div class="section-title"><h3>Os sete papéis viram responsabilidades reutilizáveis</h3><span class="rule"></span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Responsabilidade</th><th scope="col">Com agente único</th><th scope="col">Quando delegar</th></tr></thead>
+        <tbody>
+          <tr><td><code>map</code></td><td>Localizar fontes, dependências e limites.</td><td>Investigação extensa que possa ser dividida.</td></tr>
+          <tr><td><code>config</code> / <code>implement</code></td><td>Editar configuração ou código dentro da superfície contratada.</td><td>Especialização ou divisão de escopo que ajude a entrega.</td></tr>
+          <tr><td><code>test</code></td><td>Acionar o executor local e avaliar o resultado contra o esperado.</td><td>Preparação de casos ou verificação por outro agente.</td></tr>
+          <tr><td><code>refute</code></td><td>Realizar checagem crítica e registrar <strong>autorrevisão</strong>.</td><td>Revisão independente útil ou exigida; pode ser feita por outro agente ou pessoa.</td></tr>
+          <tr><td><code>docs</code></td><td>Escrever documentação fiel às fontes e inspecionar links.</td><td>Documento extenso ou revisão especializada.</td></tr>
+          <tr><td><code>dab</code></td><td>Preparar e conferir uma operação autorizada, com controle aplicável.</td><td>Especialista disponível; o papel mantém as mesmas restrições operacionais.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><strong>Revisão explícita:</strong> registrar “autorrevisão”, “independente” ou “não realizada”. Se o contrato exigir independência, a ausência do revisor permite trabalho local independente, mas mantém o fecho pendente. Outra chamada no mesmo contexto não comprova independência por si só.</div>
+    </div>
+    <div class="section"><div class="section-title"><h3>Interface mínima para verificações locais</h3><span class="rule"></span></div>
+      <p class="command-label">Exemplo de interface proposta · os argumentos abaixo ainda não existem</p>
+      <pre><code>py -3 adaptadores/prova.py --execucao exec-exemplo retomar
+py -3 adaptadores/prova.py --execucao exec-exemplo verificar testes_locais
+py -3 adaptadores/prova.py --execucao exec-exemplo estado
+py -3 adaptadores/prova.py --execucao exec-exemplo fechar --resultado "Critérios verificados"</code></pre>
+      <p class="sub"><small><code>verificar</code> executaria o comando local já declarado no critério. Capturaria diretório, início/fim, exit code, log e hashes, sem permitir preencher sucesso à mão. Esse executor não serviria para envolver comandos Databricks ou contornar uma negação.</small></p>
+    </div>
+    <div class="panel-link"><a class="button" href="#retomada">Próximo: trocar de CLI <span aria-hidden="true">→</span></a></div>
+  </section>
+
+  <section class="panel" id="retomada" aria-labelledby="titulo-retomada">
+    <header><p class="eyebrow">Continuidade proposta</p><h2 id="titulo-retomada">A ferramenta muda. O trabalho permanece.</h2><p class="sub">O agente recebe o identificador da execução, lê o checkpoint e confere o estado real. A memória necessária fica nos arquivos da execução.</p></header>
+    <div class="simulator" id="simulador">
+      <div class="sim-head"><h3>Simulador de retomada</h3><small>EXEMPLO DIDÁTICO · SEM EXECUÇÃO REAL</small></div>
+      <div class="sim-body">
+        <form class="sim-controls" id="sim-form">
+          <div class="field"><label for="origem">Começou em</label><select id="origem"><option>Claude Code</option><option>Cursor</option><option>Codex</option><option>OpenCode</option></select></div>
+          <div class="field"><label for="destino">Vai continuar em</label><select id="destino"><option>Cursor</option><option>Claude Code</option><option>Codex</option><option>OpenCode</option></select></div>
+          <fieldset><legend>Condições do exemplo</legend>
+            <label class="check"><input id="hooks" type="checkbox"><span>Hook integrado disponível no destino</span></label>
+            <label class="check"><input id="subagentes" type="checkbox"><span>Ferramenta de subagentes disponível</span></label>
+            <label class="check"><input id="independente" type="checkbox"><span>Contrato exige revisão independente ainda não feita</span></label>
+            <label class="check"><input id="alterado" type="checkbox"><span>Arquivos relevantes mudaram após o teste</span></label>
+            <label class="check"><input id="externo" type="checkbox"><span>Operação externa está sem resultado confirmado</span></label>
+          </fieldset>
+          <div class="presets" aria-label="Carregar cenário"><button type="button" data-scenario="troca">Troca simples</button><button type="button" data-scenario="obsoleto">Teste obsoleto</button><button type="button" data-scenario="revisao">Revisão exigida</button><button type="button" data-scenario="externo">Operação pendente</button></div>
+          <p style="font-size:11px;color:var(--muted);margin-top:18px">As escolhas representam condições hipotéticas. Não detectam nem afirmam o suporte atual de cada CLI.</p>
+        </form>
+        <div class="sim-result" id="sim-resultado" aria-live="polite" aria-atomic="true">
+          <p>Ative JavaScript para explorar os cenários. O fluxo de retomada e suas condições estão descritos a seguir.</p>
+        </div>
+      </div>
+    </div>
+    <div class="section"><div class="section-title"><h3>O protocolo de retomada</h3><span class="rule"></span></div>
+      <div class="grid two">
+        <ol class="step-list">
+          <li><b>Encontrar a execução</b><p>Localizar contrato, baseline, histórico e checkpoint pelo identificador permanente.</p></li>
+          <li><b>Conferir coordenação</b><p>Transferir para um coordenador ativo por vez. Sessão interrompida exige recuperação explícita; tempo decorrido não libera o lock.</p></li>
+          <li><b>Comparar o estado</b><p>Revalidar manifestos, dependências e requisitos registrados. Edição relevante pede nova prova para os critérios afetados.</p></li>
+        </ol>
+        <ol class="step-list" style="counter-reset:step 3">
+          <li><b>Resolver efeito externo incerto</b><p>Consultar o resultado real por identificador. Não repetir deploy, run ou escrita porque a conversa caiu.</p></li>
+          <li><b>Registrar a transição</b><p>Acrescentar origem, destino, instante, motivo e resultado da conferência. Provas históricas conservam sua procedência.</p></li>
+          <li><b>Continuar do próximo passo</b><p>Retomar o trabalho permitido; manter revisão, achados e autorizações com seu escopo e validade.</p></li>
+        </ol>
+      </div>
+    </div>
+    <div class="grid two section">
+      <article class="card"><h3>O checkpoint precisa guardar</h3><ul><li>Objetivo, término e critérios.</li><li>Arquivos alterados e baseline atribuível.</li><li>Provas e estado de validade.</li><li>Revisão, achados e tratamentos pendentes.</li><li>Próximo passo e coordenador ativo.</li><li>Referências de autorização e operação externa com ID.</li></ul></article>
+      <article class="card tint"><h3>O que a troca preserva</h3><p>Contrato, baseline e eventos anteriores permanecem íntegros. A mudança de ferramenta não aprova um teste, resolve um achado ou amplia autorização.</p><p style="margin-top:14px">Uma chamada feita no Claude Code conserva essa origem, mesmo depois da retomada no Cursor. A nova sessão acrescenta fatos ao histórico.</p><p style="margin-top:14px">O mesmo protocolo vale para uma nova conversa na mesma CLI. Troca de máquina exige acesso aos registros locais e às referências necessárias.</p></article>
+    </div>
+    <div class="panel-link"><a class="button" href="#garantias">Próximo: garantias e riscos <span aria-hidden="true">→</span></a></div>
+  </section>
+
+  <section class="panel" id="garantias" aria-labelledby="titulo-garantias">
+    <header><p class="eyebrow">Segurança e confiança</p><h2 id="titulo-garantias">O aceite acompanha o efeito e a evidência.</h2><p class="sub">Ter mais agentes ou trocar de CLI não altera autorização. A exigência de prova acompanha o critério e o risco do trabalho.</p></header>
+    <div class="grid three section">
+      <article class="card"><p class="metric-label">Sempre</p><h3>Escopo e prova</h3><p>Preservar mudanças anteriores, respeitar a superfície e exigir evidência atual para os critérios obrigatórios.</p></article>
+      <article class="card"><p class="metric-label">Por operação</p><h3>Controle aplicável</h3><p>Conferir autorização, ambiente, perfil, destino e pré-condições exigidas. Falta de integração impede somente a parte dependente.</p></article>
+      <article class="card"><p class="metric-label">Por contrato e risco</p><h3>Revisão independente</h3><p>Definir a exigência antes da conclusão. Outro agente ou pessoa pode cumpri-la com evidência rastreável.</p></article>
+    </div>
+    <div class="section"><div class="section-title"><h3>Regras Databricks preservadas nesta proposta</h3><span class="rule"></span></div>
+      <div class="card tint"><ul style="margin-top:0"><li><code>bundle</code> no diretório local autorizado, um comando literal por vez.</li><li>Perfil de <code>configuracao/perfil.local.json</code>, explícito em todo comando Databricks. Sem arquivo, solicitar o perfil.</li><li><code>validate</code>, <code>plan</code> e <code>deploy</code> autorizados apenas em <code>sandbox</code>, no escopo das regras vigentes.</li><li>Deploy continua exigindo plan atual, <code>-p</code> e <code>--select</code>. Outros targets e todo <code>run</code> exigem autorização explícita.</li><li>SQL ad hoc continua somente leitura. Negação é corrigida na chamada; não se contorna com outra ferramenta.</li><li>Autorizações válidas podem continuar no seu escopo. Controle de identidade, destinos e coordenação precisa da evidência aplicável; “sandbox” não comprova isolamento de dados.</li></ul><p style="margin-top:14px">O executor local proposto cobre verificações locais. Operações de plataforma mantêm a guarda aplicável e suas limitações atuais.</p></div>
+    </div>
+    <div class="section"><div class="section-title"><h3>Riscos da simplificação e resposta proposta</h3><span class="rule"></span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Risco</th><th scope="col">Consequência</th><th scope="col">Resposta</th></tr></thead>
+        <tbody>
+          <tr><td>Viés do autor</td><td>O mesmo agente pode repetir a hipótese errada ao revisar.</td><td>Testes com expectativa independente da implementação; revisor independente quando exigido pelo risco ou contrato.</td></tr>
+          <tr><td>Hook indisponível</td><td>Perda de coleta automática, aviso de fecho e interceptação das chamadas cobertas.</td><td>Executor comum para testes locais; operações dependentes de guarda indisponível permanecem impedidas.</td></tr>
+          <tr><td>Prova declarada</td><td>Um “passou” sem execução gera confiança indevida.</td><td>Captura pelo executor, exit code, log, manifesto e confronto com o esperado. Hashes locais não são assinatura de autoria.</td></tr>
+          <tr><td>Estado antigo</td><td>Teste aprovado sobre arquivos que já mudaram.</td><td>Conferência antes da retomada e do fecho; reexecutar os critérios afetados.</td></tr>
+          <tr><td>Concorrência</td><td>Duas sessões sobrescrevem estado ou misturam edições.</td><td>Um coordenador por execução, lock e controle de revisão; conflito real interrompe a escrita dependente.</td></tr>
+          <tr><td>Efeito duplicado</td><td>Repetir operação externa após perder a resposta.</td><td>Guardar ID e consultar o resultado; incerteza impede repetição.</td></tr>
+          <tr><td>Redução silenciosa do aceite</td><td>Trocar CLI ou configuração remove exigências da execução aberta.</td><td>Registrar os requisitos da execução; mudança de exigência é explícita e preserva o histórico. Restrições operacionais atuais continuam valendo.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="section"><div class="section-title"><h3>O significado do fecho permanece</h3><span class="rule"></span></div>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Status</th><th scope="col">Condição</th></tr></thead><tbody>
+        <tr><td><span class="status good">DONE</span></td><td>Critérios obrigatórios atendidos com prova atual, sem achado obrigatório aberto nem ação humana exigida.</td></tr>
+        <tr><td><span class="status warn">REVIEW</span></td><td>Aceite técnico atendido e revisão humana prevista no acordo. Não encobre teste faltante.</td></tr>
+        <tr><td><span class="status warn">DECIDE</span></td><td>Falta decisão, autorização ou coordenação humana necessária.</td></tr>
+        <tr><td><span class="status bad">BLOCKED</span></td><td>Falta acesso ou capacidade, há conflito ou efeito externo inconclusivo, após recuperação possível.</td></tr>
+        <tr><td><span class="status bad">FAILED</span></td><td>Avaliação executada e reprovada; a trilha não corrige ou esgotou seu limite.</td></tr>
+      </tbody></table></div>
+      <p class="callout info">O trabalho independente continua quando apenas uma operação está impedida. <code>DONE</code> de uma tarefa de revisão significa que a revisão foi concluída; o artefato pode continuar com achados.</p>
+    </div>
+    <div class="panel-link"><a class="button" href="#adocao">Próximo: estado e adoção <span aria-hidden="true">→</span></a></div>
+  </section>
+
+  <section class="panel" id="adocao" aria-labelledby="titulo-adocao">
+    <header><p class="eyebrow">Do checkout atual ao desenho v6</p><h2 id="titulo-adocao">O que existe e o que precisa mudar.</h2><p class="sub">Fotografia das fontes locais em 19/10/2026. A matriz descreve a integração deste repositório; não é um inventário de todas as capacidades dos produtos.</p></header>
+    <div class="section"><div class="section-title"><h3>Cobertura atual dos adaptadores</h3><span class="rule"></span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Runtime</th><th scope="col">Guarda e prova no checkout</th><th scope="col">Agentes e continuidade</th></tr></thead>
+        <tbody>
+          <tr><td>Claude Code</td><td><span class="badge observed">Observado</span><p>Guarda, coleta de provas e agentes documentados como observados em sessão real.</p></td><td>Agentes obrigatórios em cinco trilhas configuradas. Estado vinculado à sessão e ao runtime.</td></tr>
+          <tr><td>Cursor</td><td><span class="badge observed">Observado</span><p>Guarda e coleta documentadas como observadas; registros locais também contêm falhas na entrega dos eventos.</p></td><td>Agentes obrigatórios nas mesmas cinco trilhas. Outra sessão não assume a fatia pelo CLI atual.</td></tr>
+          <tr><td>Codex</td><td><span class="badge limited">Integração parcial</span><p>Adaptador de guarda disponível; <code>.codex/hooks.json</code> sem handler instalado. Adaptador sem coleta de provas.</p></td><td>Agente único; fora da obrigatoriedade de agentes. CLI aceita <code>--runtime codex</code>, sem retomada portátil.</td></tr>
+          <tr><td>OpenCode</td><td><span class="badge proposed">Integração pendente</span><p>Ponte Bash/Task implementada e testada localmente. Observação integrada e gate G2-OC pendentes.</p></td><td>Definições de agentes disponíveis; fora da chave de obrigatoriedade em produção.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="sub"><small>As cinco trilhas atuais são <code>manutencao</code>, <code>correcao</code>, <code>novo</code>, <code>docs</code> e <code>review</code>. Fontes: <a href="configuracao/politica.json">política</a> e <a href="adaptadores/README.md">adaptadores</a>.</small></p>
+    </div>
+    <div class="callout warning"><strong>Não basta esvaziar <code>agentes_obrigatorios</code>.</strong> Hoje a ativação também participa da exigência de autorização registrada, formas de ambiente/paridade, revisão e vigilância da superfície. A separação precisa acontecer no código e nos testes.</div>
+    <div class="section"><div class="section-title"><h3>Ordem proposta para a mudança</h3><span class="rule"></span></div>
+      <ol class="step-list">
+        <li><b>Separar os requisitos do modo de agentes</b><p>Política e núcleo passam a exigir autorização, ambiente, paridade e aceite independentemente do runtime. Registrar requisitos da execução e impedir redução silenciosa.</p></li>
+        <li><b>Dar identidade própria à execução</b><p>Adicionar consulta e retomada por execução; sessão vira participante. Preservar procedência por evento e transferir coordenação com lock e controle de revisão.</p></li>
+        <li><b>Adicionar verificação local portátil</b><p>Reaproveitar a captura de manifesto e resultado do núcleo em um executor comum. Tratar erro, timeout e resultado pendente sem fabricar sucesso.</p></li>
+        <li><b>Reduzir dependências dos adaptadores</b><p>Manter hooks como integração adicional e papéis como responsabilidades. Atualizar AGENTS, núcleo, trilhas, evidência e documentação dos adaptadores.</p></li>
+        <li><b>Migrar e verificar com histórico preservado</b><p>Execuções antigas mantêm seus eventos e fechos. Uma migração registra origem e requisitos; quando não for compatível, abre execução vinculada e verifica o trabalho herdado. Não converter BLOCKED antigo em aprovação.</p></li>
+      </ol>
+    </div>
+    <div class="grid two section">
+      <article class="card"><h3>Aceite da futura implementação</h3><ul><li>Claude → Cursor, Claude → Codex e Cursor → OpenCode.</li><li>Nova sessão na mesma ferramenta.</li><li>Teste local com hook ausente.</li><li>Subagente ausente sem perder requisitos de segurança.</li><li>Prova obsoleta e teste reprovado impedem conclusão.</li><li>Achados e revisão exigida sobrevivem à troca.</li><li>Concorrência recusada e efeito externo sem repetição.</li><li>Suítes locais do harness aprovadas.</li></ul></article>
+      <article class="card accent-card"><p class="metric-label">Recorte desta entrega</p><h3>Documento visual da proposta</h3><p>Esta página apresenta o desenho e simula decisões de continuidade. A implementação do núcleo, da migração de estado e do executor comum é trabalho futuro.</p><p style="margin-top:16px">O produto continua em <code>prj-avante-analytics-adb/</code>. Contratos e histórico do harness ficam em <code>.execucoes/</code>, separados do código de negócio.</p><p style="margin-top:16px">As onze formas atuais podem ser reaproveitadas conforme necessário. O leitor não precisa preencher todos os registros para uma tarefa simples.</p></article>
+    </div>
+    <div class="section"><div class="section-title"><h3>Fontes locais do diagnóstico</h3><span class="rule"></span></div>
+      <div class="source-list">
+        <a href="implementacao/provas.py">Núcleo de provas<span>Identidade da sessão, runtime, critérios e fecho.</span></a>
+        <a href="adaptadores/prova.py">CLI atual da prova<span>Subcomandos existentes; sem retomar ou verificar.</span></a>
+        <a href="adaptadores/README.md">Integrações por runtime<span>Cobertura documentada e limites de instalação.</span></a>
+        <a href="configuracao/politica.json">Política vigente<span>Obrigatoriedade de agentes por runtime e trilha.</span></a>
+        <a href="evidencia/layout.md">Estado e retomada<span>Layout, propriedade e limites do checkpoint atual.</span></a>
+        <a href="evidencia/fecho.md">Critérios de fecho<span>Validade de evidência e significado dos status.</span></a>
+        <a href="guardas/README.md">Guardas e autorização<span>Regras operacionais, cobertura e falhas.</span></a>
+        <a href="trilhas/README.md">Trilhas e responsabilidades<span>Sequência atual e distinção de modos.</span></a>
+      </div>
+    </div>
+    <div class="section"><h3>Dúvidas práticas</h3>
+      <details><summary>Posso usar os comandos propostos agora?</summary><div>As interfaces com <code>--execucao</code>, <code>retomar</code> e <code>verificar</code> ainda precisam ser implementadas. Este HTML não altera o CLI existente. Consulte <a href="evidencia/uso.md">o manual vigente</a> para o fluxo atual.</div></details>
+      <details><summary>Preciso de uma configuração diferente para cada IDE?</summary><div>A proposta concentra regras e estado no repositório. Cada IDE precisa carregar essas regras e conseguir executar o núcleo local. Configurações específicas ficam restritas a instruções de entrada e integrações opcionais. A detecção de capacidades não concede autorização.</div></details>
+      <details><summary>Sem subagente, a qualidade fica igual?</summary><div>Autorrevisão tem menor independência. Testes objetivos reduzem o risco, e revisão independente continua exigida quando prevista pelo contrato ou pelo risco. O fecho deve apresentar qual revisão aconteceu.</div></details>
+      <details><summary>As mesmas guardas funcionariam automaticamente em qualquer ferramenta?</summary><div>A cobertura depende da integração. O executor comum observa as suas chamadas; hooks interceptam apenas as chamadas suportadas. Garantias adicionais precisam de controles adequados, como permissões da plataforma ou execução controlada.</div></details>
+    </div>
+  </section>
+</main>
+<footer class="footer"><div class="wrap"><p>Proposta v6 · 19/10/2026 · Guia explicativo. Autoridade: pedido, AGENTS.md e regras vigentes do harness.</p><a href="user-harness-esteira-v5.html">Versão anterior · v5</a></div></footer>
+<script>
+(() => {
+  'use strict';
+  const tabs = [...document.querySelectorAll('[data-panel]')];
+  const panels = [...document.querySelectorAll('.panel')];
+  const tablist = document.getElementById('tabs');
+  tablist.setAttribute('role', 'tablist');
+  tablist.setAttribute('aria-label', 'Seções da proposta v6');
+  tabs.forEach(tab => {
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-controls', tab.dataset.panel);
+  });
+  panels.forEach(panel => {
+    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('aria-labelledby', 'tab-' + panel.id);
+  });
+  function showPanel(id, updateHash = false) {
+    if (!panels.some(panel => panel.id === id)) return;
+    panels.forEach(panel => { panel.hidden = panel.id !== id; });
+    tabs.forEach(tab => {
+      const active = tab.dataset.panel === id;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+    if (updateHash) {
+      if (location.hash !== '#' + id) history.pushState(null, '', '#' + id);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    const id = link.getAttribute('href').slice(1);
+    if (!panels.some(panel => panel.id === id)) return;
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      const isTab = link.hasAttribute('data-panel');
+      showPanel(id, true);
+      if (isTab) link.focus();
+      else document.getElementById('conteudo').focus({ preventScroll: true });
+    });
+  });
+  tablist.addEventListener('keydown', event => {
+    if (!tabs.includes(event.target)) return;
+    const index = tabs.indexOf(event.target);
+    let next;
+    if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+    if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = tabs.length - 1;
+    if (next === undefined) return;
+    event.preventDefault();
+    showPanel(tabs[next].dataset.panel, true);
+    tabs[next].focus();
+  });
+  window.addEventListener('hashchange', () => {
+    const id = location.hash.slice(1);
+    showPanel(panels.some(panel => panel.id === id) ? id : 'proposta');
+  });
+  const initial = location.hash.slice(1);
+  showPanel(panels.some(panel => panel.id === initial) ? initial : 'proposta');
+
+  const form = document.getElementById('sim-form');
+  const result = document.getElementById('sim-resultado');
+  const field = id => document.getElementById(id);
+  const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
+  function renderSimulation() {
+    const origin = field('origem').value;
+    const destination = field('destino').value;
+    const hooks = field('hooks').checked;
+    const agents = field('subagentes').checked;
+    const review = field('independente').checked;
+    const changed = field('alterado').checked;
+    const external = field('externo').checked;
+    let title = 'Continuar o trabalho local';
+    let label = 'Retomada prevista';
+    let tone = 'good';
+    let explanation = 'Após a conferência e a transferência da coordenação, o próximo passo local pode continuar na nova sessão.';
+    if (review) {
+      title = 'Continuar; revisão independente pendente'; label = 'Fecho condicionado'; tone = 'warn';
+      explanation = agents ? 'Há ferramenta de subagentes disponível. Ainda é preciso realizar e registrar a revisão independente exigida.' : 'Implementação e testes locais podem continuar. O fecho depende de outro agente ou pessoa realizar a revisão exigida.';
+    }
+    if (changed) {
+      title = 'Retomar e refazer a prova afetada'; label = 'Prova obsoleta'; tone = 'warn';
+      explanation = 'Os arquivos relevantes mudaram após o teste. A prova anterior fica no histórico; os critérios afetados precisam de nova verificação.';
+      if (review) explanation += ' A revisão independente também permanece pendente.';
+    }
+    if (external) {
+      title = 'Conferir a operação externa primeiro'; label = 'Operação dependente bloqueada'; tone = 'bad';
+      explanation = 'Consultar o resultado pelo identificador persistido antes de repetir a operação. O trabalho local independente pode continuar.';
+      if (changed) explanation += ' Há também prova local a renovar.';
+      if (review) explanation += ' A revisão independente segue pendente.';
+    }
+    const reviewText = review
+      ? (agents ? 'Subagente disponível não equivale a revisão feita. Registrar a execução e os achados do revisor.' : 'Buscar revisor em outra sessão ou pessoa. Autorrevisão não atende à exigência de independência.')
+      : 'Autorrevisão permitida neste exemplo; registrar esse modo. Revisão independente pode ser acrescentada.';
+    const steps = [
+      ['Recuperar exec-exemplo', 'Objetivo, critérios, baseline, provas, achados e próximo passo seguem na mesma execução.'],
+      ['Transferir a coordenação', `${origin} → ${destination}${origin === destination ? ' · nova sessão na mesma ferramenta' : ''}. Só um coordenador ativo; conflito ou chamada pendente exige recuperação.`],
+      [changed ? 'Renovar a prova afetada' : 'Conferir as provas existentes', changed ? 'Acionar o executor local para os critérios afetados; manter os registros anteriores.' : 'Preservar as provas cujo conteúdo, dependências e controles continuam compatíveis.'],
+      ['Registrar o modo de revisão', reviewText],
+      [external ? 'Consultar o efeito pendente' : 'Salvar o próximo passo', external ? 'Guardar o resultado real. Não repetir a operação enquanto seu efeito for incerto.' : 'Gravar checkpoint para continuar nesta sessão ou em outra ferramenta.']
+    ];
+    result.innerHTML = `<div class="sim-id"><strong>exec-exemplo</strong> · ${escape(origin)} → ${escape(destination)}</div>
+      <span class="status ${tone}">${label}</span><h3>${title}</h3><p>${escape(explanation)}</p>
+      <ol class="step-list">${steps.map(([heading, text]) => `<li><b>${escape(heading)}</b><p>${escape(text)}</p></li>`).join('')}</ol>
+      <div class="sim-footer"><strong>${hooks ? 'Com hook integrado:' : 'Sem hook integrado:'}</strong> ${hooks ? 'a integração pode automatizar coleta e aplicar a guarda nas chamadas cobertas.' : 'o executor comum proposto permite testes locais; uma operação externa que exige guarda indisponível continua impedida.'}<br>Simulação do desenho v6. Não transfere sessão, não executa comandos e não declara aceite real.</div>`;
+  }
+  form.addEventListener('submit', event => event.preventDefault());
+  form.addEventListener('change', renderSimulation);
+  document.querySelectorAll('[data-scenario]').forEach(button => {
+    button.addEventListener('click', () => {
+      ['hooks', 'subagentes', 'independente', 'alterado', 'externo'].forEach(id => { field(id).checked = false; });
+      const presets = { obsoleto:'alterado', revisao:'independente', externo:'externo' };
+      if (presets[button.dataset.scenario]) field(presets[button.dataset.scenario]).checked = true;
+      renderSimulation();
+    });
+  });
+  renderSimulation();
+})();
+</script>
+</body>
+</html>

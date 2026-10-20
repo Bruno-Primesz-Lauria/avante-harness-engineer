@@ -209,6 +209,23 @@ class ProvasTestes(unittest.TestCase):
             outra.fechar("DONE", "Nao pode")
         self.p.fechar("DONE", "Verificado")
 
+    def test_fatia_e_sessao_usam_nome_legivel(self):
+        dia = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        nome = f"{dia}-correcao-verificar-a-mudanca"
+        self.assertRegex(self.p.indice.name, r"^[0-9a-f]{64}$")
+        self.iniciar()
+        self.assertEqual(self.p.pasta().parent.name, nome)
+        self.assertEqual(self.p.indice.name, nome)
+        self.assertEqual(self.p.estado(self.p.pasta())["execucao_id"], nome)
+        self.assertFalse((self.p.registros / "sessoes" / self.p.sessao).exists())
+        retomada = Provas(self.raiz, self.politica["registros_raiz"], "sessao-a")
+        self.assertEqual(retomada.pasta(), self.p.pasta())
+        outra = Provas(self.raiz, self.politica["registros_raiz"], "sessao-b")
+        outra.iniciar(self.contrato)
+        self.assertEqual(outra.pasta().parent.name, nome + "-2")
+        self.assertEqual(outra.indice.name, nome + "-2")
+        self.assertTrue(self.p.pasta().is_dir())
+
     def test_lock_e_revisao_impedem_sobrescrita(self):
         self.iniciar()
         pasta = self.p.pasta()
@@ -1554,6 +1571,7 @@ class ProvasTestes(unittest.TestCase):
         base = ["--sessao", "sessao-a"]
         codigo, _, erro = self.chamar_adaptador_prova([*base, "iniciar", self.arquivo_yaml("c.yaml", self.contrato)])
         self.assertEqual(codigo, 0, erro)
+        self.p = Provas(self.raiz, self.politica["registros_raiz"], "sessao-a")
 
         codigo, saida, erro = self.chamar_adaptador_prova([*base, "diagnosticar", self.arquivo_yaml(
             "d.yaml", dict(self.diagnostico_declarado(criterio_reproducao="c1"), produtor="map"))])

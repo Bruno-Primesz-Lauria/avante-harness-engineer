@@ -191,6 +191,7 @@ class AdaptadoresTestes(unittest.TestCase):
         clone = self.raiz / "checkout com espacos"
         for relativo in ("adaptadores/entrada.py", "adaptadores/executar.py", "adaptadores/protocolo.py",
                          "implementacao/guarda_cwd.py", "implementacao/guarda_efeito.py",
+                         "implementacao/nomes.py",
                          "configuracao/politica.json"):
             alvo = clone / relativo
             alvo.parent.mkdir(parents=True, exist_ok=True)

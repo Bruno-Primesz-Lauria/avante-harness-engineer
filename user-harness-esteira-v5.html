@@ -756,13 +756,13 @@ td.m, th.m { text-align: center; }
 <g class="al edit arq-hit" data-arq="s_edit" tabindex="0" role="button" aria-pressed="false" aria-label="o agente edita o código do produto (Git próprio)"><rect x="550.0" y="796" width="420" height="24" rx="12"/><text x="760" y="812.5">o agente edita o código do produto (Git próprio)</text></g>
 <g class="band" data-grp="p3"><rect x="20" y="870" width="1560" height="196" rx="18"/></g>
 <g class="hd arq-hit" data-arq="p3" tabindex="0" role="button" aria-pressed="false" aria-label="3 · PLANO DE EVIDÊNCIA — .execucoes/ (fora do Git)"><rect class="hdr" x="34" y="882" width="510" height="24" rx="12"/><text class="bl" x="42" y="898">3 · PLANO DE EVIDÊNCIA — .execucoes/ (fora do Git)</text><circle class="ii" cx="528" cy="894" r="8.5"/><text class="iit" x="528" y="898">i</text></g>
-<g class="ab  arq-hit" data-arq="ev_sessoes" tabindex="0" role="button" aria-pressed="false" aria-label="sessoes/&lt;hash&gt;/ativa.json — aponta a fatia ativa, de cada sessão"><rect x="44" y="928" width="320" height="108" rx="12"/>
-<text class="t mono" x="204.0" y="970.0">sessoes/&lt;hash&gt;/ativa.json</text>
+<g class="ab  arq-hit" data-arq="ev_sessoes" tabindex="0" role="button" aria-pressed="false" aria-label="sessoes/&lt;assunto&gt;/ativa.json — aponta a fatia ativa, de cada sessão"><rect x="44" y="928" width="320" height="108" rx="12"/>
+<text class="t mono" x="204.0" y="970.0">sessoes/&lt;assunto&gt;/ativa.json</text>
 <text class="s" x="204.0" y="990.0">aponta a fatia ativa</text>
 <text class="s" x="204.0" y="1007.0">de cada sessão</text>
 </g>
-<g class="ab  arq-hit" data-arq="ev_provas" tabindex="0" role="button" aria-pressed="false" aria-label="provas/&lt;execução&gt;/principal/ — contrato.yaml · baseline.json, estado.json com hashes"><rect x="424" y="928" width="380" height="108" rx="12"/>
-<text class="t mono" x="614.0" y="970.0">provas/&lt;execução&gt;/principal/</text>
+<g class="ab  arq-hit" data-arq="ev_provas" tabindex="0" role="button" aria-pressed="false" aria-label="provas/&lt;assunto&gt;/principal/ — contrato.yaml · baseline.json, estado.json com hashes"><rect x="424" y="928" width="380" height="108" rx="12"/>
+<text class="t mono" x="614.0" y="970.0">provas/&lt;assunto&gt;/principal/</text>
 <text class="s" x="614.0" y="990.0">contrato.yaml · baseline.json</text>
 <text class="s" x="614.0" y="1007.0">estado.json com hashes</text>
 </g>
@@ -919,7 +919,7 @@ td.m, th.m { text-align: center; }
 <tr><td class="mono">nucleo/</td><td>política (modus operandi) e contexto do projeto Avante</td></tr>
 <tr><td class="mono">trilhas/</td><td>as oito trilhas: passos, aceite e fecho</td></tr>
 <tr><td class="mono">agentes/</td><td>roteamento.yaml (fonte única dos fluxos) e os sete papéis</td></tr>
-<tr><td class="mono">contratos/</td><td>campos do contrato da fatia</td></tr>
+<tr><td class="mono">contratos/</td><td>campos do contrato; a instância da fatia não fica aqui</td></tr>
 <tr><td class="mono">guardas/</td><td>o que o código nega e a conduta sem código</td></tr>
 <tr><td class="mono">evidencia/</td><td>prova, validade, status de fecho, layout dos registros</td></tr>
 <tr><td class="mono">formas/</td><td>schema dos registros</td></tr>
@@ -932,7 +932,7 @@ td.m, th.m { text-align: center; }
 <tr><td class="mono">acervo/</td><td>candidatas do desenho e a situação de cada uma</td></tr>
 <tr><td class="mono">PLANO-AGENTES-TRILHAS.md</td><td>plano, painel e pendências: único lugar com estado e histórico</td></tr>
 <tr><td class="mono">.agents/skills/</td><td>skills Databricks</td></tr>
-<tr><td class="mono">.execucoes/</td><td>registros locais, fora do Git</td></tr>
+<tr><td class="mono">.execucoes/</td><td>registros locais, fora do Git: entradas, provas, sessões, plans e indice.md</td></tr>
 <tr><td class="mono">prj-avante-analytics-adb/</td><td>produto, com Git próprio, ignorado pelo Git do harness; sem instruções de agente próprias</td></tr>
 </tbody></table></div></div>
 </section>
@@ -1647,7 +1647,7 @@ const ARQ = {
     serve: "Permitir que o núcleo saiba os papéis e a ordem da trilha.",
     importa: "Instrução e controle leem a mesma fonte, então não divergem.",
     liga: ["roteamento"] },
-  cfg_contrato: { tipo: "Configuração", chip: "neutral", t: "contrato.yaml da fatia", onde: "contratos/ (campos) · .execucoes/provas/…",
+  cfg_contrato: { tipo: "Configuração", chip: "neutral", t: "contrato.yaml da fatia", onde: "contratos/ (campos) · .execucoes/entradas/<assunto>/ · .execucoes/provas/…",
     oque: "O contrato criado ao iniciar a fatia: escopo, critérios e o esperado de cada um.",
     serve: "Definir o que precisa ser provado para fechar.",
     importa: "Sem contrato não há fecho estruturado. O caminho simples dispensa contrato.",
@@ -1674,12 +1674,12 @@ const ARQ = {
     importa: "Clonado dentro da raiz do harness e ignorado pelo Git dele; provas e registros nunca entram no repositório do produto.",
     liga: ["s_edit"] },
 
-  ev_sessoes: { tipo: "Registro", chip: "neutral", t: "sessoes/<hash>/ativa.json", onde: ".execucoes/sessoes/",
+  ev_sessoes: { tipo: "Registro", chip: "neutral", t: "sessoes/<data>-<trilha>-<assunto>/ativa.json", onde: ".execucoes/sessoes/",
     oque: "Aponta qual fatia está ativa em cada sessão.",
     serve: "Saber a qual fatia atribuir cada evento que o hook recebe.",
     importa: "Permite sessões paralelas sem misturar provas.",
     liga: ["ev_provas"] },
-  ev_provas: { tipo: "Registro", chip: "neutral", t: "provas/<execução>/principal/", onde: ".execucoes/provas/",
+  ev_provas: { tipo: "Registro", chip: "neutral", t: "provas/<data>-<trilha>-<assunto>/principal/", onde: ".execucoes/provas/",
     oque: "contrato.yaml, baseline.json (estado anterior) e estado.json com hashes.",
     serve: "Guardar o ponto de partida e o andamento da fatia; a retomada parte daqui.",
     importa: "O baseline inclui arquivo não rastreado: Git limpo não é pré-condição.",

@@ -2,6 +2,10 @@
 
 O contrato registra o que será verdadeiro ao fim da fatia. O agente preenche o que descobre no repositório. O usuário não classifica o trabalho nem preenche formulário.
 
+## Onde fica o arquivo
+
+Esta pasta descreve os campos. O agente grava a instância em `.execucoes/entradas/<assunto>/`. `iniciar` grava a cópia em `.execucoes/provas/<data>-<trilha>-<assunto>/principal/contrato.yaml`.
+
 No caminho simples o contrato é o escopo no chat, quando houver escrita. No estruturado, o registro segue a forma `contrato` em [`formas/catalogo.yaml`](../formas/catalogo.yaml). O agente o prepara conforme [`evidencia/uso.md`](../evidencia/uso.md).
 
 ## Campos
