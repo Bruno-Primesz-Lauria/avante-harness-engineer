@@ -12,9 +12,13 @@ Política do harness. O `AGENTS.md` aponta para este arquivo. Esta política nã
 | Caminho | Quando | Entrega |
 |---|---|---|
 | Simples | Pergunta delimitada, ou mudança pequena e reversível, com escopo e resultado claros. | Resposta com fontes, ou alteração com a verificação adequada. Com escrita, registre o escopo em poucas linhas no chat. Sem contrato YAML e sem agente filho. Fecho em prosa no chat. |
-| Estruturado | Várias etapas, ambiguidade material, impacto relevante, retomada ou revisão independente. | Contrato por fatia ([`contratos/README.md`](../contratos/README.md)), trilha de [`trilhas/`](../trilhas/README.md). O rascunho fica em `.execucoes/entradas/<assunto>/` e os registros da fatia em `.execucoes/provas/`. Se a trilha está em `agentes_obrigatorios` do seu runtime, delegue aos papéis previstos ([agentes](../trilhas/README.md#agentes)); fora da chave, delegue só com autorização e benefício concreto. |
+| Estruturado | Várias etapas, ambiguidade material, impacto relevante, retomada ou revisão independente. | Contrato por fatia ([`contratos/README.md`](../contratos/README.md)), trilha de [`trilhas/`](../trilhas/README.md). O rascunho fica em `.execucoes/entradas/<assunto>/` e os registros da fatia em `.execucoes/provas/`. Na execução portátil, o agente principal assume as responsabilidades e registra autorrevisão; delegação depende de suporte e autorização. Independência exigida no contrato precisa de evidência própria. |
 
 As guardas de [`guardas/README.md`](../guardas/README.md) valem nos dois caminhos.
+
+Novas execuções fixam os requisitos de autorização, formas de ambiente/paridade, revisão e diagnóstico em `requisitos.json`. A ausência de hooks ou subagentes não os reduz. O executor local registra testes diretamente; operações da plataforma continuam pelas integrações e guardas aplicáveis. As exigências de agentes das execuções antigas são preservadas por `agentes_legados` até a migração explícita.
+
+Para trocar de conversa ou ferramenta, salve o checkpoint e libere a coordenação. O destino consulta e retoma pelo `execucao_id`, conferindo provas e pendências. Há um coordenador ativo por vez. Recuperação explícita exige revisão atual e motivo; chamada sem resultado impede a transferência. Operação externa pendente permite trabalho local independente, mas impede conclusão até a conferência por ID.
 
 Escale para o estruturado quando a investigação revelar dependência, impacto ou incerteza maior. Registre o motivo, formalize a fatia e preserve o trabalho feito. Peça decisão se escopo, resultado ou autorização mudarem.
 

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Proposta v6 do harness de engenharia: continuidade entre CLIs, provas locais e segurança por efeito.">
-<title>User-Harness Engenharia · Proposta v6</title>
+<meta name="description" content="Harness de engenharia v6: continuidade entre CLIs, provas locais e requisitos persistidos por execução.">
+<title>User-Harness Engenharia · v6</title>
 <style>
 :root {
   --blue:#221F52; --pink:#ED0973; --red:#FF1229; --yellow:#FFB400;
@@ -212,7 +212,7 @@ details>div { padding:0 0 20px; font-size:14px; color:var(--muted); }
       <path d="M313.67 133.78 L359.58 87.87 L313.67 41.96 C310.87 39.16 310.87 34.61 313.67 31.81 L322.96 22.52 C325.77 19.72 330.31 19.72 333.12 22.52 L393.40 82.78 C396.20 85.59 396.20 90.14 393.40 92.95 L333.11 153.22 C330.31 156.03 325.76 156.03 322.96 153.22 L313.67 143.93 C310.86 141.13 310.86 136.58 313.67 133.78"/>
     </svg>
     <div><small>Projeto Avante · Engenharia</small><div class="brand-name">User-Harness</div></div>
-    <span class="brand-version">v6 · proposta de evolução</span>
+    <span class="brand-version">v6 · núcleo portátil</span>
   </div>
 </header>
 <nav class="tabs" aria-label="Seções da proposta">
@@ -227,7 +227,7 @@ details>div { padding:0 0 20px; font-size:14px; color:var(--muted); }
 </nav>
 <main class="wrap" id="conteudo" tabindex="-1">
   <section class="panel" id="proposta" aria-labelledby="titulo-proposta">
-    <div class="proposal-bar"><b>Proposta · não implementada</b><span>Esta v6 descreve o funcionamento desejado. Criar este guia não altera o núcleo, os hooks ou a política vigente. As regras atuais do <a href="AGENTS.md">AGENTS.md</a> continuam valendo.</span></div>
+    <div class="proposal-bar"><b>Núcleo portátil implementado</b><span>Execução por ID, retomada, checkpoints, migração e verificação local disponíveis. Os cenários têm testes locais; a observação da troca em cada IDE continua necessária. Consulte o <a href="evidencia/uso.md">manual executável</a> e as regras do <a href="AGENTS.md">AGENTS.md</a>.</span></div>
     <header class="hero">
       <p class="eyebrow">Continuidade entre ferramentas</p>
       <h1 id="titulo-proposta">Uma execução.<br><em>Continua na próxima CLI.</em></h1>
@@ -243,7 +243,7 @@ details>div { padding:0 0 20px; font-size:14px; color:var(--muted); }
     <div class="section">
       <div class="section-title"><h3>O que muda na experiência</h3><span class="rule"></span></div>
       <div class="table-wrap"><table>
-        <thead><tr><th scope="col">Ponto</th><th scope="col">Hoje, neste repositório</th><th scope="col">Na proposta v6</th></tr></thead>
+        <thead><tr><th scope="col">Ponto</th><th scope="col">Fluxo anterior</th><th scope="col">Núcleo v6</th></tr></thead>
         <tbody>
           <tr><td>Troca de sessão</td><td>O estado exige a sessão original; outra conversa não assume a fatia.</td><td>Retomada explícita por <code>execucao_id</code>, com conferência e transferência da coordenação.</td></tr>
           <tr><td>Teste local</td><td>A prova depende da coleta dos eventos do runtime.</td><td>Executor comum roda o critério e captura a prova; o hook pode automatizar essa integração.</td></tr>
@@ -252,7 +252,7 @@ details>div { padding:0 0 20px; font-size:14px; color:var(--muted); }
           <tr><td>Retomada humana</td><td>Próximo passo pode ficar apenas no chat ou fecho.</td><td>Checkpoint pequeno com próximo passo, provas, achados, autorizações e operações pendentes.</td></tr>
         </tbody>
       </table></div>
-      <p class="callout">O ganho esperado é reduzir bloqueios causados pela integração com a ferramenta, preservando o aceite técnico. A implementação deve separar segurança e orquestração antes de remover exigências de agentes.</p>
+      <p class="callout">Os requisitos ficam fixos na execução. Autorização, ambiente, paridade, diagnóstico, revisão e superfície são conferidos sem depender da delegação. Execuções antigas conservam as exigências e migram para uma execução vinculada, com provas novas.</p>
     </div>
     <div class="panel-link"><a class="button" href="#arquitetura">Próximo: arquitetura <span aria-hidden="true">→</span></a></div>
   </section>
@@ -316,12 +316,12 @@ details>div { padding:0 0 20px; font-size:14px; color:var(--muted); }
       <div class="callout"><strong>Revisão explícita:</strong> registrar “autorrevisão”, “independente” ou “não realizada”. Se o contrato exigir independência, a ausência do revisor permite trabalho local independente, mas mantém o fecho pendente. Outra chamada no mesmo contexto não comprova independência por si só.</div>
     </div>
     <div class="section"><div class="section-title"><h3>Interface mínima para verificações locais</h3><span class="rule"></span></div>
-      <p class="command-label">Exemplo de interface proposta · os argumentos abaixo ainda não existem</p>
-      <pre><code>py -3 adaptadores/prova.py --execucao exec-exemplo retomar
-py -3 adaptadores/prova.py --execucao exec-exemplo verificar testes_locais
-py -3 adaptadores/prova.py --execucao exec-exemplo estado
-py -3 adaptadores/prova.py --execucao exec-exemplo fechar --resultado "Critérios verificados"</code></pre>
-      <p class="sub"><small><code>verificar</code> executaria o comando local já declarado no critério. Capturaria diretório, início/fim, exit code, log e hashes, sem permitir preencher sucesso à mão. Esse executor não serviria para envolver comandos Databricks ou contornar uma negação.</small></p>
+      <p class="command-label">Interface disponível · substitua o ID e use a sua sessão</p>
+      <pre><code>py -3 adaptadores/prova.py --runtime codex --sessao destino --execucao ID retomar --motivo "Continuar nesta CLI"
+py -3 adaptadores/prova.py --runtime codex --sessao destino --execucao ID verificar testes_locais
+py -3 adaptadores/prova.py --runtime codex --sessao destino --execucao ID estado
+py -3 adaptadores/prova.py --runtime codex --sessao destino --execucao ID fechar --resultado "Critérios verificados"</code></pre>
+      <p class="sub"><small>Antes da troca, salve o checkpoint com <code>liberar</code> na origem. Registre a revisão com <code>revisar</code> antes de fechar. <code>verificar</code> executa testes Python/Node declarados e captura diretório, início/fim, exit code, log e hashes. Ambiente e comandos Databricks continuam pelas integrações operacionais; o executor local não pode envolver essas chamadas nem contornar uma negação. Fluxo completo no <a href="evidencia/uso.md">manual</a>.</small></p>
     </div>
     <div class="panel-link"><a class="button" href="#retomada">Próximo: trocar de CLI <span aria-hidden="true">→</span></a></div>
   </section>
@@ -408,21 +408,21 @@ py -3 adaptadores/prova.py --execucao exec-exemplo fechar --resultado "Critério
   </section>
 
   <section class="panel" id="adocao" aria-labelledby="titulo-adocao">
-    <header><p class="eyebrow">Do checkout atual ao desenho v6</p><h2 id="titulo-adocao">O que existe e o que precisa mudar.</h2><p class="sub">Fotografia das fontes locais em 19/10/2026. A matriz descreve a integração deste repositório; não é um inventário de todas as capacidades dos produtos.</p></header>
+    <header><p class="eyebrow">Adoção do núcleo v6</p><h2 id="titulo-adocao">Implementação local e integração por ferramenta.</h2><p class="sub">Núcleo portátil disponível em 28/10/2026. As observações históricas dos hooks são separadas dos novos testes locais de continuidade. A matriz descreve este repositório.</p></header>
     <div class="section"><div class="section-title"><h3>Cobertura atual dos adaptadores</h3><span class="rule"></span></div>
       <div class="table-wrap"><table>
         <thead><tr><th scope="col">Runtime</th><th scope="col">Guarda e prova no checkout</th><th scope="col">Agentes e continuidade</th></tr></thead>
         <tbody>
-          <tr><td>Claude Code</td><td><span class="badge observed">Observado</span><p>Guarda, coleta de provas e agentes documentados como observados em sessão real.</p></td><td>Agentes obrigatórios em cinco trilhas configuradas. Estado vinculado à sessão e ao runtime.</td></tr>
-          <tr><td>Cursor</td><td><span class="badge observed">Observado</span><p>Guarda e coleta documentadas como observadas; registros locais também contêm falhas na entrega dos eventos.</p></td><td>Agentes obrigatórios nas mesmas cinco trilhas. Outra sessão não assume a fatia pelo CLI atual.</td></tr>
-          <tr><td>Codex</td><td><span class="badge limited">Integração parcial</span><p>Adaptador de guarda disponível; <code>.codex/hooks.json</code> sem handler instalado. Adaptador sem coleta de provas.</p></td><td>Agente único; fora da obrigatoriedade de agentes. CLI aceita <code>--runtime codex</code>, sem retomada portátil.</td></tr>
-          <tr><td>OpenCode</td><td><span class="badge proposed">Integração pendente</span><p>Ponte Bash/Task implementada e testada localmente. Observação integrada e gate G2-OC pendentes.</p></td><td>Definições de agentes disponíveis; fora da chave de obrigatoriedade em produção.</td></tr>
+          <tr><td>Claude Code</td><td><span class="badge observed">Hooks observados</span><p>Guarda, coleta de provas e agentes documentados como observados em sessões anteriores.</p></td><td>Retomada por execução e executor local disponíveis; delegação opcional nas novas execuções.</td></tr>
+          <tr><td>Cursor</td><td><span class="badge observed">Hooks observados</span><p>Guarda e coleta observadas em sessões anteriores; o executor local também pode produzir a prova.</p></td><td>Retomada por execução, inclusive nova conversa; requisitos conservados.</td></tr>
+          <tr><td>Codex</td><td><span class="badge limited">Hook parcial</span><p>Adaptador de guarda disponível; coleta automática de provas ausente. Executor comum disponível sem hook.</p></td><td>Agente único, testes locais e retomada portátil por CLI.</td></tr>
+          <tr><td>OpenCode</td><td><span class="badge proposed">Observação pendente</span><p>Ponte Bash/Task testada localmente; observação integrada pendente. Executor comum disponível.</p></td><td>Retomada por execução e delegação opcional; continuidade coberta por testes locais.</td></tr>
         </tbody>
       </table></div>
-      <p class="sub"><small>As cinco trilhas atuais são <code>manutencao</code>, <code>correcao</code>, <code>novo</code>, <code>docs</code> e <code>review</code>. Fontes: <a href="configuracao/politica.json">política</a> e <a href="adaptadores/README.md">adaptadores</a>.</small></p>
+      <p class="sub"><small>Novas execuções usam <code>execucao_portatil: true</code>. A chave <code>agentes_legados</code> conserva as cinco trilhas antigas até a migração. Fontes: <a href="configuracao/politica.json">política</a> e <a href="adaptadores/README.md">adaptadores</a>.</small></p>
     </div>
-    <div class="callout warning"><strong>Não basta esvaziar <code>agentes_obrigatorios</code>.</strong> Hoje a ativação também participa da exigência de autorização registrada, formas de ambiente/paridade, revisão e vigilância da superfície. A separação precisa acontecer no código e nos testes.</div>
-    <div class="section"><div class="section-title"><h3>Ordem proposta para a mudança</h3><span class="rule"></span></div>
+    <div class="callout warning"><strong>Requisitos persistidos, delegação opcional.</strong> O núcleo registra os requisitos na abertura e os confere no fecho. A troca de ferramenta não reduz autorização, formas de ambiente/paridade, revisão ou superfície. Operação externa pendente exige conferência por ID; não há repetição automática.</div>
+    <div class="section"><div class="section-title"><h3>Roteiro aplicado no núcleo</h3><span class="rule"></span></div>
       <ol class="step-list">
         <li><b>Separar os requisitos do modo de agentes</b><p>Política e núcleo passam a exigir autorização, ambiente, paridade e aceite independentemente do runtime. Registrar requisitos da execução e impedir redução silenciosa.</p></li>
         <li><b>Dar identidade própria à execução</b><p>Adicionar consulta e retomada por execução; sessão vira participante. Preservar procedência por evento e transferir coordenação com lock e controle de revisão.</p></li>
@@ -432,13 +432,13 @@ py -3 adaptadores/prova.py --execucao exec-exemplo fechar --resultado "Critério
       </ol>
     </div>
     <div class="grid two section">
-      <article class="card"><h3>Aceite da futura implementação</h3><ul><li>Claude → Cursor, Claude → Codex e Cursor → OpenCode.</li><li>Nova sessão na mesma ferramenta.</li><li>Teste local com hook ausente.</li><li>Subagente ausente sem perder requisitos de segurança.</li><li>Prova obsoleta e teste reprovado impedem conclusão.</li><li>Achados e revisão exigida sobrevivem à troca.</li><li>Concorrência recusada e efeito externo sem repetição.</li><li>Suítes locais do harness aprovadas.</li></ul></article>
-      <article class="card accent-card"><p class="metric-label">Recorte desta entrega</p><h3>Documento visual da proposta</h3><p>Esta página apresenta o desenho e simula decisões de continuidade. A implementação do núcleo, da migração de estado e do executor comum é trabalho futuro.</p><p style="margin-top:16px">O produto continua em <code>prj-avante-analytics-adb/</code>. Contratos e histórico do harness ficam em <code>.execucoes/</code>, separados do código de negócio.</p><p style="margin-top:16px">As onze formas atuais podem ser reaproveitadas conforme necessário. O leitor não precisa preencher todos os registros para uma tarefa simples.</p></article>
+      <article class="card"><h3>Cenários de aceite local</h3><ul><li>Claude → Cursor, Claude → Codex e Cursor → OpenCode.</li><li>Nova sessão na mesma ferramenta.</li><li>Teste local com hook ausente.</li><li>Subagente ausente sem perder requisitos de segurança.</li><li>Prova obsoleta e teste reprovado impedem conclusão.</li><li>Achados e revisão exigida sobrevivem à troca.</li><li>Concorrência recusada e efeito externo sem repetição.</li><li>Suítes locais do harness; observar a troca nas IDEs separadamente.</li></ul></article>
+      <article class="card accent-card"><p class="metric-label">Recorte desta entrega</p><h3>Núcleo e executor locais</h3><p>Consulta por execução, transferência de coordenação, checkpoints, migração vinculada e testes Python/Node estão implementados. O simulador desta página continua didático e não executa comandos.</p><p style="margin-top:16px">O produto continua em <code>prj-avante-analytics-adb/</code>. Contratos e histórico do harness ficam em <code>.execucoes/</code>, separados do código de negócio.</p><p style="margin-top:16px">A observação do fluxo em sessões reais de cada IDE continua necessária. O leitor não precisa preencher registros estruturados para uma tarefa simples.</p></article>
     </div>
     <div class="section"><div class="section-title"><h3>Fontes locais do diagnóstico</h3><span class="rule"></span></div>
       <div class="source-list">
         <a href="implementacao/provas.py">Núcleo de provas<span>Identidade da sessão, runtime, critérios e fecho.</span></a>
-        <a href="adaptadores/prova.py">CLI atual da prova<span>Subcomandos existentes; sem retomar ou verificar.</span></a>
+        <a href="adaptadores/prova.py">CLI da prova<span>Retomar, verificar, checkpoint, liberar e migrar.</span></a>
         <a href="adaptadores/README.md">Integrações por runtime<span>Cobertura documentada e limites de instalação.</span></a>
         <a href="configuracao/politica.json">Política vigente<span>Obrigatoriedade de agentes por runtime e trilha.</span></a>
         <a href="evidencia/layout.md">Estado e retomada<span>Layout, propriedade e limites do checkpoint atual.</span></a>
@@ -448,14 +448,14 @@ py -3 adaptadores/prova.py --execucao exec-exemplo fechar --resultado "Critério
       </div>
     </div>
     <div class="section"><h3>Dúvidas práticas</h3>
-      <details><summary>Posso usar os comandos propostos agora?</summary><div>As interfaces com <code>--execucao</code>, <code>retomar</code> e <code>verificar</code> ainda precisam ser implementadas. Este HTML não altera o CLI existente. Consulte <a href="evidencia/uso.md">o manual vigente</a> para o fluxo atual.</div></details>
+      <details><summary>Posso usar os comandos agora?</summary><div>Sim. <code>--execucao</code>, <code>retomar</code> e <code>verificar</code> estão no CLI local. Informe runtime e sessão, libere a origem e registre a revisão antes do fecho. Consulte <a href="evidencia/uso.md">o manual vigente</a> para os exemplos completos e os limites do executor.</div></details>
       <details><summary>Preciso de uma configuração diferente para cada IDE?</summary><div>A proposta concentra regras e estado no repositório. Cada IDE precisa carregar essas regras e conseguir executar o núcleo local. Configurações específicas ficam restritas a instruções de entrada e integrações opcionais. A detecção de capacidades não concede autorização.</div></details>
       <details><summary>Sem subagente, a qualidade fica igual?</summary><div>Autorrevisão tem menor independência. Testes objetivos reduzem o risco, e revisão independente continua exigida quando prevista pelo contrato ou pelo risco. O fecho deve apresentar qual revisão aconteceu.</div></details>
       <details><summary>As mesmas guardas funcionariam automaticamente em qualquer ferramenta?</summary><div>A cobertura depende da integração. O executor comum observa as suas chamadas; hooks interceptam apenas as chamadas suportadas. Garantias adicionais precisam de controles adequados, como permissões da plataforma ou execução controlada.</div></details>
     </div>
   </section>
 </main>
-<footer class="footer"><div class="wrap"><p>Proposta v6 · 19/10/2026 · Guia explicativo. Autoridade: pedido, AGENTS.md e regras vigentes do harness.</p><a href="user-harness-esteira-v5.html">Versão anterior · v5</a></div></footer>
+<footer class="footer"><div class="wrap"><p>v6 · 28/10/2026 · Núcleo portátil local. Autoridade: pedido, AGENTS.md e regras vigentes do harness.</p><a href="user-harness-esteira-v5.html">Versão anterior · v5</a></div></footer>
 <script>
 (() => {
   'use strict';

@@ -1,6 +1,8 @@
 # Trilhas
 
-Escolha a trilha pelo objetivo. Ela roda em um de dois modos, pela chave `agentes_obrigatorios` de [`configuracao/politica.json`](../configuracao/politica.json) para o seu runtime:
+Escolha a trilha pelo objetivo. Nas novas execuções, `execucao_portatil` em [`configuracao/politica.json`](../configuracao/politica.json) fixa requisitos independentes do runtime. O agente principal executa as responsabilidades da trilha; hooks e delegação são opcionais. Testes usam `prova.py verificar`; revisão declara o modo e a cobertura. Revisão independente exigida no contrato não é substituída por autorrevisão. Troca de sessão segue [`evidencia/uso.md`](../evidencia/uso.md#execução-portátil).
+
+Execuções antigas conservam os modos abaixo, inclusive a chave `agentes_legados` para não perder exigências durante a migração:
 
 - **Com agentes**, se a trilha está na chave: você coordena e os papéis de [`agentes/`](../agentes/) executam, conforme [Agentes](#agentes).
 - **Agente único**, fora da chave: você executa a trilha, com verificação objetiva. Não dependa de subagente nem de skill candidata do [acervo](../acervo/README.md).
@@ -48,6 +50,8 @@ pode corrigir?
 - Limite de tentativas do laço: [`nucleo/modus-operandi.md`](../nucleo/modus-operandi.md#recuperação).
 
 ## Agentes
+
+Esta seção descreve a cobrança de papéis das execuções antigas. Na execução portátil, os sete papéis são responsabilidades reutilizáveis; o plano de chamadas orienta delegações opcionais. A falta de um subagente permite o trabalho local; autorização, ambiente, paridade, diagnóstico, revisão contratada e superfície continuam obrigatórios.
 
 Vale só para a trilha que está em `agentes_obrigatorios` do seu runtime. A fonte única da ordem e dos gatilhos é [`agentes/roteamento.yaml`](../agentes/roteamento.yaml); cada papel tem sua definição em `agentes/<papel>.md`.
 

@@ -167,7 +167,7 @@ def concluidas(plano, registros):
 
 
 class Provas:
-    def __init__(self, raiz, registros, sessao, runtime=None):
+    def __init__(self, raiz, registros, sessao, runtime=None, execucao=None):
         self.raiz = Path(raiz).resolve(strict=True)
         self.registros = Path(registros).resolve()
         exigir(self.registros.is_relative_to(self.raiz) and self.registros != self.raiz,
@@ -180,6 +180,10 @@ class Provas:
         self.indice = self._indice_resolvido()
         self.runtime = runtime
         self.politica_path = self.raiz / "configuracao/politica.json"
+        self.execucao = execucao
+        if execucao is not None:
+            relativo(execucao)
+            exigir("/" not in execucao, "Execucao deve ser um identificador")
 
     def _caminho_mapa(self):
         return self.registros / "sessoes" / "mapa.json"
@@ -218,18 +222,36 @@ class Provas:
             self.indice = destino
 
     def pasta(self):
+        if self.execucao is not None:
+            pasta = dentro(self.registros, f"provas/{self.execucao}/principal")
+            exigir((pasta / "estado.json").is_file(), "Execucao nao encontrada")
+            return pasta
         ponteiro = self.indice / "ativa.json"
         if not ponteiro.exists():
             return None
-        return dentro(self.registros, ler(ponteiro)["fatia"])
+        pasta = dentro(self.registros, ler(ponteiro)["fatia"])
+        estado = ler(pasta / "estado.json")
+        if estado.get("portatil") and (not estado.get("coordenador_ativo") or
+                estado["sessao"] != self.sessao or estado["runtime"] != self.runtime):
+            return None
+        return pasta
 
     def cwd(self, ref):
         return self.raiz if ref == "." else dentro(self.raiz, ref).resolve()
 
-    def estado(self, pasta):
+    def estado(self, pasta, coordenador=True):
         estado = ler(pasta / "estado.json")
-        exigir(estado["versao"] == 1 and estado["sessao"] == self.sessao, "Estado de outra sessao")
+        exigir(estado["versao"] == 1 and (not coordenador or estado["sessao"] == self.sessao), "Estado de outra sessao. Use retomar")
         exigir(hash_arquivo(pasta / "contrato.yaml") == estado["contrato_sha256"], "O contrato mudou. Abra uma nova fatia")
+        if estado.get("portatil"):
+            exigir(not coordenador or estado.get("coordenador_ativo") is True, "Coordenacao liberada. Use retomar")
+            exigir(not coordenador or estado.get("runtime") == self.runtime, "Runtime diferente. Use retomar")
+            exigir(hash_arquivo(pasta / "requisitos.json") == estado["requisitos_sha256"],
+                   "Requisitos da execucao alterados")
+            exigir(ler(pasta / "requisitos.json") == estado["requisitos"], "Requisitos divergentes")
+            exigir(hash_arquivo(pasta / "baseline.json") == estado["baseline_sha256"], "Baseline alterado")
+            for r in estado.get("transicoes", []):
+                exigir(hash_arquivo(dentro(pasta, r["ref"])) == r["sha256"], "Historico de continuidade alterado")
         return estado
 
     def atualizar(self, pasta, estado):
@@ -250,6 +272,8 @@ class Provas:
                       tentativa=tentativa, evento_id=uuid4().hex,
                       produtor=produtor or produtores[tipo],
                       registrado_em=agora(), manifesto_ref=manifesto, dados=dados)
+        if estado.get("portatil"):
+            evento["origem"] = dict(sessao=self.sessao, runtime=self.runtime)
         validar(evento, pasta, estado["execucao_id"], "principal")
         ref = destino or f"tentativas/{tentativa:03d}/eventos/{evento['evento_id']}.yaml"
         gravar(dentro(pasta, ref), evento)
@@ -344,7 +368,20 @@ class Provas:
             exigir(isinstance(trilhas, list) and all(t in {"novo", "manutencao", "correcao", "docs",
                        "destilar", "review", "validacao", "entendimento"} for t in trilhas),
                    f"agentes_obrigatorios.{runtime} invalido")
-        return {"agentes_obrigatorios": ativacao}
+        portatil = dados.get("execucao_portatil", False)
+        exigir(type(portatil) is bool, "execucao_portatil deve ser booleano")
+        return {"agentes_obrigatorios": ativacao, "execucao_portatil": portatil,
+                "agentes_legados": dados.get("agentes_legados", {})}
+
+    def modo_agentes(self, estado, contrato):
+        if estado.get("portatil"):
+            return False
+        if "agentes_exigidos" in estado:
+            return estado["agentes_exigidos"]
+        runtime = estado.get("runtime") or self.runtime
+        if contrato["trilha"] in self.politica().get("agentes_legados", {}).get(runtime, []):
+            return True
+        return self.ativada(contrato["trilha"], runtime)
 
     def ativada(self, trilha, runtime):
         """Trilha com agentes obrigatórios no runtime; fora da chave vale o fluxo atual."""
@@ -361,7 +398,9 @@ class Provas:
             for c in contrato.get("aceite", [])) else "3.1"
         validar_dados("contrato", contrato, schema_versao)
         exigir(contrato["artefatos_raiz"] == ".execucoes/provas", "Use .execucoes/provas para artefatos")
-        ativa = self.ativada(contrato["trilha"], self.runtime)
+        portatil = self.politica().get("execucao_portatil", False)
+        exigir(not portatil or self.runtime is not None, "Runtime explicito obrigatorio")
+        ativa = not portatil and self.ativada(contrato["trilha"], self.runtime)
         comandos = set()
         cobertura = []
         autorizacoes = {}
@@ -393,7 +432,10 @@ class Provas:
         with trava(self.indice):
             anterior = self.pasta()
             if anterior:
-                exigir(self.estado(anterior)["fecho"] is not None, "Feche a fatia ativa antes de iniciar outra")
+                anterior_estado = self.estado(anterior, coordenador=False)
+                liberada = anterior_estado.get("portatil") and (
+                    not anterior_estado.get("coordenador_ativo") or anterior_estado["sessao"] != self.sessao)
+                exigir(anterior_estado["fecho"] is not None or liberada, "Feche a fatia ativa antes de iniciar outra")
             execucao = reservar_diretorio(
                 self.registros / "provas",
                 nome_fatia(contrato["trilha"], contrato["objetivo"]))
@@ -404,10 +446,23 @@ class Provas:
                           autorizacoes=autorizacoes, manifestos_autorizacao={},
                           revisao=0, tentativa=0, pendente=None, chamadas=[], provas={}, inspecoes={},
                           revisoes=[], triagens=[], fecho=None, contrato_sha256="")
+            if ativa:
+                estado["agentes_exigidos"] = True
+            if portatil:
+                estado.update(portatil=True, coordenador_ativo=True,
+                              participantes=[dict(sessao=self.sessao, runtime=self.runtime, inicio=agora())],
+                              transicoes=[], checkpoint=None, operacoes_pendentes={}, delegacoes_abertas={},
+                              requisitos=dict(autorizacao_ambiente=True, formas=True,
+                                              revisao=contrato.get("revisao", "autorrevisao"),
+                                              diagnostico=self.exige_diagnostico(contrato["trilha"])))
+                gravar(pasta / "requisitos.json", estado["requisitos"])
+                estado["requisitos_sha256"] = hash_arquivo(pasta / "requisitos.json")
             if ativa and ESCRITORES & {c["papel"] for c in chamadas_previstas}:
                 estado["vigilancia_superficie"] = dict(
                     retrato=retrato(self.raiz, self.vigiados(contrato)), abertas={}, pendencias=[])
             gravar(pasta / "baseline.json", dict(versao=1, registrado_em=agora(), arquivos=baseline))
+            if portatil:
+                estado["baseline_sha256"] = hash_arquivo(pasta / "baseline.json")
             for criterio_id, ref in autorizacoes.items():
                 manifesto_ref = f"tentativas/001/autorizacoes/{criterio_id}.json"
                 manifesto = dict(versao=1, caminhos=[ref], arquivos=retrato(self.raiz, [ref]),
@@ -422,9 +477,172 @@ class Provas:
         self._publicar_sessao(execucao)
         return resultado
 
+    def registrar_continuidade(self, pasta, estado, acao, dados):
+        """Preserva transições e checkpoints sem reescrever o histórico."""
+        ref = f"continuidade/{uuid4().hex}.json"
+        evento = dict(versao=1, acao=acao, registrado_em=agora(), execucao_id=estado["execucao_id"],
+                      origem=dict(sessao=self.sessao, runtime=self.runtime), dados=dados)
+        gravar(dentro(pasta, ref), evento)
+        estado.setdefault("transicoes", []).append(dict(ref=ref, sha256=hash_arquivo(dentro(pasta, ref))))
+
+    def salvar_checkpoint(self, dados, liberar=False):
+        pasta = self.pasta()
+        exigir(pasta is not None, "Nenhuma fatia ativa")
+        exigir(isinstance(dados, dict) and set(dados) <= {"proximo_passo", "autorizacoes", "operacoes"},
+               "Checkpoint invalido")
+        exigir(isinstance(dados.get("proximo_passo"), str) and dados["proximo_passo"].strip(),
+               "Checkpoint exige proximo_passo")
+        with trava(pasta):
+            estado = self.estado(pasta)
+            exigir(estado.get("portatil"), "Execucao antiga. Use migrar")
+            exigir(not liberar or (estado["pendente"] is None and not self.ha_subagente_pendente(estado)),
+                   "Chamada pendente. Confira o resultado antes de liberar")
+            autorizacoes = dados.get("autorizacoes", [])
+            exigir(isinstance(autorizacoes, list) and all(isinstance(a, dict) and
+                   set(a) == {"ref", "escopo", "validade"} and all(isinstance(v, str) and v.strip()
+                   for v in a.values()) for a in autorizacoes), "Referencias de autorizacao invalidas")
+            operacoes = dados.get("operacoes", [])
+            exigir(isinstance(operacoes, list), "Operacoes invalidas")
+            for op in operacoes:
+                exigir(isinstance(op, dict) and set(op) == {"id", "referencia"} and
+                       all(isinstance(v, str) and v.strip() for v in op.values()), "Operacao exige id e referencia")
+                exigir(op["id"] not in estado["operacoes_pendentes"], "Operacao ja registrada")
+                estado["operacoes_pendentes"][op["id"]] = op["referencia"]
+            self.registrar_continuidade(pasta, estado, "liberar" if liberar else "checkpoint", dados)
+            estado["checkpoint"] = dict(dados, registrado_em=agora())
+            if liberar:
+                estado["coordenador_ativo"] = False
+            estado["fecho"] = None
+            self.atualizar(pasta, estado)
+            return dict(execucao_id=estado["execucao_id"], revisao=estado["revisao"], checkpoint=estado["checkpoint"])
+
+    def ha_subagente_pendente(self, estado):
+        if estado.get("delegacoes_abertas"):
+            return True
+        if estado.get("vigilancia_superficie", {}).get("abertas"):
+            return True
+        for chave in ("cursor_subagentes", "claude_subagentes", "opencode_subagentes"):
+            rastreio = estado.get(chave, {})
+            if any(rastreio.get(k) for k in ("pendentes", "janelas", "abertas")):
+                return True
+        return False
+
+    def resolver_operacao(self, operacao_id, evidencia_ref):
+        """Registra conferência externa; não repete a operação nem aprova um critério."""
+        pasta = self.pasta()
+        exigir(pasta is not None, "Nenhuma fatia ativa")
+        with trava(pasta):
+            estado = self.estado(pasta)
+            exigir(operacao_id in estado.get("operacoes_pendentes", {}), "Operacao pendente ausente")
+            evidencia = dentro(self.raiz, evidencia_ref)
+            exigir(evidencia.is_file(), "Evidencia de conferencia ausente")
+            conferencia = ler(evidencia)
+            exigir(conferencia.get("operacao_id") == operacao_id and
+                   conferencia.get("referencia") == estado["operacoes_pendentes"][operacao_id] and
+                   conferencia.get("resultado") in {"concluida", "falhou", "nao_executada"},
+                   "Conferencia nao corresponde ao ID, referencia ou resultado da operacao")
+            instante = conferencia.get("observado_em")
+            exigir(isinstance(instante, str) and datetime.fromisoformat(instante).utcoffset() is not None,
+                   "Conferencia exige observado_em com fuso")
+            self.registrar_continuidade(pasta, estado, "conferir_operacao", dict(
+                id=operacao_id, evidencia_ref=evidencia_ref, sha256=hash_arquivo(evidencia)))
+            estado.setdefault("operacoes_conferidas", {})[operacao_id] = dict(
+                evidencia_ref=evidencia_ref, sha256=hash_arquivo(evidencia))
+            del estado["operacoes_pendentes"][operacao_id]
+            estado["fecho"] = None
+            self.atualizar(pasta, estado)
+            return {"operacao_conferida": operacao_id}
+
+    def retomar(self, motivo, revisao=None, recuperar=False):
+        exigir(self.execucao is not None, "Informe --execucao")
+        exigir(self.runtime is not None, "Informe --runtime")
+        exigir(isinstance(motivo, str) and motivo.strip(), "Informe o motivo da retomada")
+        pasta = self.pasta()
+        with trava(self.indice), trava(pasta):
+            estado = self.estado(pasta, coordenador=False)
+            exigir(estado.get("portatil"), "Execucao antiga. Use migrar; o historico sera preservado")
+            mesma = estado["sessao"] == self.sessao and estado["runtime"] == self.runtime
+            exigir(revisao is None or revisao == estado["revisao"], "Revisao mudou. Consulte estado novamente")
+            exigir(not estado.get("coordenador_ativo") or mesma or (recuperar and revisao is not None),
+                   "Coordenador ativo. Libere na origem ou use --recuperar com --revisao e --motivo")
+            exigir(estado["pendente"] is None and not self.ha_subagente_pendente(estado),
+                   "Chamada pendente. Confira o resultado na origem antes da retomada")
+            # Uma sessão não assume duas fatias abertas silenciosamente.
+            indice_anterior = self.indice
+            ponteiro = indice_anterior / "ativa.json"
+            if ponteiro.is_file():
+                anterior = dentro(self.registros, ler(ponteiro)["fatia"])
+                if anterior != pasta:
+                    e = ler(anterior / "estado.json")
+                    exigir(e.get("fecho") is not None or not e.get("coordenador_ativo", True),
+                           "Feche ou libere a fatia da sessao de destino")
+            _, pendencias = self.pendencias(pasta, estado)
+            origem = dict(sessao=estado["sessao"], runtime=estado["runtime"])
+            self.registrar_continuidade(pasta, estado, "recuperar" if recuperar else "retomar",
+                                        dict(origem=origem, motivo=motivo, pendencias=pendencias))
+            estado.update(sessao=self.sessao, runtime=self.runtime, coordenador_ativo=True)
+            if "cursor_subagentes" in estado:
+                estado["cursor_subagentes"]["coordenador_id"] = self.sessao_bruta
+            estado["participantes"].append(dict(sessao=self.sessao, runtime=self.runtime, inicio=agora()))
+            self.atualizar(pasta, estado)
+            # Não renomeia a sessão de origem; o ponteiro do destino muda sob o mesmo lock.
+            gravar(self.indice / "ativa.json", {"fatia": pasta.relative_to(self.registros).as_posix()}, substituir=True)
+        return self.conferir()
+
+    def migrar(self, contrato):
+        """Abre execução vinculada; nunca converte eventos ou fechos antigos em aprovação."""
+        exigir(self.execucao is not None, "Informe --execucao da origem")
+        origem = self.pasta()
+        with trava(origem):
+            estado = self.estado(origem, coordenador=False)
+            exigir(not estado.get("portatil"), "Execucao ja portatil. Use retomar")
+            exigir(estado["pendente"] is None and not self.ha_subagente_pendente(estado), "Chamada pendente na origem")
+            antigo = ler(origem / "contrato.yaml")["dados"]
+            contrato = dict(contrato)
+            # Preserva os critérios e a superfície herdados; ampliar é permitido.
+            exigir(all(c in contrato["aceite"] for c in antigo["aceite"]) and
+                   set(antigo["superficie"]) <= set(contrato["superficie"]), "Migracao nao pode reduzir o contrato")
+            exigida = self.modo_agentes(estado, antigo)
+            if exigida or antigo.get("revisao") == "independente":
+                contrato["revisao"] = "independente"
+            decisoes = {}
+            for r in estado.get("triagens", []):
+                evento = self.registrado(origem, estado, r)
+                exigir(evento is not None, "Triagem legada invalida; confira a origem")
+                d = evento["dados"]
+                decisoes[(d["revisao_ref"], d["achado_id"])] = d["decisao"]
+            herdados = []
+            for r in estado.get("revisoes", []):
+                evento = self.registrado(origem, estado, r)
+                exigir(evento is not None, "Revisao legada invalida; confira a origem")
+                achados = [a for a in evento["dados"]["achados"]
+                           if decisoes.get((r["ref"], a["id"])) != "descartado"]
+                if achados:
+                    herdados.append((evento, achados))
+            exigir(self.politica().get("execucao_portatil"), "Habilite a politica portatil antes de migrar")
+            vinculo = dict(execucao_id=estado["execucao_id"], estado_sha256=hash_arquivo(origem / "estado.json"),
+                           contrato_sha256=estado["contrato_sha256"], baseline_sha256=hash_arquivo(origem / "baseline.json"))
+        destino = Provas(self.raiz, self.registros, self.sessao_bruta, self.runtime)
+        resultado = destino.iniciar(contrato)
+        pasta = destino.pasta()
+        with trava(pasta):
+            novo = destino.estado(pasta)
+            destino.registrar_continuidade(pasta, novo, "migrar", vinculo)
+            novo["origem_legada"] = vinculo
+            destino.atualizar(pasta, novo)
+        for evento, achados in herdados:
+            ref = f"heranca/{uuid4().hex}.json"
+            gravar(dentro(pasta, ref), evento)
+            destino.revisar(dict(modo="nao_realizada", entrada=dict(intencao_ref="contrato.yaml",
+                aceite_ref="contrato.yaml", baseline_ref="baseline.json", provas_refs=[ref]),
+                veredito="com_achados", tentativas=[], cobertura=[],
+                achados=[dict(a, evidencia_ref=ref) for a in achados]))
+        return resultado
+
     def vigiados(self, contrato):
         return sorted(set(contrato["superficie"]) |
-                      {p for c in contrato["aceite"] for p in c["verificacao"]["caminhos"]})
+                      {p for c in contrato["aceite"] for p in c["verificacao"]["caminhos"]} |
+                      {c["autorizacao_ref"] for c in contrato["aceite"] if c.get("autorizacao_ref")})
 
     def abrir_chamada(self, chamada_id, papel):
         """Início observado de um subagente: o que mudou desde o último retrato não foi feito por papel (C5)."""
@@ -433,6 +651,12 @@ class Provas:
             return False
         with trava(pasta):
             estado = self.estado(pasta)
+            if estado.get("portatil"):
+                exigir(chamada_id not in estado["delegacoes_abertas"], "Delegacao ja aberta")
+                estado["delegacoes_abertas"][chamada_id] = papel
+                estado["fecho"] = None
+                self.atualizar(pasta, estado)
+                return True
             vigia = estado.get("vigilancia_superficie")
             if vigia is None or chamada_id in vigia["abertas"]:
                 return False
@@ -459,6 +683,10 @@ class Provas:
             return False
         with trava(pasta):
             estado = self.estado(pasta)
+            if estado.get("portatil"):
+                estado["delegacoes_abertas"].pop(chamada_id, None)
+                self.atualizar(pasta, estado)
+                return True
             vigia = estado.get("vigilancia_superficie")
             if vigia is None or chamada_id not in vigia["abertas"]:
                 return False
@@ -518,7 +746,7 @@ class Provas:
             else:
                 indice = plano.index(esperada)
                 anteriores = [c["id"] for c in plano[:indice] if c["etapa"] != esperada["etapa"]]
-                exigir(all(i in feitas for i in anteriores), "Chamada fora da ordem prevista")
+                exigir(estado.get("portatil") or all(i in feitas for i in anteriores), "Chamada fora da ordem prevista")
             dados ={"chamada_id": chamada_id, "papel": papel, "runtime": runtime,
                      "ids_observados": ids_observados, "inicio": inicio, "fim": fim, "status": status}
             manifesto_ref = "baseline.json"
@@ -530,6 +758,8 @@ class Provas:
             ref = self.evento(pasta, estado, "chamada", dados, manifesto_ref, max(1, estado["tentativa"]),
                               produtor="adaptador", schema_versao="3.2")
             estado["runtime"] = runtime
+            if estado.get("portatil"):
+                estado["delegacoes_abertas"].pop(chamada_id, None)
             if estado.get("vigilancia_superficie") is not None:
                 self.fechar_janela(estado["vigilancia_superficie"], ler(pasta / "contrato.yaml")["dados"],
                                    chamada_id, papel)
@@ -588,10 +818,28 @@ class Provas:
             # O estado revisado é retratado pelo núcleo, não declarado por quem revisa.
             caminhos = sorted(set(contrato["superficie"]) |
                               {p for c in contrato["aceite"] for p in c["verificacao"]["caminhos"]})
+            if estado.get("portatil") and dados.get("modo") == "independente":
+                ref_indep = dados.get("evidencia_independencia_ref")
+                exigir(ref_indep and dados.get("revisor"), "Revisao independente exige revisor e evidencia")
+                atestado = ler(dentro(pasta, ref_indep))
+                exigir(atestado.get("execucao_id") == estado["execucao_id"] and
+                       atestado.get("revisor") == dados["revisor"] and
+                       atestado.get("tipo") in {"revisao_humana", "revisao_agente"} and
+                       isinstance(atestado.get("contexto"), str) and atestado["contexto"].strip() and
+                       atestado["contexto"] not in {p["sessao"] for p in estado["participantes"]} and
+                       hash_bytes(atestado["contexto"].encode()) not in {p["sessao"] for p in estado["participantes"]} and
+                       atestado.get("contexto_independente") is True and
+                       atestado.get("arquivos") == retrato(self.raiz, caminhos),
+                       "Evidencia de independencia nao corresponde ao revisor, contexto ou estado revisado")
             tentativa = max(1, estado["tentativa"])
             manifesto_ref = f"tentativas/{tentativa:03d}/revisoes/{uuid4().hex}.json"
+            evidencias = {}
+            if dados.get("evidencia_independencia_ref"):
+                ref_indep = dados["evidencia_independencia_ref"]
+                evidencias[ref_indep] = hash_arquivo(dentro(pasta, ref_indep))
             gravar(dentro(pasta, manifesto_ref), dict(versao=1, caminhos=caminhos,
-                   arquivos=retrato(self.raiz, caminhos), controle=retrato(self.raiz, CONTROLE)))
+                   arquivos=retrato(self.raiz, caminhos), controle=retrato(self.raiz, CONTROLE),
+                   evidencias=evidencias))
             ref = self.evento(pasta, estado, "ataque", dados, manifesto_ref, tentativa,
                               produtor="refute", schema_versao="3.2")
             estado.setdefault("revisoes", []).append({"ref": ref, "sha256": hash_arquivo(dentro(pasta, ref))})
@@ -772,7 +1020,8 @@ class Provas:
     def manifesto_atual(self, pasta, ref):
         m = ler(dentro(pasta, ref))
         return (m["arquivos"] == retrato(self.raiz, m["caminhos"]) and
-                m["controle"] == retrato(self.raiz, list(m["controle"])))
+                m["controle"] == retrato(self.raiz, list(m["controle"])) and
+                all(hash_arquivo(dentro(pasta, r)) == h for r, h in m.get("evidencias", {}).items()))
 
     def depois(self, chamada, comando, exit_code, saida, exit_code_origem=None):
         pasta = self.pasta()
@@ -790,10 +1039,16 @@ class Provas:
             log_ref = f"tentativas/{tentativa:03d}/logs/resultado.txt"
             log = dentro(pasta, log_ref)
             log.parent.mkdir(parents=True, exist_ok=True)
-            with log.open("x", encoding="utf-8") as arquivo:
-                arquivo.write(limpar_log(saida))
-            atual = (hash_arquivo(dentro(pasta, p["manifesto"])) == p["manifesto_sha256"] and
-                     self.manifesto_atual(pasta, p["manifesto"]))
+            if log.exists():
+                exigir(log.read_text(encoding="utf-8") == limpar_log(saida), "Log ja registrado com outro conteudo")
+            else:
+                with log.open("x", encoding="utf-8") as arquivo:
+                    arquivo.write(limpar_log(saida))
+            try:
+                atual = (hash_arquivo(dentro(pasta, p["manifesto"])) == p["manifesto_sha256"] and
+                         self.manifesto_atual(pasta, p["manifesto"]))
+            except OSError:
+                atual = False
             resultado = "inconclusivo" if exit_code is None or not atual else ("pass" if exit_code == 0 else "fail")
             dados = dict(criterio_id=p["criterio"], chamada_id=chamada, cwd=p["cwd"],
                          comando=limpar_log(comando), inicio=p["inicio"], fim=agora(), exit_code=exit_code,
@@ -852,7 +1107,8 @@ class Provas:
             e = self.registrado(pasta, estado, registro) if registro else None
             provado = e is not None and self.prova_atende(pasta, c, e)
             # Com a trilha ativada, o critério ambiente também exige a autorização registrada e atual.
-            autorizado = not (ativa and c["tipo"] == "ambiente") or self.manifesto_valido(
+            seguranca = ativa or estado.get("requisitos", {}).get("autorizacao_ambiente", False)
+            autorizado = not (seguranca and c["tipo"] == "ambiente") or self.manifesto_valido(
                 pasta, estado.get("manifestos_autorizacao", {}).get(c["id"]))
             vinculado = (agentes_test is None or c["tipo"] not in TIPOS_TESTE or
                          (e is not None and e["dados"].get("agente_id") in agentes_test))
@@ -884,7 +1140,7 @@ class Provas:
         forma, papel = ("sandbox", "dab") if sandbox else ("paridade", "test")
         registro = estado.get("sandbox" if sandbox else "paridades", {}).get(c["id"])
         if registro is None:
-            return [f"{forma}_ausente:{c['id']}"] if ativa else []
+            return [f"{forma}_ausente:{c['id']}"] if ativa or estado.get("requisitos", {}).get("formas") else []
         e = self.registrado(pasta, estado, registro)
         if e is None or e["tipo"] != forma:
             return [f"{forma}_invalido:{c['id']}"]
@@ -910,7 +1166,7 @@ class Provas:
             if e is None:
                 continue
             d = e["dados"]
-            if (e["tipo"] == "chamada" and e["produtor"] == "adaptador" and d["runtime"] == runtime and
+            if (e["tipo"] == "chamada" and e["produtor"] == "adaptador" and (estado.get("portatil") or d["runtime"] == runtime) and
                     d["papel"] == registro["papel"] and d["chamada_id"] == registro["chamada_id"] and
                     d["status"] == registro["status"] and
                     (d["papel"] != "dab" or self.manifesto_valido(pasta, e["manifesto_ref"]))):
@@ -926,7 +1182,7 @@ class Provas:
     def chamadas_faltantes(self, pasta, estado):
         runtime = estado.get("runtime") or self.runtime
         contrato = ler(pasta / "contrato.yaml")["dados"]
-        if not self.ativada(estado.get("trilha", contrato["trilha"]), runtime):
+        if not self.modo_agentes(estado, contrato):
             return []
         plano = estado.get("chamadas_previstas") or self.plano_chamadas(contrato)
         feitas = concluidas(plano, [registro for registro, _ in self.chamadas_validas(pasta, estado)])
@@ -942,13 +1198,27 @@ class Provas:
         if not revisoes:
             return ["revisao:ausente"]
         ataques = [(r["ref"], self.registrado(pasta, estado, r)) for r in revisoes]
+        if estado.get("portatil") and any(a is None for _, a in ataques):
+            return ["revisao:historico_invalido"]
         ataque = ataques[-1][1]
         if ataque is None:
             return ["revisao:invalida"]
         if not self.manifesto_valido(pasta, ataque["manifesto_ref"]):
             return ["revisao:obsoleta"]
-        if ataque["dados"].get("agente_id") not in self.agentes_do_papel(pasta, estado, "refute"):
+        if not estado.get("portatil") and ataque["dados"].get("agente_id") not in self.agentes_do_papel(pasta, estado, "refute"):
             return ["revisao:fora_do_refute"]
+        if estado.get("portatil"):
+            modo = ataque["dados"].get("modo", "nao_realizada")
+            if modo == "nao_realizada":
+                return ["revisao:nao_realizada"]
+            if estado["requisitos"]["revisao"] == "independente":
+                if (modo != "independente" or not ataque["dados"].get("revisor") or
+                        not ataque["dados"].get("evidencia_independencia_ref")):
+                    return ["revisao:independencia_pendente"]
+            cobertos = {c["criterio_id"] for c in ataque["dados"]["cobertura"] if c["coberto"]}
+            contrato = ler(pasta / "contrato.yaml")["dados"]
+            if any(c["obrigatorio"] and c["id"] not in cobertos for c in contrato["aceite"]):
+                return ["revisao:cobertura_incompleta"]
         revisados = {a["dados"].get("agente_id") for _, a in ataques if a is not None}
         faltam = [f"revisao:sem_registro:{registro['chamada_id']}"
                   for registro, e in self.chamadas_validas(pasta, estado)
@@ -976,10 +1246,25 @@ class Provas:
         """Critérios e, com a trilha ativada, chamadas previstas, revisão atual e achados tratados."""
         contrato = ler(pasta / "contrato.yaml")["dados"]
         trilha = estado.get("trilha", contrato["trilha"])
-        ativa = self.ativada(trilha, estado.get("runtime") or self.runtime)
+        ativa = self.modo_agentes(estado, contrato)
         criterios, faltam = self.criterios(pasta, estado, contrato, ativa)
         if estado["pendente"]:
             faltam.append("resultado_da_chamada_pendente")
+        if estado.get("portatil"):
+            faltam.extend("delegacao_pendente:" + i for i in estado.get("delegacoes_abertas", {}))
+            faltam.extend(self.revisao_faltante(pasta, estado, trilha))
+            faltam.extend("operacao_pendente:" + i for i in estado.get("operacoes_pendentes", {}))
+            for op_id, conferencia in estado.get("operacoes_conferidas", {}).items():
+                ref = dentro(self.raiz, conferencia["evidencia_ref"])
+                if not ref.is_file() or hash_arquivo(ref) != conferencia["sha256"]:
+                    faltam.append("conferencia_operacao_invalida:" + op_id)
+            if estado["requisitos"]["diagnostico"] and not self.diagnosticos_validos(pasta, estado):
+                faltam.append("diagnostico:ausente")
+            baseline = ler(pasta / "baseline.json")["arquivos"]
+            atual = retrato(self.raiz, self.vigiados(contrato))
+            fora = [r for r in alterados(baseline, atual) if not any(
+                r == s or r.startswith(s + "/") for s in contrato["superficie"])]
+            faltam.extend("superficie_fora_do_contrato:" + r for r in fora)
         if ativa:
             faltam.extend("chamada:" + etapa for etapa in self.chamadas_faltantes(pasta, estado))
             plano = estado.get("chamadas_previstas") or self.plano_chamadas(contrato)
@@ -1001,6 +1286,10 @@ class Provas:
             dados = dict(escopo_conclusao=estado["execucao_id"], status=status, outcome=resultado,
                          criterios=criterios, pendencias=faltam,
                          acao_humana=resultado if status in {"DECIDE", "REVIEW"} else None)
+            if estado.get("portatil"):
+                revisoes = estado.get("revisoes", [])
+                revisao = self.registrado(pasta, estado, revisoes[-1]) if revisoes else None
+                dados["modo_revisao"] = revisao["dados"].get("modo", "nao_realizada") if revisao else "nao_realizada"
             # Baseline sustenta o envelope; cada criterio aponta seu proprio manifesto.
             ref = self.evento(pasta, estado, "brief", dados, "baseline.json",
                               max(1, estado["tentativa"]), f"fechos/{uuid4().hex}.yaml")
@@ -1012,7 +1301,11 @@ class Provas:
         pasta = self.pasta()
         if pasta is None:
             return {"ativa": False, "pendencias": []}
-        estado = self.estado(pasta)
+        estado = self.estado(pasta, coordenador=False)
+        if self.execucao is None and estado.get("portatil") and (
+                not estado.get("coordenador_ativo") or estado["sessao"] != self.sessao or
+                estado["runtime"] != self.runtime):
+            return dict(ativa=False, execucao_id=estado["execucao_id"], pendencias=[], coordenacao="transferida_ou_liberada")
         _, faltam = self.pendencias(pasta, estado)
         status = None
         if estado["fecho"]:
@@ -1026,4 +1319,6 @@ class Provas:
                     for registro, e in self.chamadas_validas(pasta, estado)]
         return dict(ativa=True, execucao_id=estado["execucao_id"], revisao=estado["revisao"],
                     status=status, pendencias=faltam, chamadas=chamadas,
+                    runtime=estado.get("runtime"), checkpoint=estado.get("checkpoint"),
+                    requisitos=estado.get("requisitos"), participantes=estado.get("participantes", []),
                     fecho_valido=status is not None and (status not in ("DONE", "REVIEW") or not faltam))

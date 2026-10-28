@@ -435,6 +435,8 @@ class ProvasTestes(unittest.TestCase):
         politica_clone = clone / "configuracao/politica.json"
         politica = ler(politica_clone)
         politica["agentes_obrigatorios"] = {"claude_code": [], "cursor": []}
+        politica["execucao_portatil"] = False
+        politica["agentes_legados"] = {}
         politica_clone.write_text(json.dumps(politica), encoding="utf-8")
         (clone / "src").mkdir()
         (clone / "src/a.py").write_text("# arquivo", encoding="utf-8")
@@ -563,7 +565,7 @@ class ProvasTestes(unittest.TestCase):
         self.assertEqual(self.p.fechar("DONE", "Rollback para chave vazia")["status"], "DONE")
 
     def test_e0_chave_real_ativa_as_mesmas_trilhas_nos_dois_runtimes_e_esvaziar_restaura(self):
-        real = ler(RAIZ / "configuracao/politica.json")["agentes_obrigatorios"]
+        real = ler(RAIZ / "configuracao/politica.json")["agentes_legados"]
         ativas = ["manutencao", "correcao", "novo", "docs", "review"]
         self.assertEqual(real, {"claude_code": ativas, "cursor": ativas})
         self.politica["agentes_obrigatorios"] = real

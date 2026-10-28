@@ -1,5 +1,48 @@
 # Prova da fatia — uso
 
+## Execução portátil
+
+Novas fatias usam o núcleo comum com `execucao_portatil: true`. Informe uma sessão própria e o runtime (`claude_code`, `cursor`, `codex` ou `opencode`). A sessão identifica o participante; `execucao_id` identifica o trabalho e não muda na retomada.
+
+```powershell
+py -3 adaptadores/prova.py --runtime codex --sessao minha-sessao iniciar .execucoes/entradas/assunto/contrato.yaml
+py -3 adaptadores/prova.py --runtime codex --sessao minha-sessao verificar testes_locais
+py -3 adaptadores/prova.py --runtime codex --sessao minha-sessao revisar .execucoes/entradas/assunto/revisao.yaml
+py -3 adaptadores/prova.py --runtime codex --sessao minha-sessao estado
+py -3 adaptadores/prova.py --runtime codex --sessao minha-sessao fechar --resultado "Critérios verificados"
+```
+
+`verificar` executa o comando do critério sem shell, captura início/fim, cwd, log, exit code e manifesto. Aceita `unittest`, `pytest` e scripts Python/Node em `testes/` ou `tests/`. Só critérios `teste`, `validacao_dados` ou `paridade`; ambiente e comandos Databricks seguem pelas integrações operacionais. Não aceita wrappers, `-c`, `-e`, encadeamento ou instalação de pacotes. A flag `-B` antes do script é aceita e o comando roda com ela. Não inspeciona os efeitos internos do código de teste: use apenas testes locais e respeite as guardas. `--timeout` aceita 1–3600 segundos (padrão 300). Falha, timeout, interpretador ausente ou edição durante o teste não aprovam o critério; o CLI retorna 2. O executor não preenche sucesso a partir de relato.
+
+Se o processo ou a gravação da captura local forem interrompidos, confirme que o processo terminou. `recuperar-local CHAMADA --motivo ...` preserva o log já capturado e encerra somente aquela chamada local como inconclusiva; não executa novamente nem aceita exit code informado à mão. Depois execute uma nova verificação. Manifesto ilegível também torna o resultado inconclusivo.
+
+O YAML de revisão usa a forma `ataque` documentada abaixo e acrescenta `modo: autorrevisao`, `independente` ou `nao_realizada`. A cobertura inclui todos os critérios obrigatórios. Se o contrato declarar `revisao: independente`, autorrevisão permite progresso, mas não fecha o aceite. Para uma revisão independente, informe `revisor` e `evidencia_independencia_ref`, referência dentro da execução a um JSON de conferência com `tipo` (`revisao_humana` ou `revisao_agente`), `execucao_id`, `revisor`, `contexto` distinto da sessão coordenadora, `contexto_independente: true` e `arquivos` com o retrato dos caminhos revisados. O núcleo confere esse retrato e guarda o hash da evidência. Uma segunda chamada no mesmo contexto não basta; hashes e declarações rastreiam a evidência, sem autenticar a identidade da pessoa.
+
+Para transferir a coordenação, prepare um checkpoint em `.execucoes/entradas/assunto/checkpoint.yaml`:
+
+```yaml
+proximo_passo: Conferir a revisão e fechar
+autorizacoes: []  # opcional; itens com ref, escopo e validade
+operacoes: []     # opcional; operações externas sem resultado, com id e referencia
+```
+
+```powershell
+py -3 adaptadores/prova.py --runtime claude_code --sessao origem liberar .execucoes/entradas/assunto/checkpoint.yaml
+py -3 adaptadores/prova.py --runtime codex --sessao destino --execucao ID estado
+py -3 adaptadores/prova.py --runtime codex --sessao destino --execucao ID retomar --motivo "Continuar nesta CLI"
+py -3 adaptadores/prova.py --runtime codex --sessao destino --execucao ID verificar testes_locais
+```
+
+`checkpoint` salva sem liberar. Contrato, baseline, testes, revisões e fechos anteriores permanecem. A retomada registra origem/destino, motivo e pendências, compara manifestos e mantém os requisitos congelados em `requisitos.json`. Outra sessão só escreve depois de `retomar`. Se o coordenador foi interrompido, confira que ele terminou e use `retomar --recuperar --revisao N --motivo ...`, com a revisão atual de `estado`; tempo decorrido não libera coordenação. Lock de processo interrompido não expira: confirme o encerramento e remova somente aquele lock. Verificação ou delegação sem resultado impede a transferência; recupere seu resultado na origem antes de retomar.
+
+Operações externas registradas no checkpoint se acumulam e impedem `DONE`; salvar outro checkpoint não as apaga. Consulte a plataforma por ID, guarde a evidência JSON com `operacao_id`, `referencia`, `resultado` (`concluida`, `falhou` ou `nao_executada`) e `observado_em` com fuso. Use `resolver-operacao ID --evidencia caminho/relativo` para registrar a conferência. ID e referência precisam casar com a pendência; o hash da evidência é conferido no fecho. O comando não executa a operação, não concede autorização nem aprova um critério de ambiente. Referências de autorização do checkpoint são contexto; o aceite continua exigindo a referência e o manifesto do critério.
+
+Execuções antigas podem ser consultadas pelo ID. Para herdar trabalho, use `--execucao ID_ANTIGO migrar .execucoes/entradas/assunto/contrato.yaml` em uma sessão nova. O contrato conserva os critérios e a superfície herdados; exigência de revisão independente do modo antigo é preservada. Achados não descartados entram como revisões de herança, com evidência da origem, exigindo triagem no destino. A nova execução referencia os hashes do estado, contrato e baseline anteriores e exige novas provas. A origem fica intacta, inclusive seus fechos `BLOCKED`; não se converte histórico em aprovação.
+
+## Compatibilidade com coleta por hooks
+
+As seções seguintes descrevem as integrações e os registros compartilhados. Menções à obrigatoriedade de papéis se aplicam às execuções antigas; nas portáteis, os requisitos operacionais são exigidos sem depender do modo de agentes. O executor local permite verificar também no Codex sem coleta de shell instalada.
+
 Manual da prova estruturada: iniciar a fatia, rodar as verificações, fechar. O fluxo abaixo é o do Cursor; no Claude Code, as diferenças estão no [README do adaptador](../adaptadores/claude_code/README.md) (sessão pelo `SessionStart`, diretório pelo prefixo literal, `Stop` uma vez por turno). Política de validade e status: [`fecho.md`](fecho.md). Layout dos arquivos: [`layout.md`](layout.md). Requisitos: Python 3.12 ou mais novo e PyYAML (`requirements.txt`).
 
 ## Fluxo

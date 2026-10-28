@@ -2,6 +2,12 @@
 
 O núcleo define a política ([guardas](../guardas/README.md)). Cada runtime traduz seu evento para a mesma guarda. O Cursor é o adaptador principal. Mapa do código, protocolo e limites: [arquitetura](arquitetura.md).
 
+## Núcleo portátil
+
+Todos os runtimes podem usar `prova.py verificar` para testes locais e `--execucao ID retomar` para continuidade. Hooks acrescentam observação e controle nas chamadas cobertas. Nas novas execuções, os papéis são delegações opcionais; autorização, ambiente/paridade, diagnóstico, revisão e superfície são requisitos próprios da execução. Veja [o fluxo comum](../evidencia/uso.md#execução-portátil).
+
+A tabela descreve a coleta automática dos hooks. O Codex produz provas pelo executor comum mesmo sem coleta automática. As referências abaixo a agentes obrigatórios são do fluxo legado: a política atual conserva essas listas em `agentes_legados` para execuções antigas, enquanto novas execuções usam `execucao_portatil: true` e `agentes_obrigatorios: {}`. Testes locais de continuidade não substituem observação real em cada IDE.
+
 | Runtime | Evento | O que guarda | Prova coletada | Instalar e conferir |
 |---|---|---|---|---|
 | [Cursor](cursor/README.md) | `beforeShellExecution` (falha fecha) | Shell: cwd, target, plan e deploy | `sessionStart`, `preToolUse`, `postToolUse`, `postToolUseFailure` e `stop` | `gerenciar.py cursor --instalar`. Customize, Hooks e canal Hooks. |

@@ -15,10 +15,12 @@ Contexto do projeto Avante (vocabulário, etapas, papéis): `nucleo/contexto-ava
 
 - **Simples**: pergunta delimitada ou mudança pequena e reversível. Responda com fontes ou altere e verifique. Sem contrato.
 - **Estruturado**: várias etapas, impacto relevante, ambiguidade ou retomada. Siga a trilha em `trilhas/` e, **antes de editar**, inicie a fatia:
-  `py -3 adaptadores/prova.py iniciar .execucoes/entradas/<assunto>/<arquivo>.yaml` — `contratos/` descreve os campos; a instância não fica nessa pasta. Modelo do contrato em `evidencia/uso.md`.
-  Rode as verificações pelo chat, consulte com `estado` e feche com `fechar`.
+  `py -3 adaptadores/prova.py --runtime <runtime> --sessao <ID> iniciar .execucoes/entradas/<assunto>/<arquivo>.yaml` — `contratos/` descreve os campos; a instância não fica nessa pasta. Modelo do contrato em `evidencia/uso.md`.
+  Rode testes locais com `verificar <criterio_id>`, consulte com `estado`, registre revisão e feche com `fechar`.
   Só escreva `DONE` se `fechar` aceitar. Se recusar, verifique de novo ou feche com `BLOCKED`, `FAILED` ou `DECIDE` (`evidencia/fecho.md`).
 - **Agentes obrigatórios**: se a trilha estiver em `agentes_obrigatorios` do seu runtime (`configuracao/politica.json`), você coordena e delega aos papéis de `agentes/` na ordem de [`trilhas/README.md`](trilhas/README.md#agentes). Não faça em silêncio o trabalho de um papel obrigatório: papel indisponível fecha `BLOCKED`. Fora da chave, um único agente executa a trilha.
+- **Execução portátil**: novas fatias conservam `execucao_id`, requisitos e procedência ao trocar de sessão ou runtime. Salve `checkpoint`, use `liberar` na origem e `--execucao <ID> retomar --motivo ...` no destino. Recuperação de coordenador interrompido exige `--recuperar --revisao N --motivo ...`; tempo não libera coordenação. Execução antiga usa `migrar`, com contrato preservado e novas provas.
+- **Aceite sem agentes**: autorização, ambiente, paridade, superfície e achados continuam exigidos. Registre `autorrevisao`, `independente` ou `nao_realizada`; independência exigida no contrato continua pendente sem evidência. O executor local só roda testes declarados, nunca envolve Databricks nem contorna uma negação. Operação externa incerta exige conferência por ID antes de qualquer repetição.
 
 ## Databricks
 

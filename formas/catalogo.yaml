@@ -52,9 +52,15 @@ enums:
   decisao_guarda: [permitir, negar, nao_aplica]
   validade: [valida, obsoleta, nao_verificada]
   origem_exit_code: [campo_resultado, evento_sucesso, texto_falha]
+  modo_revisao: [autorrevisao, independente, nao_realizada]
+  revisao_exigida: [autorrevisao, independente]
   operacao_sandbox: [validate, plan, deploy, run]
   estado_divergencia: [explicada, pendente]
 envelope:
+  - campo: origem
+    tipo: objeto
+    opcional: true
+    regra: "Sessao e runtime que produziram o evento; preservados na retomada."
   - campo: schema_versao
     tipo: string
     regra: "A especificacao 3.2 define novos eventos; registros 3.1 continuam legiveis. Escrita operacional 3.2 depende de C2."
@@ -121,6 +127,7 @@ formas:
       artefatos_raiz: {tipo: string, obrigatorio: true}
       fora: {tipo: lista, item: string, obrigatorio: true}
       fontes: {tipo: lista, item: string, obrigatorio: true}
+      revisao: {tipo: enum, enum: revisao_exigida}
       aceite:
         tipo: lista
         obrigatorio: true
@@ -194,6 +201,7 @@ formas:
           validade: {tipo: enum, enum: validade}
       pendencias: {tipo: lista, obrigatorio: true}
       acao_humana: {tipo: string, anulavel: true, obrigatorio: true}
+      modo_revisao: {tipo: enum, enum: modo_revisao}
 
   - id: intencao
     titulo: Intenção
@@ -274,6 +282,9 @@ formas:
     consumidor: coordenador
     validacao: "O manifesto_ref do envelope identifica o estado revisado. com_achados exige achados com evidência; simplificacao é uma categoria válida. nao_quebrei exige tentativas e cobertura. Inconclusivo não aprova critério obrigatório."
     dados:
+      modo: {tipo: enum, enum: modo_revisao}
+      revisor: {tipo: string}
+      evidencia_independencia_ref: {tipo: caminho}
       agente_id: {tipo: string}
       entrada:
         tipo: objeto

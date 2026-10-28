@@ -1,6 +1,30 @@
 # User harness — Esteira
 
-Regras, guardas e registro de provas para agentes de IA que trabalham na esteira `saneamento_migracao`. O apoio visual (princípio, estrutura e fluxos) está em [`user-harness-esteira-v4.html`](user-harness-esteira-v4.html). Estes arquivos descrevem o que existe hoje.
+Regras, guardas e provas para agentes que trabalham na esteira `saneamento_migracao`. O núcleo mantém uma execução entre sessões de Claude Code, Cursor, Codex e OpenCode. O [guia v6](user-harness-esteira-v6.html) apresenta o desenho e um simulador didático; o fluxo executável está no [manual da prova](evidencia/uso.md#execução-portátil).
+
+## Fluxo portátil
+
+Pergunta delimitada ou mudança pequena e reversível: leia, faça, verifique e feche em prosa. Trabalho estruturado começa com contrato em `.execucoes/entradas/<assunto>/`, antes da edição:
+
+```powershell
+py -3 adaptadores/prova.py --runtime codex --sessao minha-sessao iniciar .execucoes/entradas/assunto/contrato.yaml
+py -3 adaptadores/prova.py --runtime codex --sessao minha-sessao verificar testes_locais
+py -3 adaptadores/prova.py --runtime codex --sessao minha-sessao revisar .execucoes/entradas/assunto/revisao.yaml
+py -3 adaptadores/prova.py --runtime codex --sessao minha-sessao estado
+py -3 adaptadores/prova.py --runtime codex --sessao minha-sessao fechar --resultado "Critérios verificados"
+```
+
+`execucao_id` é permanente. Para continuar em outra conversa ou CLI, salve o checkpoint com `liberar` na origem e use `--execucao ID retomar --motivo ...` no destino. Há um coordenador ativo por vez. Recuperação após interrupção exige revisão atual e motivo explícito; operação sem resultado não é repetida automaticamente. Execuções antigas usam `migrar`, mantendo seus registros e exigindo novas provas. Exemplos completos: [uso](evidencia/uso.md).
+
+O agente principal assume as responsabilidades da trilha. A política habilita `execucao_portatil` e mantém `agentes_obrigatorios` vazio; `agentes_legados` preserva as exigências das execuções antigas. Delegação e hooks acrescentam integração. Autorrevisão é declarada; contrato com `revisao: independente` exige evidência própria de revisão por outra pessoa ou agente em contexto independente.
+
+O executor local roda testes declarados sem shell e captura log, exit code e hashes. Falha, timeout, prova ausente ou obsoleta impedem conclusão. Autorização, ambiente, paridade, diagnóstico, superfície e tratamento de achados independem do modo de agentes. O executor aceita testes locais Python/Node; comandos Databricks e efeitos externos continuam pelas integrações e controles aplicáveis. Ele não inspeciona os efeitos internos dos testes.
+
+O fluxo de continuidade tem testes locais; as sessões reais históricas dos adaptadores não comprovam uma troca v6 em cada IDE. Hashes rastreiam a evidência sem autenticar autoria. Terminal manual, SDK, REST e MCP não são interceptados pelo executor.
+
+## Referência do fluxo anterior
+
+As seções abaixo conservam a documentação dos adaptadores, instalação e cobrança de agentes do fluxo anterior. Nas novas execuções, o fluxo portátil acima prevalece: o Codex verifica pelo executor comum; as listas de agentes obrigatórios antigas estão em `agentes_legados`. As pendências de integração real de cada runtime continuam aplicáveis.
 
 ## Como a IA recebe o harness
 

@@ -19,6 +19,8 @@ No caminho simples o contrato é o escopo no chat, quando houver escrita. No est
 | Aceite | Verificação adequada ao resultado. | Critérios com `tipo` (`teste`, `inspecao_documental`, `analise_codigo`, `ambiente`, `paridade`, `validacao_dados`), `esperado` e `verificacao` (comando, cwd, caminhos). Fatia que publica dado usa `validacao_dados` para conferir schema e conteúdo da saída. |
 | Responsabilidades | O agente executa; a prova objetiva valida. | Quem executa, quem verifica e quem coordena. |
 
+Na execução portátil, `revisao` aceita `autorrevisao` (padrão) ou `independente`. Defina a exigência no início conforme o contrato e o risco. Os requisitos ficam persistidos na execução; mudar de runtime ou remover a integração de agentes não os reduz. Critérios `ambiente` precisam de `autorizacao_ref` atual. Critério de bundle exige registro `sandbox`, e `paridade` exige o registro correspondente, mesmo com agente único.
+
 O aceite de cada trilha (superfície, critério e fecho) está no arquivo da trilha. O contrato não tem orçamento nem prazo: o limite de tentativas é fixo e está em [`nucleo/modus-operandi.md`](../nucleo/modus-operandi.md#recuperação).
 
 ## Fechado quando

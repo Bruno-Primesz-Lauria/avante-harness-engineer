@@ -19,7 +19,7 @@ No caminho simples o fecho é prosa curta no chat, com os mesmos campos: status,
 
 `pass` recebido de outro agente não prova a execução: o coordenador precisa do log ou artefato verificável e de um manifesto compatível. Prova `derived` fecha paridade quando insumos e cálculo são verificáveis. Prova `reported` sozinha não fecha critério obrigatório.
 
-Não implementado: o campo `base` não existe na forma `teste`. O núcleo registra só prova direta, de comando observado com exit code. Critério sem comando verificável não fecha pelo núcleo.
+O campo `base` não existe na forma `teste`. O núcleo registra prova direta de comando observado pelo hook ou pelo executor local, com exit code. Inspeção documental e análise de código usam a forma `inspecao`, com checagens e manifesto. Na execução portátil, o fecho declara `modo_revisao`; autorização, formas de ambiente/paridade, diagnóstico, superfície e achados continuam exigidos sem subagentes. Revisão independente contratada exige evidência própria.
 
 ## Status da tarefa
 

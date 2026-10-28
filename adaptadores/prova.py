@@ -1,4 +1,4 @@
-"""Inicia, consulta e fecha uma fatia; nao executa comandos de produto."""
+"""Gerencia provas, continuidade entre sessoes e testes locais declarados."""
 import argparse
 import json
 import os
@@ -103,6 +103,7 @@ def atualizar_indice(registros: Path) -> None:
 def principal(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sessao", default=os.environ.get("ESTEIRA_SESSAO"))
+    parser.add_argument("--execucao")
     runtime_detectado = "claude_code" if os.environ.get("CLAUDE_CODE_SESSION_ID") else (
         "opencode" if os.environ.get("ESTEIRA_RUNTIME") == "opencode" else None
     )
@@ -110,6 +111,22 @@ def principal(argv=None):
                         default=runtime_detectado)
     comandos = parser.add_subparsers(dest="acao", required=True)
     comandos.add_parser("iniciar").add_argument("contrato", type=Path)
+    comandos.add_parser("migrar").add_argument("contrato", type=Path)
+    for acao in ("checkpoint", "liberar"):
+        comandos.add_parser(acao).add_argument("arquivo", type=Path)
+    retomar = comandos.add_parser("retomar")
+    retomar.add_argument("--motivo", required=True)
+    retomar.add_argument("--revisao", type=int)
+    retomar.add_argument("--recuperar", action="store_true")
+    verificar = comandos.add_parser("verificar")
+    verificar.add_argument("criterio")
+    verificar.add_argument("--timeout", type=int, default=300)
+    recuperar = comandos.add_parser("recuperar-local")
+    recuperar.add_argument("chamada")
+    recuperar.add_argument("--motivo", required=True)
+    resolver = comandos.add_parser("resolver-operacao")
+    resolver.add_argument("operacao_id")
+    resolver.add_argument("--evidencia", required=True)
     for acao in ("inspecionar", "revisar", "triar", "diagnosticar", "registrar-sandbox", "registrar-paridade"):
         comandos.add_parser(acao).add_argument("arquivo", type=Path)
     comandos.add_parser("estado")
@@ -119,15 +136,32 @@ def principal(argv=None):
     args = parser.parse_args(argv)
     try:
         politica = carregar_politica(RAIZ / "configuracao/politica.json")
-        provas = Provas(RAIZ, politica["registros_raiz"], args.sessao, runtime=args.runtime)
-        if args.acao not in ("estado", "fechar"):
+        provas = Provas(RAIZ, politica["registros_raiz"], args.sessao, runtime=args.runtime, execucao=args.execucao)
+        if args.acao in ("iniciar", "migrar", "checkpoint", "liberar", "inspecionar", "revisar", "triar",
+                         "diagnosticar", "registrar-sandbox", "registrar-paridade"):
             arquivo = getattr(args, "contrato", None) or args.arquivo
             exigir_entrada(Path(politica["registros_raiz"]), arquivo)
             dados = yaml.load(arquivo.read_text(encoding="utf-8-sig"), Loader=YamlSemDuplicatas)
             if not isinstance(dados, dict):
                 raise ValueError("O arquivo de entrada deve ser um objeto YAML")
         if args.acao == "iniciar":
+            if args.execucao:
+                raise ValueError("Use iniciar sem --execucao; para herdar, use migrar")
             resultado = provas.iniciar(dados)
+        elif args.acao == "migrar":
+            resultado = provas.migrar(dados)
+        elif args.acao in ("checkpoint", "liberar"):
+            resultado = provas.salvar_checkpoint(dados, liberar=args.acao == "liberar")
+        elif args.acao == "retomar":
+            resultado = provas.retomar(args.motivo, args.revisao, args.recuperar)
+        elif args.acao == "resolver-operacao":
+            resultado = provas.resolver_operacao(args.operacao_id, args.evidencia)
+        elif args.acao == "verificar":
+            from executor_local import verificar as executar_criterio
+            resultado = executar_criterio(provas, args.criterio, args.timeout)
+        elif args.acao == "recuperar-local":
+            from executor_local import recuperar_local
+            resultado = recuperar_local(provas, args.chamada, args.motivo)
         elif args.acao == "inspecionar":
             resultado = provas.inspecionar(dados["criterio_id"], dados["checagens"], dados.get("produtor"))
         elif args.acao == "revisar":
@@ -153,7 +187,7 @@ def principal(argv=None):
             atualizar_indice(provas.registros)
         except Exception as erro:
             print(f"[prova] indice nao atualizado: {erro}", file=sys.stderr)
-        return 0
+        return 0 if args.acao != "verificar" or resultado["resultado"] == "pass" else 2
     except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError) as erro:
         print(f"[prova] {erro}", file=sys.stderr)
         return 2

@@ -254,7 +254,13 @@ def validar_dados(tipo, dados, schema_versao="3.1"):
 def validar(evento, raiz, execucao_id, fatia_id):
     c = catalogo()
     nomes = {v["campo"] for v in c["envelope"]}
-    exigir(isinstance(evento, dict) and set(evento) == nomes, "Envelope invalido")
+    obrigatorios = {v["campo"] for v in c["envelope"] if not v.get("opcional")}
+    exigir(isinstance(evento, dict) and obrigatorios <= set(evento) <= nomes, "Envelope invalido")
+    if "origem" in evento:
+        origem = evento["origem"]
+        exigir(isinstance(origem, dict) and set(origem) == {"sessao", "runtime"}, "Origem invalida")
+        exigir(isinstance(origem["sessao"], str) and bool(origem["sessao"]), "Sessao de origem invalida")
+        exigir(origem["runtime"] in {"claude_code", "cursor", "codex", "opencode"}, "Runtime de origem invalido")
     versao = evento["schema_versao"]
     exigir(isinstance(versao, str) and versao in VERSOES and evento["exemplo"] is False,
            "Versao ou exemplo invalido")
@@ -281,6 +287,8 @@ def validar(evento, raiz, execucao_id, fatia_id):
     refs = [dados["log_ref"]] if evento["tipo"] == "teste" else []
     refs += [i["evidencia_ref"] for i in dados.get("criterios", dados.get("checagens", [])) if i.get("evidencia_ref")]
     if evento["tipo"] == "ataque":
+        if dados.get("evidencia_independencia_ref"):
+            refs.append(dados["evidencia_independencia_ref"])
         refs += [dados["entrada"][chave] for chave in
                  ("intencao_ref", "aceite_ref", "baseline_ref")]
         refs += dados["entrada"]["provas_refs"]
